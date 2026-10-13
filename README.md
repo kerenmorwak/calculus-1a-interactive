@@ -28,7 +28,7 @@ http://127.0.0.1:8000/?chapter=1&dev=1
 ```
 
 This shows a small "development only" panel that can jump straight to the final
-quiz or the homework submission area, and can clear local progress for a fresh
+quiz or the closing writing task, and can clear local progress for a fresh
 test. The panel is gated to `127.0.0.1`/`localhost` and does not appear on normal
 links or hosted URLs. It updates only the local browser state and does not sync
 those shortcut changes to Supabase.
@@ -120,7 +120,17 @@ restricted to invited users. Sending a URL is not an access grant.
 Run and inspect the existing course before changing its presentation. Preserve
 the mathematical content, Hebrew/left-to-right math handling, progression
 rules, first-answer scoring, and coin accounting. A hint costs 5 coins once and
-remains open after purchase. Do not present homework uploads as submitted or
-graded without implementing the corresponding service.
+remains open after purchase. Writing tasks are self-practice: learners mark
+"כתבתי" for each task, and nothing is uploaded or graded. Do not add wording that
+implies checking until a real checking service exists.
+
+The question flow: options are shuffled per round (radio values keep the
+original option index, so scoring and analytics are unchanged). A first wrong
+answer rules that option out and asks the learner to think again; the
+explanation appears after the second try or once the answer is correct.
+Questions whose options are consecutive lines of one argument keep their order
+(`ORDERED_OPTION_QUESTIONS` in `interactive.js`, or `keepOptionOrder` in the bank).
+The personal insight panel counts mistakes and repeated tries only; response
+time is stored but never treated as weakness.
 
 Work on a separate branch and preview locally before changing the hosted site.
