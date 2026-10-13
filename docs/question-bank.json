@@ -2990,37 +2990,37 @@
       "section": "1.6.2",
       "unitTitle": "תכונת ארכימדס וערך שלם",
       "topic": "תכונת ארכימדס וערך שלם",
-      "prompt": "מהי טעות נפוצה ביחס לתכונת ארכימדס?",
+      "prompt": "צריך לבחור n∈N כך ש־n>x עבור x=37.2. איזו בחירה מתאימה?",
       "options": [
         {
           "index": 0,
           "label": "A",
-          "text": "לחשוב שהיא אומרת שכל ממשי הוא שלם",
-          "correct": true
+          "text": "n=37, כי הוא החלק השלם של x",
+          "correct": false
         },
         {
           "index": 1,
           "label": "B",
-          "text": "לחשוב שהיא עוסקת רק במספרים שליליים",
-          "correct": false
+          "text": "n=38, כי 38>37.2",
+          "correct": true
         },
         {
           "index": 2,
           "label": "C",
-          "text": "לחשוב שהיא הגדרת ערך מוחלט",
+          "text": "n=1, כי 1 הוא טבעי",
           "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "לחשוב שהיא איחוד קבוצות",
+          "text": "אין n כזה, כי x אינו טבעי",
           "correct": false
         }
       ],
-      "correctOption": "A",
-      "feedback": "נכון. התכונה אינה אומרת שממשיים הם שלמים, אלא שטבעיים יכולים לעבור כל ממשי נתון.",
+      "correctOption": "B",
+      "feedback": "נכון. תכונת ארכימדס מבטיחה טבעי שעובר כל ממשי נתון; כאן 38 כבר גדול מ־37.2.",
       "layer": "base",
-      "questionMode": "proof-step",
+      "questionMode": "application",
       "skills": [
         "archimedean-property",
         "proof-structure"
@@ -3092,35 +3092,35 @@
       "section": "1.6.2",
       "unitTitle": "תכונת ארכימדס וערך שלם",
       "topic": "תכונת ארכימדס וערך שלם",
-      "prompt": "מה הרעיון של ערך שלם של x?",
+      "prompt": "מה הרעיון של ערך שלם של מספר ממשי?",
       "options": [
         {
           "index": 0,
           "label": "A",
-          "text": "האיבר הקטן ביותר מ־x",
+          "text": "המרחק של המספר מאפס",
           "correct": false
         },
         {
           "index": 1,
           "label": "B",
-          "text": "מספר שלם המתאר את המקום של x בין שלמים עוקבים",
+          "text": "השלם האחרון שאינו גדול ממנו",
           "correct": true
         },
         {
           "index": 2,
           "label": "C",
-          "text": "הערך המוחלט של x",
+          "text": "השלם הראשון שגדול ממנו",
           "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "הסופרמום של כל R",
+          "text": "חסם עליון של כל הממשיים",
           "correct": false
         }
       ],
       "correctOption": "B",
-      "feedback": "נכון. זהו ניסוח של מיקום ממשי ביחס לשלמים סמוכים.",
+      "feedback": "נכון. הערך השלם ממקם מספר ממשי בין שני שלמים עוקבים: [x]≤x<[x]+1.",
       "layer": "base",
       "questionMode": "conceptual-application",
       "skills": [
@@ -4326,18 +4326,18 @@
       "section": "1.6.5",
       "unitTitle": "אקסיומת השלמות",
       "topic": "אקסיומת השלמות",
-      "prompt": "איך מקבלים טענה מקבילה על חסם מלרע גדול ביותר?",
+      "prompt": "איך מוכיחים תכונה על אינפימום בעזרת תוצאה על סופרמום?",
       "options": [
         {
           "index": 0,
           "label": "A",
-          "text": "באמצעות התבוננות ב־−A",
+          "text": "עוברים לקבוצת הנגדיים ומשתמשים בסופרמום שלה",
           "correct": true
         },
         {
           "index": 1,
           "label": "B",
-          "text": "באמצעות החלפת כל חסם במקסימום",
+          "text": "מחליפים כל חסם תחתון במקסימום",
           "correct": false
         },
         {
@@ -4354,7 +4354,7 @@
         }
       ],
       "correctOption": "A",
-      "feedback": "נכון. הפיכת סימן מחליפה חסמים מלעיל וחסמים מלרע.",
+      "feedback": "נכון. שינוי סימן הופך חסמים תחתונים לחסמים עליונים; לכן אפשר לעבוד עם סופרמום של קבוצת הנגדיים.",
       "layer": "base",
       "questionMode": "conceptual-application",
       "skills": [
@@ -4480,35 +4480,35 @@
       "section": "1.6.5",
       "unitTitle": "אקסיומת השלמות",
       "topic": "אקסיומת השלמות",
-      "prompt": "איך מקבלים קיום של חסם מלרע גדול ביותר מתוך אקסיומת השלמות?",
+      "prompt": "איך מקבלים קיום של אינפימום מתוך אקסיומת השלמות?",
       "options": [
         {
           "index": 0,
           "label": "A",
-          "text": "באמצעות החלפת כל המספרים ב־0",
+          "text": "מחליפים את כל האיברים באפס",
           "correct": false
         },
         {
           "index": 1,
           "label": "B",
-          "text": "באמצעות ציור בלבד",
+          "text": "מספיק לצייר את הקבוצה",
           "correct": false
         },
         {
           "index": 2,
           "label": "C",
-          "text": "אי אפשר לקבל זאת",
+          "text": "אי אפשר להסיק זאת משלמות",
           "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "באמצעות הקבוצה −A והפיכת הסדר",
+          "text": "עוברים לקבוצת הנגדיים ומפעילים סופרמום",
           "correct": true
         }
       ],
       "correctOption": "D",
-      "feedback": "נכון. שינוי סימן מחליף בין חסמים מלעיל וחסמים מלרע.",
+      "feedback": "נכון. קבוצת הנגדיים הופכת חסמים מלרעיים לחסמים מלעיליים, ואז אקסיומת השלמות נותנת סופרמום מתאים.",
       "layer": "base",
       "questionMode": "conceptual-application",
       "skills": [
@@ -4998,13 +4998,13 @@
         {
           "index": 0,
           "label": "A",
-          "text": "A={x≥0 : x²≤c}",
+          "text": "A={x∈R : x≥0 ∧ x²≤c}",
           "correct": true
         },
         {
           "index": 1,
           "label": "B",
-          "text": "A={x : x<0}",
+          "text": "A={x∈R : x<0}",
           "correct": false
         },
         {
@@ -5045,35 +5045,35 @@
       "section": "1.6.7",
       "unitTitle": "לכל מספר ממשי חיובי יש שורש",
       "topic": "לכל מספר ממשי חיובי יש שורש",
-      "prompt": "איפה נכנסת אקסיומת השלמות בהוכחה?",
+      "prompt": "בהוכחת קיום שורש ל־c>0 מגדירים A={x∈R : x≥0 ∧ x²≤c}. איפה משתמשים באקסיומת השלמות?",
       "options": [
         {
           "index": 0,
           "label": "A",
-          "text": "כדי להבטיח של־A יש סופרמום",
+          "text": "כדי להסיק של־A יש סופרמום",
           "correct": true
         },
         {
           "index": 1,
           "label": "B",
-          "text": "כדי להראות שכל מספר רציונלי",
+          "text": "כדי להראות ש־A אינה ריקה",
           "correct": false
         },
         {
           "index": 2,
           "label": "C",
-          "text": "כדי להגדיר חיבור",
+          "text": "כדי להראות ש־A חסומה מלעיל",
           "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "כדי למחוק את תנאי החיוביות",
+          "text": "כדי להציב ישירות s²=c",
           "correct": false
         }
       ],
       "correctOption": "A",
-      "feedback": "נכון. צריך קיום של חסם מלעיל קטן ביותר.",
+      "feedback": "נכון. אחרי שמראים ש־A לא ריקה וחסומה מלעיל, השלמות נותנת את קיום s=sup A.",
       "layer": "base",
       "questionMode": "conceptual-application",
       "skills": [
@@ -5201,7 +5201,7 @@
       "section": "1.6.7",
       "unitTitle": "לכל מספר ממשי חיובי יש שורש",
       "topic": "לכל מספר ממשי חיובי יש שורש",
-      "prompt": "למה הקבוצה A={x≥0 : x²≤c} אינה ריקה כאשר c>0?",
+      "prompt": "למה הקבוצה A={x∈R : x≥0 ∧ x²≤c} אינה ריקה כאשר c>0?",
       "options": [
         {
           "index": 0,
@@ -5253,7 +5253,7 @@
       "section": "1.6.7",
       "unitTitle": "לכל מספר ממשי חיובי יש שורש",
       "topic": "שלמות",
-      "prompt": "בהוכחת קיום שורש ל־a>0 מגדירים A={x≥0 : x^2<a} ו־s=sup A. אם מניחים s^2<a, מהו הצעד הבא הטבעי?",
+      "prompt": "בהוכחת קיום שורש ל־a>0 מגדירים A={x∈R : x≥0 ∧ x^2<a} ו־s=sup A. אם מניחים s^2<a, מהו הצעד הבא הטבעי?",
       "options": [
         {
           "index": 0,
@@ -5380,7 +5380,7 @@
         {
           "index": 3,
           "label": "D",
-          "text": "להשתמש בנגזרות",
+          "text": "להגדיל מעט את b ועדיין להישאר ב־A",
           "correct": false
         }
       ],
@@ -5462,30 +5462,30 @@
       "section": "1.6.8",
       "unitTitle": "תכונות נוספות של הממשיים",
       "topic": "צפיפות",
-      "prompt": "יהיו a<b רציונליים. איזו בחירה משלימה הוכחה שיש אי־רציונלי בין a ל־b?",
+      "prompt": "יהיו a<b רציונליים. בוחרים q∈Q כך ש־a−√2<q<b−√2. איזה מספר אי־רציונלי מתקבל בין a ל־b?",
       "options": [
         {
           "index": 0,
           "label": "A",
-          "text": "לבחור q∈Q כך ש־a−√2<q<b−√2, ואז q+√2 נמצא בין a ל־b ואינו רציונלי",
+          "text": "q+√2",
           "correct": true
         },
         {
           "index": 1,
           "label": "B",
-          "text": "לבחור q∈Q כך ש־a<q<b; אז q הוא אי־רציונלי",
+          "text": "q−√2",
           "correct": false
         },
         {
           "index": 2,
           "label": "C",
-          "text": "לקחת את a+b; סכום רציונליים הוא אי־רציונלי",
+          "text": "√2−q",
           "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "לטעון שאין צורך בבנייה, כי כל מספר בין רציונליים הוא אי־רציונלי",
+          "text": "q",
           "correct": false
         }
       ],
@@ -5514,35 +5514,35 @@
       "section": "1.6.8",
       "unitTitle": "תכונות נוספות של הממשיים",
       "topic": "תכונות נוספות של הממשיים",
-      "prompt": "אם רוצים למצוא רציונלי בין a<b, איזה כלי בסיסי מופיע ברקע?",
+      "prompt": "רוצים למצוא q∈Q כך ש־a<q<b. איזה צעד מקטין את הרווח מספיק?",
       "options": [
         {
           "index": 0,
           "label": "A",
-          "text": "ארכימדיות/חלוקה לרשת קטנה מספיק",
+          "text": "לבחור n∈N כך ש־1/n<b−a",
           "correct": true
         },
         {
           "index": 1,
           "label": "B",
-          "text": "נגזרות",
+          "text": "לבחור n∈N כך ש־n<b−a",
           "correct": false
         },
         {
           "index": 2,
           "label": "C",
-          "text": "אינטגרלים",
+          "text": "להציב q=(a+b)/2 בלי בדיקה",
           "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "רציפות",
+          "text": "להניח ש־a ו־b הם שלמים",
           "correct": false
         }
       ],
       "correctOption": "A",
-      "feedback": "נכון. משתמשים בכך שאפשר לבחור טבעי גדול מספיק כדי ליצור רווחים קטנים.",
+      "feedback": "נכון. ארכימדיות מאפשרת לבחור טבעי גדול מספיק כך שהצעד 1/n קטן מאורך הקטע.",
       "layer": "base",
       "questionMode": "application",
       "skills": [
@@ -5566,35 +5566,35 @@
       "section": "1.6.8",
       "unitTitle": "תכונות נוספות של הממשיים",
       "topic": "תכונות נוספות של הממשיים",
-      "prompt": "מהי טעות ביחס לצפיפות?",
+      "prompt": "ידוע ש־Q צפופה ב־R. מה אפשר להסיק לגבי הקטע (2,2.01)?",
       "options": [
         {
           "index": 0,
           "label": "A",
-          "text": "לחשוב שצפיפות אומרת שוויון בין Q ל־R",
+          "text": "יש בו רציונלי אחד לפחות",
           "correct": true
         },
         {
           "index": 1,
           "label": "B",
-          "text": "לחשוב שבכל קטע יש רציונלי",
+          "text": "כל המספרים בו רציונליים",
           "correct": false
         },
         {
           "index": 2,
           "label": "C",
-          "text": "לחשוב שבכל קטע יש אי־רציונלי",
+          "text": "אין בו אי־רציונליים",
           "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "לחשוב שהקטע צריך להיות לא ריק",
+          "text": "יש בו רק מספרים שלמים",
           "correct": false
         }
       ],
       "correctOption": "A",
-      "feedback": "נכון. צפיפות אינה אומרת שהקבוצות שוות.",
+      "feedback": "נכון. צפיפות מבטיחה רציונלי בכל קטע פתוח לא ריק; היא לא אומרת שכל המספרים בקטע רציונליים.",
       "layer": "base",
       "questionMode": "proof-step",
       "skills": [
@@ -5774,35 +5774,35 @@
       "section": "1.6.8",
       "unitTitle": "תכונות נוספות של הממשיים",
       "topic": "תכונות נוספות של הממשיים",
-      "prompt": "מה צפיפות אינה אומרת?",
+      "prompt": "איזה ניסוח מתאר במדויק את צפיפות Q בתוך R?",
       "options": [
         {
           "index": 0,
           "label": "A",
-          "text": "שבכל קטע לא ריק אפשר למצוא איבר מתאים",
-          "correct": false
+          "text": "לכל a<b ממשיים יש q∈Q כך ש־a<q<b",
+          "correct": true
         },
         {
           "index": 1,
           "label": "B",
-          "text": "שהקבוצה הצפופה שווה לקבוצה שבתוכה היא צפופה",
-          "correct": true
+          "text": "לכל a∈R יש q∈Q כך ש־a=q",
+          "correct": false
         },
         {
           "index": 2,
           "label": "C",
-          "text": "שיש רציונליים בין ממשיים",
+          "text": "לכל q∈Q יש r∈R כך ש־q<r",
           "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "שיש אי־רציונליים בין רציונליים",
+          "text": "בין כל שני ממשיים יש רק רציונליים",
           "correct": false
         }
       ],
-      "correctOption": "B",
-      "feedback": "נכון. Q צפופה ב־R אבל Q אינה שווה ל־R.",
+      "correctOption": "A",
+      "feedback": "נכון. צפיפות היא טענה על קיום איבר רציונלי בתוך כל קטע פתוח לא ריק.",
       "layer": "base",
       "questionMode": "conceptual-application",
       "skills": [
@@ -6452,30 +6452,30 @@
         {
           "index": 0,
           "label": "A",
-          "text": "min A=0 ו־sup A=1, אבל אין max A",
+          "text": "המינימום הוא 0, הסופרמום הוא 1, ואין מקסימום",
           "correct": true
         },
         {
           "index": 1,
           "label": "B",
-          "text": "min A=1 ו־sup A=1",
+          "text": "המינימום הוא 1 וגם הסופרמום הוא 1",
           "correct": false
         },
         {
           "index": 2,
           "label": "C",
-          "text": "inf A=1 ו־max A=0",
+          "text": "האינפימום הוא 1 והמקסימום הוא 0",
           "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "A אינה חסומה מלעיל",
+          "text": "הקבוצה אינה חסומה מלעיל",
           "correct": false
         }
       ],
       "correctOption": "A",
-      "feedback": "האיבר הראשון הוא 0, והאיברים מתקרבים ל־1 מלמטה בלי להגיע אליו.",
+      "feedback": "נכון. עבור n=1 מקבלים 0; האיברים גדלים ומתקרבים ל־1 מלמטה, ולכן 1 הוא סופרמום אבל לא מקסימום.",
       "layer": "assessment",
       "questionMode": "application",
       "skills": [
