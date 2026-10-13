@@ -250,9 +250,9 @@
 
   async function signInWithEmail(email) {
     if (!client) return { ok: false, error: friendlyError("") };
-    // Redirect to the site root: Supabase allows http://127.0.0.1:8017 exactly,
-    // so query strings such as ?chapter=1 must not be part of the redirect.
-    const redirectTo = location.origin || location.href.split("#")[0].split("?")[0];
+    // Redirect to the app root, not only the domain. Project Pages live under
+    // /calculus-1a-interactive/, while local checks live at the server root.
+    const redirectTo = authRedirectUrl();
     const { error } = await client.auth.signInWithOtp({
       email,
       options: { emailRedirectTo: redirectTo }
@@ -263,6 +263,19 @@
     }
     setState({ status: "link-sent", error: null });
     return { ok: true };
+  }
+
+  function authRedirectUrl() {
+    const current = new URL(location.href);
+    current.hash = "";
+    current.search = "";
+    if (current.pathname === "/" || current.pathname === "") {
+      return current.origin;
+    }
+    if (!current.pathname.endsWith("/")) {
+      current.pathname = current.pathname.replace(/[^/]*$/, "");
+    }
+    return current.href;
   }
 
   async function signOut() {
