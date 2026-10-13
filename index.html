@@ -7,6 +7,8 @@
   <title>סיכומים בחדו״א 1א</title>
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="style.css">
+  <script src="runtime-config.js" defer></script>
+  <script src="auth.js" defer></script>
   <script src="app.js" defer></script>
   <script src="interactive.js" defer></script>
   <script>
@@ -31,6 +33,18 @@
   <header class="masthead">
     <a class="brand" href="./"><img class="brand-photo" src="assets/dog.jpg" alt="" width="96" height="54"><span>סיכומים בחדו״א <bdi>1א</bdi></span></a>
     <span class="institution">אוניברסיטת תל אביב · בית הספר למדעי המתמטיקה</span>
+    <div class="account-bar" data-account-state="local">
+      <span class="coin-hud header-coins" role="status" aria-live="polite">
+        <img class="coin-icon" src="assets/coin.svg" alt="" width="20" height="20">
+        <strong data-coin-count>0</strong>
+        <span class="sr-only">מטבעות</span>
+      </span>
+      <button class="profile-chip is-empty" type="button" data-open-learner-profile aria-label="הפרופיל שלי">
+        <span class="math-avatar is-empty" data-learner-avatar aria-hidden="true"></span>
+        <span class="profile-chip-name" data-learner-name>הפרופיל שלי</span>
+      </button>
+      <button class="account-button" type="button" data-auth-open hidden>כניסה</button>
+    </div>
   </header>
   <div class="layout">
     <aside class="sidebar" aria-label="ניווט ברשימות">
