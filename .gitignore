@@ -1,0 +1,10 @@
+_site/
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+.env
+.env.*
+!.env.example
+*.tgz
+*.zip
