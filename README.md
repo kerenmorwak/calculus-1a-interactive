@@ -28,7 +28,7 @@ http://127.0.0.1:8000/?chapter=1&dev=1
 ```
 
 This shows a small "development only" panel that can jump straight to the final
-quiz or the homework submission area, and can clear local progress for a fresh
+quiz or the closing writing task, and can clear local progress for a fresh
 test. The panel is gated to `127.0.0.1`/`localhost` and does not appear on normal
 links or hosted URLs. It updates only the local browser state and does not sync
 those shortcut changes to Supabase.
@@ -120,7 +120,31 @@ restricted to invited users. Sending a URL is not an access grant.
 Run and inspect the existing course before changing its presentation. Preserve
 the mathematical content, Hebrew/left-to-right math handling, progression
 rules, first-answer scoring, and coin accounting. A hint costs 5 coins once and
-remains open after purchase. Do not present homework uploads as submitted or
-graded without implementing the corresponding service.
+remains open after purchase.
+
+Homework ("תרגיל להגשה") is submitted by uploading a PDF or images. Files go to
+the private Storage bucket `homework-submissions`, under the learner's own
+folder (`{user_id}/{homework_id}/{submission_id}/…`), with one row per file in
+`public.homework_submissions`. "העבודה הועלתה" is shown only after both the
+upload and the database row succeeded; learners can open their files through
+short-lived signed links and replace the submission (a replacement is a new
+submission; earlier files are kept). There is no checking, grade, solution or
+self-check list yet, and the interface says so: "העבודה נשמרה. בדיקה ומשוב
+עדיין אינם זמינים." Uploading never changes progress. The "כתבתי" toggle exists
+only on the optional writing-practice cards, not on homework.
+
+Before the first real upload, run `supabase/homework-storage.sql` once in the
+Supabase SQL editor. It creates the private bucket (PDF and images, 20 MB per
+file) and the Storage policies that limit each user to their own folder. It
+does not change existing tables.
+
+The question flow: options are shuffled per round (radio values keep the
+original option index, so scoring and analytics are unchanged). A first wrong
+answer rules that option out and asks the learner to think again; the
+explanation appears after the second try or once the answer is correct.
+Questions whose options are consecutive lines of one argument keep their order
+(`ORDERED_OPTION_QUESTIONS` in `interactive.js`, or `keepOptionOrder` in the bank).
+The personal insight panel counts mistakes and repeated tries only; response
+time is stored but never treated as weakness.
 
 Work on a separate branch and preview locally before changing the hosted site.

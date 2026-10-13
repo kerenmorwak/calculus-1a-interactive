@@ -24,11 +24,16 @@ chapters.forEach((title, index) => {
 });
 document.title = `${chapters[chapter - 1]} | סיכומים בחדו״א 1א`;
 const section = document.querySelector('#chapter');
-const heading = el('div', 'chapter-heading');
-const titles = el('div');titles.append(el('p', 'chapter-kicker', `פרק ${chapter}`));
-const title = el('h2', '', chapters[chapter - 1]);title.id = 'chapter-title';titles.append(title);heading.append(titles);section.append(heading);
+const heading = el('header', 'chapter-heading chapter-hero');
+const titles = el('div', 'chapter-hero-text');titles.append(el('p', 'chapter-kicker', `פרק ${chapter}`));
+const title = el('h1', '', chapters[chapter - 1]);title.id = 'chapter-title';titles.append(title);heading.append(titles);section.append(heading);
 const data = chapterData[chapter];
 if(data) {
+  const readingNote = chapter === 1
+    ? 'קוראים מקטע מהרשימות, עונים על כמה שאלות קצרות, וממשיכים. כל סעיף שמסיימים פותח את הבא ומוסיף מטבעות.'
+    : `${data.pages.length} עמודים. להגדלה, לחיפוש בטקסט או להדפסה אפשר לפתוח את קובץ ה־PDF.`;
+  titles.append(el('p', 'chapter-lede', readingNote));
+  titles.append(el('p', 'chapter-credit', 'על בסיס הרשימות של שירי ארטשטיין וירון אוסטרובר'));
   const actions = el('div', 'actions');
   const open = el('a', 'action', 'פתיחת PDF');open.href = data.pdf;open.target = '_blank';open.rel = 'noopener';
   const download = el('a', 'action primary', 'הורדת הפרק');download.href = data.pdf;download.download = `Chedva1_Chapter${chapter}.pdf`;
@@ -39,10 +44,6 @@ if(data) {
     const a = el('a', item.level > 2 ? 'subsection' : '');a.href = `#page-${item.page}`;
     a.append(el('span', 'section-number', item.number), el('span', '', item.title));links.append(a);
   });
-  const readingNote = chapter === 1
-    ? `מתקדמים במנות קטנות: קוראים עד סוף המקטע, עונים על כמה שאלות קצרות, ואז ממשיכים.`
-    : `פרק ${chapter} · ${data.pages.length} עמודים. להגדלה, לחיפוש בטקסט או להדפסה אפשר לפתוח את קובץ ה־PDF.`;
-  section.append(el('p', 'reading-note', readingNote));
   const pages = el('div', 'pages');
   for(let i = 1; i <= data.pages.length; i++) {
     const figure = el('figure', 'page');figure.id = `page-${i}`;
