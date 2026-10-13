@@ -109,6 +109,10 @@ function renderItem(item) {
   if (correctOption) lines.push("", `תשובה נכונה: ${correctOption}`);
   if (item.feedback) lines.push("", `משוב: ${mdEscape(item.feedback)}`);
   if (item.hint) lines.push("", `רמז (${item.hintCost ?? 5} מטבעות): ${mdEscape(item.hint)}`);
+  if (item.modelSolution) lines.push("", `פתרון לדוגמה: ${mdEscape(item.modelSolution)}`);
+  if (item.modelSolutionTex) {
+    lines.push("", "פתרון לדוגמה — נוסחה:", "", "```tex", String(item.modelSolutionTex).trim(), "```");
+  }
   if (item.reviewNote) lines.push("", `הערת סקירה: ${mdEscape(item.reviewNote)}`);
 
   return `${lines.join("\n")}\n`;

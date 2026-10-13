@@ -609,7 +609,9 @@ function homeworkTaskFromBankItem(item) {
   return {
     text: item.prompt || "",
     tex: item.tex || "",
-    hint: item.hint || ""
+    hint: item.hint || "",
+    modelSolution: item.modelSolution || "",
+    modelSolutionTex: item.modelSolutionTex || ""
   };
 }
 
@@ -1776,14 +1778,18 @@ function renderWritingPracticeMilestone(milestone) {
       <span>${formatInlineText(milestone.subtitle)}</span>
     </div>
     <ol class="writing-practice-tasks">
-      ${milestone.tasks.map((task, taskIndex) => `
+      ${milestone.tasks.map((task, taskIndex) => {
+        const key = writtenTaskKey("practice", milestone, taskIndex);
+        return `
         <li>
           <div class="homework-question">${formatInlineText(task.text)}</div>
           ${task.tex ? renderTexDisplay(task.tex) : ""}
           ${task.formula ? renderMathDisplay(task.formula) : ""}
-          <div class="task-tools">${renderWrittenToggle(writtenTaskKey("practice", milestone, taskIndex))}</div>
+          <div class="task-tools">${renderWrittenToggle(key)}</div>
+          ${renderWritingSolution(task, key)}
         </li>
-      `).join("")}
+        `;
+      }).join("")}
     </ol>
   `;
   bindWrittenToggles(card);
@@ -1801,6 +1807,23 @@ function renderWrittenToggle(key) {
       <span class="written-box" aria-hidden="true"></span>
       <span>כתבתי</span>
     </button>
+  `;
+}
+
+function renderWritingSolution(task, key) {
+  if (!task.modelSolution && !task.modelSolutionTex) return "";
+  const paragraphs = String(task.modelSolution || "")
+    .split(/\n{2,}/)
+    .map((paragraph) => paragraph.trim())
+    .filter(Boolean)
+    .map((paragraph) => `<p>${formatInlineText(paragraph)}</p>`)
+    .join("");
+  return `
+    <section class="writing-solution" data-writing-solution-for="${escapeHtml(key)}" hidden>
+      <h4>פתרון לדוגמה</h4>
+      ${paragraphs}
+      ${task.modelSolutionTex ? renderTexDisplay(task.modelSolutionTex) : ""}
+    </section>
   `;
 }
 
@@ -1828,6 +1851,8 @@ function syncWrittenToggles(root = document) {
     const on = Boolean(written[button.dataset.writtenTask]);
     button.setAttribute("aria-pressed", on ? "true" : "false");
     button.classList.toggle("is-on", on);
+    const solution = button.closest("li")?.querySelector("[data-writing-solution-for]");
+    if (solution) solution.hidden = !on;
   });
 }
 

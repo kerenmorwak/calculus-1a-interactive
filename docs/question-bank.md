@@ -2001,6 +2001,14 @@ a+\frac{1}{a}\in\mathbb{Z} \Longrightarrow a^3+\frac{1}{a^3}\in\mathbb{Z},\qquad
 \forall\varepsilon>0\ \exists n\in\mathbb{N}:\ \frac{1}{n}<\varepsilon
 ```
 
+פתרון לדוגמה: השלילה היא שקיים אפסילון חיובי שעבורו אף מספר טבעי לא מצליח להפוך את 1/n לקטן ממנו. מחליפים את \forall ב־\exists, את \exists ב־\forall, ואת < ב־\ge.
+
+פתרון לדוגמה — נוסחה:
+
+```tex
+\exists\varepsilon>0\ \forall n\in\mathbb{N}:\ \frac{1}{n}\ge\varepsilon
+```
+
 #### ch01-s04-writing-02
 
 - סוג: תרגול כתיבה
@@ -2017,6 +2025,14 @@ a+\frac{1}{a}\in\mathbb{Z} \Longrightarrow a^3+\frac{1}{a^3}\in\mathbb{Z},\qquad
 
 ```tex
 A\setminus(B\cup C)=(A\setminus B)\cap(A\setminus C)
+```
+
+פתרון לדוגמה: נראה שתי הכלות. יהי x\in A\setminus(B\cup C). אז x\in A וגם x\notin B\cup C, ולכן x\notin B וגם x\notin C. לכן x\in A\setminus B וגם x\in A\setminus C, ומכאן x\in(A\setminus B)\cap(A\setminus C).  להכלה ההפוכה, יהי x\in(A\setminus B)\cap(A\setminus C). אז x\in A\setminus B וגם x\in A\setminus C, ולכן x\in A, x\notin B ו־x\notin C. מכאן x\notin B\cup C, ולכן x\in A\setminus(B\cup C).
+
+פתרון לדוגמה — נוסחה:
+
+```tex
+A\setminus(B\cup C)\subseteq(A\setminus B)\cap(A\setminus C),\qquad (A\setminus B)\cap(A\setminus C)\subseteq A\setminus(B\cup C)
 ```
 
 ### קוויז סיכום
@@ -3356,6 +3372,14 @@ D=\left\{\frac{m}{n}:m,n\in\mathbb{N},\ m<n\right\}
 A=\left\{1-\frac{1}{n}:n\in\mathbb{N},\ n\ge 1\right\}
 ```
 
+פתרון לדוגמה: האיבר הראשון הוא 0, והאיברים גדלים ומתקרבים ל־1 מלמטה. לכן 0 הוא מינימום וגם אינפימום. 1 הוא חסם עליון קטן ביותר, כלומר סופרמום, אבל הוא לא שייך לקבוצה ולכן אין מקסימום.
+
+פתרון לדוגמה — נוסחה:
+
+```tex
+\inf A=\min A=0,\qquad \sup A=1,\qquad \max A\text{ לא קיים}
+```
+
 #### ch01-s066-writing-02
 
 - סוג: תרגול כתיבה
@@ -3372,6 +3396,14 @@ A=\left\{1-\frac{1}{n}:n\in\mathbb{N},\ n\ge 1\right\}
 
 ```tex
 s=\sup A\Longrightarrow
+\forall\varepsilon>0\ \exists a\in A:\ a>s-\varepsilon
+```
+
+פתרון לדוגמה: יהי \varepsilon>0. מכיוון ש־s הוא החסם העליון הקטן ביותר של A, המספר s-\varepsilon קטן מ־s ולכן אינו חסם מלעיל של A. לכן קיים איבר a\in A שעובר אותו, כלומר a>s-\varepsilon. זה בדיוק אפיון האפסילון.
+
+פתרון לדוגמה — נוסחה:
+
+```tex
 \forall\varepsilon>0\ \exists a\in A:\ a>s-\varepsilon
 ```
 
