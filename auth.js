@@ -187,6 +187,7 @@
       body.querySelector("[data-auth-sign-out]")?.addEventListener("click", async () => {
         await signOut();
         closeAuthDialog();
+        window.CalculusProfile?.afterSignOut?.();
       });
       return;
     }

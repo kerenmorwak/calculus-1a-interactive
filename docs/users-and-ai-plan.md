@@ -108,3 +108,10 @@ not childish. The current set (ids must match `supabase/schema.sql`):
   merged in.
 - If the sign-in library cannot load, the button stays hidden and the course
   keeps working on the device.
+- Signing out keeps the device copy and says so. "מחיקה מהמכשיר הזה", with a
+  confirmation step, removes the profile and progress from this browser only;
+  nothing in the account is deleted.
+- If saving the profile to the account fails (for example, an avatar id that
+  is missing from `public.avatars`), the dialog stays open with a short note.
+- Magic-link redirects go to the site origin only (no query string), to match
+  the Redirect URL configured in Supabase (`http://127.0.0.1:8017` locally).

@@ -958,6 +958,30 @@ function ensureLearnerProfileDialog() {
 function renderLearnerProfileDialog(overlay, profile, mode) {
   const body = overlay.querySelector("[data-profile-dialog-body]");
   if (!body) return;
+  if (mode === "signed-out") {
+    body.innerHTML = `
+      <div class="profile-dialog-head">
+        <h3 id="profile-dialog-title">יצאת מהחשבון</h3>
+        <p class="dialog-lead">הפרופיל, ההתקדמות והמטבעות עדיין שמורים בדפדפן הזה. בחשבון שום דבר לא נמחק.</p>
+      </div>
+      <p class="device-note">במחשב משותף כדאי למחוק אותם מהמכשיר.</p>
+      <div class="profile-actions" data-signed-out-actions>
+        <button class="action primary" type="button" data-close-learner-profile>השארה במכשיר</button>
+        <button class="action" type="button" data-clear-device>מחיקה מהמכשיר הזה</button>
+      </div>
+    `;
+    body.querySelector("[data-clear-device]")?.addEventListener("click", () => {
+      const actions = body.querySelector("[data-signed-out-actions]");
+      actions.innerHTML = `
+        <p class="confirm-line" role="alert">למחוק מהמכשיר את הפרופיל, ההתקדמות והמטבעות?</p>
+        <button class="action danger" type="button" data-confirm-clear>כן, למחוק מהמכשיר</button>
+        <button class="action" type="button" data-close-learner-profile>ביטול</button>
+      `;
+      actions.querySelector("[data-confirm-clear]")?.addEventListener("click", clearLearnerDataFromDevice);
+      actions.querySelector("[data-confirm-clear]")?.focus();
+    });
+    return;
+  }
   if (mode === "save-to-account") {
     const avatar = learnerAvatarById(profile.avatarId);
     body.innerHTML = `
@@ -972,14 +996,14 @@ function renderLearnerProfileDialog(overlay, profile, mode) {
           <span>${escapeHtml(avatar?.name || "")}</span>
         </div>
       </div>
+      <p class="field-note" data-profile-note role="status"></p>
       <div class="profile-actions">
         <button class="action primary" type="button" data-profile-save-account>שמירה בחשבון</button>
         <button class="action" type="button" data-profile-change>בחירה אחרת</button>
       </div>
     `;
-    body.querySelector("[data-profile-save-account]")?.addEventListener("click", () => {
-      writeLearnerProfile({ ...profile, updatedAt: new Date().toISOString() });
-      closeLearnerProfileDialog();
+    body.querySelector("[data-profile-save-account]")?.addEventListener("click", (event) => {
+      saveProfileFromDialog({ ...profile, updatedAt: new Date().toISOString() }, body.querySelector("[data-profile-note]"), event.currentTarget);
     });
     body.querySelector("[data-profile-change]")?.addEventListener("click", () => {
       renderLearnerProfileDialog(overlay, profile, "edit");
@@ -1049,7 +1073,7 @@ function renderLearnerProfileDialog(overlay, profile, mode) {
   });
   form.querySelector("[data-profile-sign-out]")?.addEventListener("click", async () => {
     await auth?.signOut?.();
-    renderLearnerProfileDialog(overlay, currentLearnerProfile(), "edit");
+    afterSignOut();
   });
   form.addEventListener("submit", (event) => {
     event.preventDefault();
@@ -1068,16 +1092,36 @@ function renderLearnerProfileDialog(overlay, profile, mode) {
       return;
     }
     const current = currentLearnerProfile();
-    writeLearnerProfile({
+    note.classList.remove("error");
+    saveProfileFromDialog({
       id: current.id || learnerProfileId(),
       nickname,
       avatarId,
       completed: true,
       updatedAt: new Date().toISOString()
-    });
-    closeLearnerProfileDialog();
+    }, note, form.querySelector("button[type='submit']"));
   });
 }
+
+// After signing out, say plainly what stays on this device and offer to remove it.
+// Nothing is deleted without the learner choosing it.
+function afterSignOut() {
+  lastHydratedAuthUserId = "";
+  updateLearnerProfileDisplay();
+  openLearnerProfileDialog({ mode: "signed-out", returnFocus: document.querySelector("[data-open-learner-profile]") });
+}
+
+function clearLearnerDataFromDevice() {
+  interactiveMemoryStore = "{}";
+  learnerProfileMemoryStore = "";
+  try {
+    window.localStorage?.removeItem(INTERACTIVE_STORAGE_KEY);
+    window.localStorage?.removeItem(LEARNER_PROFILE_STORAGE_KEY);
+  } catch {}
+  location.replace(location.pathname + location.search);
+}
+
+window.CalculusProfile = { afterSignOut };
 
 function renderProfileAccountRow(authState) {
   if (authState.signedIn) {
@@ -1177,8 +1221,29 @@ async function hydrateLearnerProfileFromCloud(userId, { ignoreLocal = false } = 
 
 async function syncLearnerProfileToCloud(profile) {
   const auth = window.CalculusAuth;
-  if (!auth?.getState?.().signedIn || !auth.saveProfile || !profile?.completed) return;
-  await auth.saveProfile(profile);
+  if (!auth?.getState?.().signedIn || !auth.saveProfile || !profile?.completed) return { ok: true, skipped: true };
+  try {
+    return await auth.saveProfile(profile);
+  } catch {
+    return { ok: false };
+  }
+}
+
+// Saves on the device first, then to the account when signed in. The dialog stays
+// open with a short note if the account save fails, so nothing is silently lost.
+async function saveProfileFromDialog(profile, noteNode, button) {
+  writeLearnerProfile(profile, { skipCloud: true });
+  if (button) button.disabled = true;
+  const result = await syncLearnerProfileToCloud(profile);
+  if (button) button.disabled = false;
+  if (result?.ok) {
+    closeLearnerProfileDialog();
+    return;
+  }
+  if (noteNode) {
+    noteNode.textContent = "הפרופיל נשמר במכשיר, אבל לא בחשבון. אפשר לנסות שוב בעוד רגע.";
+    noteNode.classList.add("error");
+  }
 }
 
 // Combines progress from this device and from the account without losing either:

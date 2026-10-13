@@ -308,3 +308,7 @@ html{scroll-padding-top:92px}
 .math-avatar.is-large{box-shadow:none;border-width:2.5px}
 .avatar-options .avatar-option .math-avatar{width:60px;height:60px}
 @media(max-width:680px){.avatar-options .avatar-option .math-avatar{width:54px;height:54px}}
+.device-note{margin:0 0 6px;color:var(--ink);line-height:1.6}
+.confirm-line{flex:1 0 100%;margin:0 0 4px;font-weight:700;color:#7a2f12}
+.action.danger{background:#9a3412;border-color:#9a3412;color:#fff}
+.action.danger:hover{background:#7c2d12}

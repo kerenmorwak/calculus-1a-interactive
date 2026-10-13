@@ -54,9 +54,9 @@ in a server function or trusted backend, never in browser JavaScript.
 
 To enable login in a Supabase project:
 
-1. Run `supabase/schema.sql` in the Supabase SQL editor. For a project that
-   already ran an earlier version, run only the `insert into public.avatars`
-   statement again so the new avatars exist.
+1. New project: run `supabase/schema.sql` in the Supabase SQL editor.
+   Existing project: run only `supabase/seed-avatars.sql` to add or update the
+   avatar list. It does not touch tables, policies or user data.
 2. Enable email magic-link authentication.
 3. Add the hosted site URL and local preview URL to Supabase Auth redirect URLs.
 4. Put the public project URL and anon/publishable key in `runtime-config.js`:
