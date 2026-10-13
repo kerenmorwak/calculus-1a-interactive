@@ -23,16 +23,20 @@ PDFs. Edit the source files, then rebuild; do not edit `_site/` directly.
 
 - `index.html`, `style.css`: page structure and styling.
 - `app.js`: reading navigation and generated chapter metadata placeholder.
+- `auth.js`: optional Supabase Auth and cloud progress bridge.
+- `runtime-config.js`: runtime configuration. It is intentionally empty by
+  default.
 - `interactive.js`: questions, quizzes, progression, coins, and paid hints.
 - `assets/chapter-1.pdf`, `assets/chapter-2.pdf`: current local reading material.
 - `assets/mathjax-tex-svg.js`: bundled mathematical typesetting engine.
 - `build_notes.py`: renders PDFs and generates the static site in `_site/`.
 
 The local copy contains two chapter PDFs. Do not assume all chapters or all
-interactive content are complete. Progress, coins, paid hints, and the current
-learner profile are stored in the visitor's browser. Moving to another browser
-or origin does not transfer that progress. Homework file selection is present;
-an automatic AI grading service is not connected yet.
+interactive content are complete. Without login, progress, coins, paid hints,
+and the current learner profile are stored in the visitor's browser. When
+Supabase is configured and the learner signs in, those fields sync to the
+account. Homework file selection is present; an automatic AI grading service is
+not connected yet.
 
 ## Users and AI grading
 
@@ -42,9 +46,26 @@ student experience before connecting real authentication.
 
 The planned production path is documented in `docs/users-and-ai-plan.md`. The
 initial Supabase database schema is in `supabase/schema.sql`; it covers Auth
-profiles, progress, question attempts, coin events, hint purchases, and scanned
-homework submissions. The OpenAI API key must live only in a server function or
-trusted backend, never in browser JavaScript.
+profiles, synced learning state, progress, question attempts, coin events, hint
+purchases, and scanned homework submissions. The OpenAI API key must live only
+in a server function or trusted backend, never in browser JavaScript.
+
+To enable login in a Supabase project:
+
+1. Run `supabase/schema.sql` in the Supabase SQL editor.
+2. Enable email magic-link authentication.
+3. Add the hosted site URL and local preview URL to Supabase Auth redirect URLs.
+4. Put the public project URL and anon/publishable key in `runtime-config.js`:
+
+```js
+window.CALCULUS_RUNTIME_CONFIG = {
+  supabaseUrl: "https://YOUR_PROJECT.supabase.co",
+  supabaseAnonKey: "YOUR_PUBLIC_ANON_OR_PUBLISHABLE_KEY"
+};
+```
+
+The anon/publishable key is designed for browser use with row-level security.
+Do not put a Supabase service-role key or an OpenAI API key in this file.
 
 ## Repository and access
 

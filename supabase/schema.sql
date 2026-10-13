@@ -50,6 +50,15 @@ create table if not exists public.unit_progress (
   primary key (user_id, course_id, chapter_id, unit_id)
 );
 
+create table if not exists public.learning_state (
+  user_id uuid not null references auth.users(id) on delete cascade,
+  course_id text not null default 'calculus-1a',
+  chapter_id text not null,
+  progress jsonb not null default '{}'::jsonb,
+  updated_at timestamptz not null default now(),
+  primary key (user_id, course_id, chapter_id)
+);
+
 create table if not exists public.question_attempts (
   id bigserial primary key,
   user_id uuid not null references auth.users(id) on delete cascade,
@@ -98,6 +107,7 @@ create table if not exists public.homework_submissions (
 alter table public.avatars enable row level security;
 alter table public.profiles enable row level security;
 alter table public.unit_progress enable row level security;
+alter table public.learning_state enable row level security;
 alter table public.question_attempts enable row level security;
 alter table public.coin_events enable row level security;
 alter table public.hint_purchases enable row level security;
@@ -130,6 +140,19 @@ with check (auth.uid() = user_id);
 
 create policy "users update own progress"
 on public.unit_progress for update
+using (auth.uid() = user_id)
+with check (auth.uid() = user_id);
+
+create policy "users read own learning state"
+on public.learning_state for select
+using (auth.uid() = user_id);
+
+create policy "users insert own learning state"
+on public.learning_state for insert
+with check (auth.uid() = user_id);
+
+create policy "users update own learning state"
+on public.learning_state for update
 using (auth.uid() = user_id)
 with check (auth.uid() = user_id);
 

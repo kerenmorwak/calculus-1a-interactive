@@ -21,6 +21,14 @@ Use Supabase Auth first:
 
 The schema lives in `supabase/schema.sql`.
 
+The frontend now has an optional Supabase bridge:
+
+- `runtime-config.js` holds the public Supabase URL and anon/publishable key.
+- `auth.js` shows login only when those values exist.
+- Profile, learning state, coins, purchased hints, unit progress, and question
+  attempt summaries sync to Supabase after sign-in.
+- Without config, the course remains local-first and keeps working.
+
 ## Phase 3: server-backed progress
 
 Move these local progress fields to Supabase:
@@ -33,6 +41,15 @@ Move these local progress fields to Supabase:
 - purchased hints
 
 Keep `localStorage` only as a temporary cache so the interface stays fast.
+
+Current sync status:
+
+- profile: implemented
+- full local progress snapshot: implemented
+- unit completion / quiz score summary: implemented
+- question attempt summaries: implemented
+- coin ledger and purchased hints: implemented
+- scanned homework uploads and AI feedback: planned
 
 ## Phase 4: personalized practice
 

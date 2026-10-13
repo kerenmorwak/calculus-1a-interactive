@@ -46,7 +46,7 @@ def main():
     if site.exists():
         shutil.rmtree(site)
     site.mkdir()
-    for name in ['index.html', 'style.css', 'app.js', 'interactive.js']:
+    for name in ['index.html', 'style.css', 'runtime-config.js', 'auth.js', 'app.js', 'interactive.js']:
         shutil.copy2(name, site / name)
     shutil.copytree('assets', site / 'assets')
     pages_root = site / 'assets/pages'
@@ -84,11 +84,19 @@ def main():
     (site / 'assets/contents.json').write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding='utf-8')
     version = hashlib.sha256(text.encode()).hexdigest()[:16]
     style_version = hashlib.sha256(Path('style.css').read_bytes()).hexdigest()[:16]
+    auth_version = hashlib.sha256(Path('auth.js').read_bytes()).hexdigest()[:16]
+    config_version = hashlib.sha256(Path('runtime-config.js').read_bytes()).hexdigest()[:16]
     interactive_version = hashlib.sha256(Path('interactive.js').read_bytes()).hexdigest()[:16]
     html = Path('index.html').read_text(encoding='utf-8')
     html, count = re.subn(r'(href=["\'])style\.css(?:\?[^"\']*)?(["\'])', lambda m: m[1] + f'style.css?v={style_version}' + m[2], html)
     if not count:
         raise ValueError('Could not find the style.css stylesheet reference in index.html')
+    html, count = re.subn(r'(src=[\"\'])runtime-config\.js(?:\?[^\"\']*)?([\"\'])', lambda m: m[1] + f'runtime-config.js?v={config_version}' + m[2], html)
+    if not count:
+        raise ValueError('Could not find the runtime-config.js script reference in index.html')
+    html, count = re.subn(r'(src=[\"\'])auth\.js(?:\?[^\"\']*)?([\"\'])', lambda m: m[1] + f'auth.js?v={auth_version}' + m[2], html)
+    if not count:
+        raise ValueError('Could not find the auth.js script reference in index.html')
     html, count = re.subn(r'(src=[\"\'])app\.js(?:\?[^\"\']*)?([\"\'])', lambda m: m[1] + f'app.js?v={version}' + m[2], html)
     if not count:
         raise ValueError('Could not find the app.js script reference in index.html')

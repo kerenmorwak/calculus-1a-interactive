@@ -8,6 +8,8 @@ const FINAL_QUIZ_COINS = 12;
 const HINT_COST = 5;
 let interactiveMemoryStore = "{}";
 let learnerProfileMemoryStore = "";
+let lastHydratedAuthUserId = "";
+let progressCloudWritePaused = false;
 
 const learnerAvatars = [
   { id: "noether", name: "אמי נתר", symbol: "N", accent: "algebra", label: "מבנים וסימטריות" },
@@ -486,6 +488,7 @@ function initInteractiveLearning() {
   const readingNote = section.querySelector(".reading-note");
   if (readingNote) readingNote.after(renderInteractiveOverview());
   bindLearnerProfileActions();
+  bindLearnerProfileCloudSync();
   tagContentsLinksForUnits();
   const renderedGuidedPages = renderGuidedReadingPages(pages);
   interactiveChapterOne.units.forEach((unit, index) => {
@@ -534,14 +537,21 @@ function readInteractiveProgress() {
   }
 }
 
-function writeInteractiveProgress(progress) {
-  const serialized = JSON.stringify(progress);
+function writeInteractiveProgress(progress, options = {}) {
+  const normalized = progress && typeof progress === "object" ? progress : {};
+  const meta = normalized[PROGRESS_META_KEY] || {};
+  if (!options.preserveUpdatedAt) {
+    meta.updatedAt = options.updatedAt || new Date().toISOString();
+  }
+  normalized[PROGRESS_META_KEY] = meta;
+  const serialized = JSON.stringify(normalized);
   interactiveMemoryStore = serialized;
   try {
     window.localStorage?.setItem(INTERACTIVE_STORAGE_KEY, serialized);
   } catch {
     // Some embedded preview browsers block storage. The in-memory store keeps the session usable.
   }
+  if (!options.skipCloud) syncProgressSnapshotToCloud(normalized);
 }
 
 function tagContentsLinksForUnits() {
@@ -786,6 +796,7 @@ function writeLearnerProfile(profile) {
   }
   attachLearnerIdToProgress(profile.id);
   updateLearnerProfileDisplay(profile);
+  syncLearnerProfileToCloud(profile);
 }
 
 function attachLearnerIdToProgress(learnerId) {
@@ -937,6 +948,61 @@ function populateLearnerProfileDialog(overlay, profile) {
   const radio = [...overlay.querySelectorAll("input[name='learner-avatar']")]
     .find((item) => item.value === avatarId);
   if (radio) radio.checked = true;
+}
+
+function bindLearnerProfileCloudSync() {
+  if (!window.CalculusAuth?.onChange) return;
+  window.CalculusAuth.onChange((authState) => {
+    if (!authState?.signedIn || !authState.user?.id) return;
+    hydrateUserDataFromCloud(authState).catch(() => {});
+  });
+}
+
+async function hydrateUserDataFromCloud(authState) {
+  const userId = authState.user?.id;
+  if (!userId || lastHydratedAuthUserId === userId) return;
+  lastHydratedAuthUserId = userId;
+  progressCloudWritePaused = true;
+  try {
+    attachLearnerIdToProgress(userId);
+  } finally {
+    progressCloudWritePaused = false;
+  }
+  await hydrateLearnerProfileFromCloud(userId);
+  await hydrateProgressSnapshotFromCloud();
+  await hydrateProgressFromCloud();
+  await syncLocalProgressToCloud();
+}
+
+async function hydrateLearnerProfileFromCloud(userId) {
+  const auth = window.CalculusAuth;
+  if (!auth?.fetchProfile) return;
+  const localProfile = readLearnerProfile();
+  const cloudProfile = await auth.fetchProfile();
+  if (!cloudProfile?.nickname) {
+    if (localProfile?.completed) await syncLearnerProfileToCloud({ ...localProfile, id: userId });
+    return;
+  }
+  const cloudUpdatedAt = Date.parse(cloudProfile.updated_at || "") || 0;
+  const localUpdatedAt = Date.parse(localProfile?.updatedAt || "") || 0;
+  if (!localProfile?.completed || cloudUpdatedAt >= localUpdatedAt) {
+    writeLearnerProfile({
+      ...localProfile,
+      id: userId,
+      nickname: cloudProfile.nickname,
+      avatarId: cloudProfile.avatar_id || localProfile?.avatarId || learnerAvatars[0].id,
+      completed: true,
+      updatedAt: cloudProfile.updated_at || new Date().toISOString()
+    });
+  } else {
+    await syncLearnerProfileToCloud({ ...localProfile, id: userId });
+  }
+}
+
+async function syncLearnerProfileToCloud(profile) {
+  const auth = window.CalculusAuth;
+  if (!auth?.getState?.().signedIn || !auth.saveProfile || !profile?.completed) return;
+  await auth.saveProfile(profile);
 }
 
 function renderLearningCard(unit, index) {
@@ -1108,6 +1174,8 @@ function purchaseHomeworkHint(key) {
   };
   progress[PROGRESS_META_KEY] = meta;
   writeInteractiveProgress(progress);
+  syncHintPurchaseToCloud(key, HINT_COST);
+  syncCoinEventToCloud(-HINT_COST, "hint_purchase", key);
   updateCoinDisplays(progress);
   pulseCoinHuds();
   return { ok: true, already: false, progress };
@@ -1449,6 +1517,12 @@ function bindQuestionOverlay() {
       closeLearnerProfileDialog();
       return;
     }
+    const authOverlay = document.querySelector("#auth-overlay");
+    if (authOverlay && !authOverlay.hidden) {
+      authOverlay.hidden = true;
+      document.body.classList.remove("question-modal-open");
+      return;
+    }
     const overlay = document.querySelector("#question-overlay");
     if (overlay && !overlay.hidden) closeQuestionOverlay();
   });
@@ -1695,6 +1769,86 @@ function finalQuizPassed(progress) {
   return getUnitProgressState(chapterFinalQuiz, progress[chapterFinalQuiz.id]).passed;
 }
 
+async function hydrateProgressFromCloud() {
+  const auth = window.CalculusAuth;
+  if (!auth?.fetchUnitProgress || !auth.getState?.().signedIn) return;
+  const rows = await auth.fetchUnitProgress();
+  if (!rows.length) return;
+  const progress = readInteractiveProgress();
+  rows.forEach((row) => {
+    const local = progress[row.unit_id] || {};
+    const cloudUpdatedAt = Date.parse(row.updated_at || row.completed_at || "") || 0;
+    const localUpdatedAt = Date.parse(local.updatedAt || "") || 0;
+    const shouldUseCloud = !local.updatedAt || cloudUpdatedAt >= localUpdatedAt || (row.passed && !local.passed);
+    if (!shouldUseCloud) return;
+    progress[row.unit_id] = {
+      ...local,
+      quizPassed: Boolean(row.passed),
+      passed: Boolean(row.passed),
+      best: typeof row.best_score === "number" ? row.best_score : local.best,
+      mistakes: typeof row.mistakes === "number" ? row.mistakes : local.mistakes,
+      total: typeof row.total_questions === "number" ? row.total_questions : local.total,
+      updatedAt: row.updated_at || row.completed_at || local.updatedAt || new Date().toISOString()
+    };
+  });
+  writeInteractiveProgress(progress, { skipCloud: true, preserveUpdatedAt: true });
+  updateInteractiveProgress();
+}
+
+async function hydrateProgressSnapshotFromCloud() {
+  const auth = window.CalculusAuth;
+  if (!auth?.fetchLearningState || !auth.getState?.().signedIn) return;
+  const cloudState = await auth.fetchLearningState();
+  if (!cloudState?.progress || typeof cloudState.progress !== "object") return;
+  const localProgress = readInteractiveProgress();
+  const localUpdatedAt = Date.parse(localProgress?.[PROGRESS_META_KEY]?.updatedAt || "") || 0;
+  const cloudUpdatedAt = Date.parse(
+    cloudState.progress?.[PROGRESS_META_KEY]?.updatedAt || cloudState.updated_at || ""
+  ) || 0;
+  if (localUpdatedAt && localUpdatedAt > cloudUpdatedAt) return;
+  writeInteractiveProgress(cloudState.progress, { skipCloud: true, preserveUpdatedAt: true });
+  updateInteractiveProgress();
+}
+
+async function syncProgressSnapshotToCloud(progress) {
+  const auth = window.CalculusAuth;
+  if (progressCloudWritePaused || !auth?.saveLearningState || !auth.getState?.().signedIn || !progress) return;
+  await auth.saveLearningState(progress);
+}
+
+async function syncLocalProgressToCloud() {
+  const progress = readInteractiveProgress();
+  const tasks = Object.entries(progress)
+    .filter(([unitId, unitProgress]) => unitId !== PROGRESS_META_KEY && unitProgress?.updatedAt)
+    .map(([unitId, unitProgress]) => syncUnitProgressToCloud(unitId, unitProgress));
+  tasks.push(syncProgressSnapshotToCloud(progress));
+  await Promise.allSettled(tasks);
+}
+
+async function syncUnitProgressToCloud(unitId, unitProgress) {
+  const auth = window.CalculusAuth;
+  if (!auth?.saveUnitProgress || !auth.getState?.().signedIn || !unitProgress) return;
+  await auth.saveUnitProgress(unitId, unitProgress);
+}
+
+async function syncQuestionAttemptsToCloud(questionStats) {
+  const auth = window.CalculusAuth;
+  if (!auth?.saveQuestionAttempts || !auth.getState?.().signedIn || !Array.isArray(questionStats) || !questionStats.length) return;
+  await auth.saveQuestionAttempts(questionStats);
+}
+
+async function syncCoinEventToCloud(amount, reason, unitId = null) {
+  const auth = window.CalculusAuth;
+  if (!auth?.saveCoinEvent || !auth.getState?.().signedIn || !amount) return;
+  await auth.saveCoinEvent(amount, reason, unitId);
+}
+
+async function syncHintPurchaseToCloud(hintId, cost) {
+  const auth = window.CalculusAuth;
+  if (!auth?.saveHintPurchase || !auth.getState?.().signedIn || !hintId) return;
+  await auth.saveHintPurchase(hintId, cost);
+}
+
 function updateUnitProgress(unit, updates) {
   const progress = readInteractiveProgress();
   const previous = progress[unit.id] || {};
@@ -1729,6 +1883,9 @@ function updateUnitProgress(unit, updates) {
 
   progress[unit.id] = next;
   writeInteractiveProgress(progress);
+  syncUnitProgressToCloud(unit.id, next);
+  if (coinsAwarded) syncCoinEventToCloud(coinsAwarded, "unit_passed", unit.id);
+  if (Array.isArray(updates.questionStats)) syncQuestionAttemptsToCloud(updates.questionStats);
   updateInteractiveProgress();
   return {
     ...getUnitProgressState(unit, next),
