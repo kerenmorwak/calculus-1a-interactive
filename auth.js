@@ -249,7 +249,9 @@
 
   async function signInWithEmail(email) {
     if (!client) return { ok: false, error: friendlyError("") };
-    const redirectTo = location.href.split("#")[0];
+    // Redirect to the site root: Supabase allows http://127.0.0.1:8017 exactly,
+    // so query strings such as ?chapter=1 must not be part of the redirect.
+    const redirectTo = location.origin || location.href.split("#")[0].split("?")[0];
     const { error } = await client.auth.signInWithOtp({
       email,
       options: { emailRedirectTo: redirectTo }
