@@ -7,6 +7,8 @@
   const supabaseKey = String(config.supabaseAnonKey || config.supabasePublishableKey || "").trim();
   const supabaseSdkUrl = String(config.supabaseSdkUrl || "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2").trim();
   const hasConfig = Boolean(supabaseUrl && supabaseKey);
+  const isLocalDevHost = ["", "localhost", "127.0.0.1"].includes(location.hostname);
+  const loginRequired = hasConfig || !isLocalDevHost;
   let client = null;
   let state = {
     mode: hasConfig ? "supabase" : "local",
@@ -22,6 +24,10 @@
 
   function isSignedIn() {
     return Boolean(state.user?.id && client);
+  }
+
+  function canUseCourse() {
+    return !loginRequired || isSignedIn();
   }
 
   function setState(next) {
@@ -52,6 +58,7 @@
       if (state.status === "signed-in") closeAuthDialog();
       else renderAuthDialog(overlay);
     }
+    renderAuthGate();
   }
 
   function bindAuthPanel() {
@@ -61,6 +68,72 @@
       event.preventDefault();
       openAuthDialog(opener);
     });
+  }
+
+  function ensureAuthGate() {
+    let gate = document.querySelector("#auth-gate");
+    if (gate) return gate;
+    gate = document.createElement("div");
+    gate.id = "auth-gate";
+    gate.className = "auth-gate";
+    gate.hidden = true;
+    gate.innerHTML = `
+      <section class="auth-gate-card" role="region" aria-labelledby="auth-gate-title">
+        <p class="eyebrow">כניסה נדרשת</p>
+        <h1 id="auth-gate-title">מתחברים כדי להתחיל ללמוד</h1>
+        <p data-auth-gate-copy>כדי להשתמש בקורס צריך להיכנס עם מייל. ההתקדמות, המטבעות והפרופיל יישמרו בחשבון.</p>
+        <div class="auth-gate-actions">
+          <button class="action primary" type="button" data-auth-gate-open>כניסה עם מייל</button>
+        </div>
+        <p class="auth-gate-note" data-auth-gate-note role="status"></p>
+      </section>
+    `;
+    gate.querySelector("[data-auth-gate-open]")?.addEventListener("click", (event) => {
+      event.preventDefault();
+      openAuthDialog(event.currentTarget);
+    });
+    document.body.append(gate);
+    return gate;
+  }
+
+  function renderAuthGate() {
+    const locked = loginRequired && !isSignedIn();
+    document.body.classList.toggle("auth-required", locked);
+    document.body.classList.remove("auth-pending");
+    document.querySelector(".layout")?.toggleAttribute("inert", locked);
+
+    const gate = document.querySelector("#auth-gate") || (loginRequired ? ensureAuthGate() : null);
+    if (!gate) return;
+    gate.hidden = !locked;
+    if (!locked) return;
+
+    const copy = gate.querySelector("[data-auth-gate-copy]");
+    const note = gate.querySelector("[data-auth-gate-note]");
+    const button = gate.querySelector("[data-auth-gate-open]");
+    const canOpen = hasConfig && !["starting", "error"].includes(state.status);
+
+    if (copy) {
+      if (!hasConfig) {
+        copy.textContent = "הכניסה לא מוגדרת כרגע, ולכן הקורס נעול. צריך להגדיר Supabase לפני שימוש באתר.";
+      } else if (state.status === "starting") {
+        copy.textContent = "בודקים אם כבר יש חיבור לחשבון במכשיר הזה.";
+      } else if (state.status === "link-sent") {
+        copy.textContent = `שלחנו קישור כניסה${lastEmail ? ` ל־${lastEmail}` : ""}. אחרי פתיחת הקישור הקורס ייפתח כאן.`;
+      } else if (state.status === "error") {
+        copy.textContent = "לא הצלחנו להפעיל את מערכת הכניסה. כדאי לרענן את הדף או לבדוק את החיבור.";
+      } else {
+        copy.textContent = "כדי להשתמש בקורס צריך להיכנס עם מייל. ההתקדמות, המטבעות והפרופיל יישמרו בחשבון.";
+      }
+    }
+    if (note) {
+      note.textContent = state.status === "link-sent"
+        ? "פתחי את הקישור מהמייל באותו דפדפן."
+        : "אין צורך בסיסמה.";
+    }
+    if (button) {
+      button.disabled = !canOpen;
+      button.textContent = state.status === "link-sent" ? "פתיחת מסך הכניסה" : "כניסה עם מייל";
+    }
   }
 
   function ensureAuthDialog() {
@@ -164,7 +237,7 @@
     const text = String(error?.message || error || "").toLowerCase();
     if (/rate|too many|seconds/.test(text)) return "נשלחו כמה קישורים ברצף. אפשר לנסות שוב בעוד דקה.";
     if (/invalid|email/.test(text)) return "כתובת המייל לא נראית תקינה. כדאי לבדוק ולנסות שוב.";
-    if (/network|fetch|failed/.test(text)) return "אין חיבור כרגע. אפשר להמשיך ללמוד, וההתקדמות נשמרת במכשיר הזה.";
+    if (/network|fetch|failed/.test(text)) return "אין חיבור כרגע. צריך חיבור כדי להיכנס לקורס.";
     return "לא הצלחנו לשלוח קישור כרגע. אפשר לנסות שוב בעוד רגע.";
   }
 
@@ -201,7 +274,7 @@
           </div>
         </div>
         <div class="profile-actions">
-          <button class="action primary" type="button" data-close-auth-dialog>חזרה לקורס</button>
+          <button class="action primary" type="button" data-close-auth-dialog>סגירה</button>
           <button class="action" type="button" data-auth-change-email>שליחה לכתובת אחרת</button>
         </div>
       `;
@@ -434,7 +507,6 @@
     }
     const sdkReady = await loadSupabaseSdk();
     if (!sdkReady || !window.supabase?.createClient) {
-      // Sign-in stays hidden; the course keeps working on this device.
       setState({ status: "error", error: null });
       return;
     }
@@ -470,6 +542,8 @@
   window.CalculusAuth = {
     getState,
     isAvailable: () => hasConfig,
+    requiresSignIn: () => loginRequired,
+    canUseCourse,
     openSignIn: openAuthDialog,
     signInWithEmail,
     signOut,

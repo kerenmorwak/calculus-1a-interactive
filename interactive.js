@@ -1032,6 +1032,9 @@ function renderMathAvatar(avatar, size = "") {
 function headerAccountMode() {
   const auth = window.CalculusAuth;
   const state = auth?.getState?.() || {};
+  if (auth?.requiresSignIn?.() && !state.signedIn) {
+    return state.status === "starting" ? "starting" : "signed-out";
+  }
   const accountsOn = Boolean(auth?.isAvailable?.()) && state.status !== "error";
   if (!accountsOn) return "local";
   if (state.signedIn) return "signed-in";
@@ -1071,6 +1074,12 @@ let profileReturnFocus = null;
 
 // mode: "edit" (choose or change), "save-to-account" (offer the device profile to a new account)
 function openLearnerProfileDialog({ mode = "edit", returnFocus = document.activeElement } = {}) {
+  const auth = window.CalculusAuth;
+  const authState = auth?.getState?.() || {};
+  if (mode !== "signed-out" && auth?.requiresSignIn?.() && !authState.signedIn) {
+    auth.openSignIn?.(returnFocus);
+    return;
+  }
   const profile = currentLearnerProfile();
   const overlay = ensureLearnerProfileDialog();
   profileReturnFocus = returnFocus;
@@ -1282,6 +1291,10 @@ function renderLearnerProfileDialog(overlay, profile, mode) {
 function afterSignOut() {
   lastHydratedAuthUserId = "";
   updateLearnerProfileDisplay();
+  if (window.CalculusAuth?.requiresSignIn?.()) {
+    closeLearnerProfileDialog();
+    return;
+  }
   openLearnerProfileDialog({ mode: "signed-out", returnFocus: document.querySelector("[data-open-learner-profile]") });
 }
 
