@@ -302,3 +302,9 @@ html{scroll-padding-top:92px}
 .profile-dialog .question-close,.auth-dialog .question-close{width:40px;height:40px}
 .profile-dialog .profile-actions{position:sticky;bottom:-26px;margin-bottom:-26px;padding-block:12px 26px;background:linear-gradient(to bottom,rgba(255,255,255,0),#fff 12px);z-index:1}
 @media(max-width:680px){.profile-dialog .profile-actions{bottom:-22px;margin-bottom:-22px;padding-bottom:calc(22px + env(safe-area-inset-bottom))}}
+/* Illustrated avatars: the portrait fills the medallion; the ring keeps each one's colour. */
+.math-avatar{overflow:hidden;padding:0;box-shadow:none;border-width:2px}
+.math-avatar img{display:block;width:100%;height:100%;border-radius:50%}
+.math-avatar.is-large{box-shadow:none;border-width:2.5px}
+.avatar-options .avatar-option .math-avatar{width:60px;height:60px}
+@media(max-width:680px){.avatar-options .avatar-option .math-avatar{width:54px;height:54px}}

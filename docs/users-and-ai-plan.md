@@ -83,8 +83,9 @@ function or another trusted backend.
 
 ## Avatar direction
 
-Use a small curated bank of mathematician avatars, drawn as quiet monogram
-medallions with each mathematician's years. They should feel academic and warm,
+Use a small curated bank of mathematician avatars: flat illustrated portraits
+inspired by each mathematician's era and look (not likenesses), shown with
+their years. They are drawn by `tools/make_avatars.py`. They should feel academic and warm,
 not childish. The current set (ids must match `supabase/schema.sql`):
 
 - Noether, Gauss, Germain, Cauchy

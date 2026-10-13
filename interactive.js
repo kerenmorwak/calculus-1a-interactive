@@ -858,7 +858,7 @@ function formatAvatarYears(years) {
 
 function renderMathAvatar(avatar, size = "") {
   if (!avatar) return `<span class="math-avatar is-empty ${size}" aria-hidden="true"></span>`;
-  return `<span class="math-avatar ${size}" data-avatar-accent="${avatar.accent}" aria-hidden="true">${escapeHtml(avatar.symbol)}</span>`;
+  return `<span class="math-avatar ${size}" data-avatar-accent="${avatar.accent}" aria-hidden="true"><img src="assets/avatars/${avatar.id}.svg" alt="" width="64" height="64" decoding="async"></span>`;
 }
 
 function updateLearnerProfileDisplay(profile = readLearnerProfile()) {
