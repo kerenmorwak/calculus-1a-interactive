@@ -36,9 +36,9 @@ connected yet.
 
 ## Repository and access
 
-This directory is prepared for a separate **private** GitHub repository. At
-preparation time it has no GitHub remote and has not been uploaded. It contains
-no automatic deployment workflow.
+This project has a separate **private** GitHub repository:
+https://github.com/kerenmorwak/calculus-1a-interactive
+It contains no automatic deployment workflow.
 
 Repository access and hosted-site access are configured separately. Keep the
 repository private, invite collaborators explicitly, and keep the hosted site
