@@ -3176,7 +3176,7 @@ function cleanFeedbackPrefix(value) {
 
 function formatInlineText(value) {
   const text = normalizeMathSyntaxForDisplay(value).replace(/([\u0590-\u05ff])-/g, "$1־");
-  const mathAtom = String.raw`(?:[A-Za-z]+|[α-ωΑ-Ωε]|√|∑|∞|∅|[0-9]+|[∀∃¬∧∨∈∉∪∩⊆⊂⊇⊃⇒⇔≤≥≠=+\-−·*\/\\^²{}()[\]|:,._<>])`;
+  const mathAtom = String.raw`(?:[A-Za-z]+|[α-ωΑ-Ωε]|√|∑|∞|∅|…|[0-9]+|[∀∃¬∧∨∈∉∪∩∖⊆⊂⊇⊃⇒⇔≤≥≠=+\-−·*\/\\^²³{}()[\]|:,._<>])`;
   const mathRunPattern = new RegExp(`${mathAtom}(?:\\s*${mathAtom})+`, "gu");
   let html = "";
   let lastIndex = 0;
@@ -3185,12 +3185,56 @@ function formatInlineText(value) {
     const start = match.index || 0;
     const raw = match[0];
     if (start > lastIndex) html += formatPlainTextSegment(text.slice(lastIndex, start));
-    html += renderMathInline(raw);
+    const { lead, core, tail } = splitMathRunEdges(raw);
+    html += formatPlainTextSegment(lead);
+    html += core ? renderMathInline(core) : "";
+    html += formatPlainTextSegment(tail);
     lastIndex = start + raw.length;
   }
 
   html += formatPlainTextSegment(text.slice(lastIndex));
   return html;
+}
+
+// Sentence punctuation and stray brackets at the edges of a formula belong to the
+// Hebrew sentence, not to the formula. Inside the LTR math span they end up on the
+// wrong side of the formula, so they are peeled off and left in the RTL text.
+function splitMathRunEdges(raw) {
+  const pairs = { "(": ")", "[": "]", "{": "}" };
+  const closers = { ")": "(", "]": "[", "}": "{" };
+  const unbalanced = (value, opener) => {
+    const closer = pairs[opener];
+    let depth = 0;
+    for (const char of value) {
+      if (char === opener) depth += 1;
+      if (char === closer) depth -= 1;
+    }
+    return depth;
+  };
+  let core = raw;
+  let lead = "";
+  let tail = "";
+  for (;;) {
+    const last = core.slice(-1);
+    if (!last) break;
+    const peel = /[\s.,:;]/.test(last)
+      || last in pairs
+      || (last in closers && unbalanced(core, closers[last]) < 0);
+    if (!peel) break;
+    tail = last + tail;
+    core = core.slice(0, -1);
+  }
+  for (;;) {
+    const first = core.charAt(0);
+    if (!first) break;
+    const peel = /[\s.,:;]/.test(first)
+      || first in closers
+      || (first in pairs && unbalanced(core, first) > 0);
+    if (!peel) break;
+    lead += first;
+    core = core.slice(1);
+  }
+  return { lead, core, tail };
 }
 
 function normalizeMathSyntaxForDisplay(value) {
@@ -3240,9 +3284,12 @@ function renderTexDisplay(value) {
 }
 
 function mathTextToTex(value) {
-  return String(value)
-    .trim()
+  return mathSpacingToTex(String(value).trim())
     .replace(/(?<!\\)\{([^{}]*(?:,|:)[^{}]*)\}/g, "\\{$1\\}")
+    .replace(/…/g, "\\dots ")
+    .replace(/∖/g, "\\setminus ")
+    .replace(/²/g, "^{2}")
+    .replace(/³/g, "^{3}")
     .replace(/−/g, "-")
     .replace(/∞/g, "\\infty")
     .replace(/∀/g, "\\forall ")
@@ -3276,6 +3323,25 @@ function mathTextToTex(value) {
     .replace(/\bN\b/g, "\\mathbb{N}")
     .replace(/\bQ\b/g, "\\mathbb{Q}")
     .replace(/\bZ\b/g, "\\mathbb{Z}");
+}
+
+// TeX ignores plain spaces, so "∃ε>0 ∀n∈N" would render as one glued block.
+// Spaces the author wrote between terms become real math spacing; spaces next to an
+// operator or relation are dropped, because TeX already spaces those.
+function mathSpacingToTex(value) {
+  const operator = /[=<>≤≥≠∈∉⊆⊂⊇⊃∪∩∖⇒⇔∧∨¬+\-−·*\/,:|^_(\[{]/;
+  const closingOperator = /[=<>≤≥≠∈∉⊆⊂⊇⊃∪∩∖⇒⇔∧∨+\-−·*\/,:|)\]}]/;
+  return value
+    .replace(/([^\s¬(\[{,:∀∃])\s*([∀∃])/gu, "$1\\;\\;$2")
+    .replace(/\s+/g, (space, offset, whole) => {
+      const before = whole.slice(0, offset);
+      const next = whole.charAt(offset + space.length);
+      const prev = before.slice(-1);
+      if (/(?:sup|inf|max|min|lim)$/.test(before)) return " ";
+      if (/\\;$/.test(before)) return "";
+      if (operator.test(prev) || closingOperator.test(next)) return " ";
+      return "\\;";
+    });
 }
 
 function typesetMath(root = document.body) {
