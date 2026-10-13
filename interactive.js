@@ -1,4 +1,5 @@
 const INTERACTIVE_STORAGE_KEY = "calculus_1a_shiri_integrated_progress_v4";
+const LEARNER_PROFILE_STORAGE_KEY = "calculus_1a_learner_profile_v1";
 const INTERACTIVE_BUILD_ID = "chapter-1-homework-map-v1";
 const PROGRESS_META_KEY = "__meta";
 const WARMUP_COINS = 3;
@@ -6,6 +7,18 @@ const CHECKPOINT_COINS = 8;
 const FINAL_QUIZ_COINS = 12;
 const HINT_COST = 5;
 let interactiveMemoryStore = "{}";
+let learnerProfileMemoryStore = "";
+
+const learnerAvatars = [
+  { id: "noether", name: "אמי נתר", symbol: "N", accent: "algebra", label: "מבנים וסימטריות" },
+  { id: "germain", name: "סופי ז׳רמן", symbol: "S", accent: "prime", label: "ראשוניות ואומץ" },
+  { id: "gauss", name: "גאוס", symbol: "Σ", accent: "sum", label: "סדר וחישוב" },
+  { id: "cauchy", name: "קושי", symbol: "ε", accent: "epsilon", label: "דיוק וגבולות" },
+  { id: "riemann", name: "רימן", symbol: "ζ", accent: "zeta", label: "מרחב ופונקציות" },
+  { id: "cantor", name: "קנטור", symbol: "ℵ", accent: "infinity", label: "קבוצות ואינסוף" },
+  { id: "weierstrass", name: "ויירשטראס", symbol: "δ", accent: "delta", label: "פורמליות נקייה" },
+  { id: "hypatia", name: "היפטיה", symbol: "H", accent: "classic", label: "למידה וסקרנות" }
+];
 
 const interactiveChapterOne = {
   attemptSize: 4,
@@ -380,7 +393,6 @@ const homeworkMilestones = [
     afterUnitId: "ch01-s069",
     title: "תרגיל להגשה 1",
     subtitle: "שאלות הוכחה לפי החומר שכבר כוסה בפרק. כדאי לכתוב פתרון מסודר ולהעלות סריקה לבדיקה.",
-    source: "מבוסס על תרגילי בית 1-2, עם התאמות לסדר הקריאה כאן.",
     tasks: [
       {
         text: "כתבו במפורש את האיחוד, החיתוך, ההפרשים והמשלימים בתוך הממשיים.",
@@ -439,22 +451,24 @@ const chapterFinalQuiz = {
   mode: "final-quiz",
   section: "סיכום",
   title: "קוויז סיכום פרק 1",
-  goal: "שאלות מעורבות מכל הפרק. צריך 70% ומעלה כדי לפתוח את תרגיל ההגשה.",
+  goal: "שאלות קצרות אבל לא אוטומטיות: צריך לזהות הגדרות, מעברים והנחות בדיוק.",
   attemptSize: 10,
   passRate: 0.7,
   questions: [
-    question("chapter-1-final-q01", "באיזו טענה מתחילים בדרך כלל הוכחת הכלה A⊆B?", ["נבחר x∈A שרירותי ונוכיח x∈B", "נבחר x∈B שרירותי ונוכיח x∈A", "נוכיח שקיים איבר משותף לשתי הקבוצות", "נבדוק שהסימונים A ו־B מופיעים באותו סדר"], 0, "הכלה נבדקת על איבר שרירותי של הקבוצה השמאלית.", 1, "קבוצות"),
-    question("chapter-1-final-q02", "איזו שלילה נכונה לטענה 'לכל x∈A מתקיים P(x)'?", ["לכל x∈A לא מתקיים P(x)", "קיים x∈A כך שלא מתקיים P(x)", "קיים x∉A כך שמתקיים P(x)", "אין x∈A שעבורו אפשר לבדוק P(x)"], 1, "שלילת 'לכל' היא 'קיים' עם שלילת התכונה.", 2, "לוגיקה"),
-    question("chapter-1-final-q03", "מהו המעבר הלא מוצדק?", ["מ־x∈A∩B להסיק x∈A", "מ־x∈A∪B להסיק x∈A או x∈B", "מ־x∈A∪B להסיק x∈A וגם x∈B", "מ־x∈A−B להסיק x∉B"], 2, "איחוד נותן 'או', לא 'וגם'.", 3, "קבוצות"),
-    question("chapter-1-final-q04", "אם b=sup A, איזו טענה חייבת להיות נכונה?", ["b הוא חסם מלעיל של A ולכן בהכרח b∈A", "b הוא חסם מלעיל של A וכל חסם מלעיל אחר גדול או שווה ל־b", "b הוא חסם מלרע של A וכל חסם מלרע אחר קטן או שווה ל־b", "לכל ε>0 מתקיים b+ε∈A"], 1, "סופרמום הוא חסם מלעיל וגם הקטן ביותר בין החסמים מלעיל.", 4, "סופרמום"),
-    question("chapter-1-final-q05", "מתי מותר להפעיל ישירות את אקסיומת השלמות על קבוצה A⊆R?", ["כאשר A חסומה מלעיל אבל ייתכן שהיא ריקה", "כאשר A אינה ריקה ויש לה איבר מקסימלי", "כאשר A אינה ריקה וחסומה מלעיל", "כאשר A חסומה מלרע בלבד"], 2, "אלה תנאי ההפעלה של האקסיומה בניסוח הסופרמום.", 5, "שלמות"),
-    question("chapter-1-final-q06", "מהו תפקיד תכונת ארכימדס בהוכחות צפיפות?", ["להראות שכל מספר ממשי הוא גבול של טבעיים", "לבחור n טבעי גדול מספיק כדי שהרווחים יהיו קטנים כרצוננו", "להבטיח שלכל קבוצה חסומה יש מקסימום", "להחליף את הצורך להוכיח שהנקודה שבחרנו נמצאת בקטע"], 1, "ארכימדיות מאפשרת לבחור n גדול מספיק כך שהרווחים יהיו קטנים כרצוננו.", 6, "ארכימדיות"),
-    question("chapter-1-final-q07", "בהוכחה ש־√2 אינו רציונלי, למה חשוב לבחור p/q מצומצם?", ["כדי שיהיה מותר להעלות את שני האגפים בריבוע", "כדי להבטיח ש־p ו־q חיוביים", "כדי שהסתירה 'p ו־q שניהם זוגיים' תהיה אמיתית", "כדי להפוך את √2 למספר שלם"], 2, "אם השבר מצומצם, לא ייתכן ששני המונים יהיו זוגיים.", 7, "אי־רציונליות"),
-    question("chapter-1-final-q08", "איזה מעבר משתמש ישירות באי־שוויון המשולש?", ["אם x<y אז x+z<y+z", "|x+y|≤|x|+|y|", "אם A⊆B אז B^c⊆A^c", "אם b=sup A אז כל a∈A מקיים a≤b"], 1, "זה הניסוח הבסיסי של אי־שוויון המשולש.", 8, "אי־שוויונות"),
-    question("chapter-1-final-q09", "בהוכחת נוסחת סכום הנדסי סופי, מה הרעיון המרכזי?", ["להשתמש באקסיומת השלמות על קבוצת הסכומים החלקיים", "להציב q=1 ואז להסיק את המקרה q≠1 ברציפות", "להוכיח קודם שהסכום חסום מלעיל לכל q", "לסמן את הסכום, לכפול ב־q ולחסר כדי לקבל ביטול של רוב האיברים"], 3, "הכפל ב־q מזיז את האיברים, והחיסור משאיר רק קצוות.", 9, "סכומים"),
-    question("chapter-1-final-q10", "איזו תשובה מתארת נכון את היחס בין אינטואיציה גיאומטרית להוכחה פורמלית ב־R?", ["ציור הישר מספיק אם הטענה נראית נכונה בכל הדוגמאות", "בפרק 1 מותר להשתמש באינטואיציה במקום בהגדרות", "האינטואיציה יכולה לכוון, אבל ההצדקה נשענת על תכונות שהוגדרו או הוכחו", "אם יש נוסחה, אין צורך להסביר את המעבר המילולי"], 2, "הציור עוזר, אבל המעבר בהוכחה צריך להישען על כלל מתמטי ברור.", 10, "פורמליות"),
-    question("chapter-1-final-q11", "מה מספיק כדי להוכיח ש־b אינו סופרמום של A?", ["להראות רק ש־b אינו איבר של A", "להראות ש־b אינו חסם מלעיל, או למצוא חסם מלעיל קטן ממנו", "להראות שקיים a∈A עם a<b", "להראות של־A אין מינימום"], 1, "סופרמום דורש שני דברים: חסם מלעיל ומינימליות בין החסמים.", 11, "סופרמום"),
-    question("chapter-1-final-q12", "אם מ־x<y רוצים להסיק xz<yz, מה צריך לבדוק לגבי z?", ["ש־z שייך ל־N", "ש־z אינו שווה ל־1", "ש־z הוא חסם מלעיל של {x,y}", "ש־z>0; אם z<0 הכיוון מתהפך"], 3, "כפל באיבר חיובי שומר כיוון, וכפל באיבר שלילי הופך כיוון.", 12, "שדה סדור")
+    question("chapter-1-final-q01", "יהיו A=(-∞,1]∪(3,5) ו־B=[0,4). מהו A∩B?", ["[0,1]∪(3,4)", "[0,1)∪[3,4)", "(-∞,4)", "[0,5)"], 0, "צריך להשתייך לשתי הקבוצות: החלק הראשון הוא [0,1], והחלק השני הוא (3,4).", 1, "קבוצות"),
+    question("chapter-1-final-q02", "מהי השלילה של הטענה: לכל x∈A קיים y∈B כך ש־x<y?", ["קיים x∈A כך שלכל y∈B מתקיים y≤x", "לכל x∈A קיים y∈B כך ש־y≤x", "קיים y∈B כך שלכל x∈A מתקיים y≤x", "לכל x∈A ולכל y∈B מתקיים x≥y"], 0, "שוללים את הכמתים בסדר הפוך: 'לכל x קיים y' נהפך ל־'קיים x כך שלכל y לא מתקיים'.", 2, "לוגיקה"),
+    question("chapter-1-final-q03", "במהלך הוכחה של A⊆B נבחר x∈A שרירותי. איזה צעד באמת סוגר את ההכלה?", ["להראות ש־x∈B בלי להוסיף הנחות על x", "להראות שקיים איבר אחד ב־A∩B", "להראות ש־B⊆A עבור אותו x", "להראות ש־A ו־B מכילות אותו מספר איברים"], 0, "האיבר נבחר שרירותית מתוך A, ולכן הוכחת x∈B מספיקה לכל איברי A.", 3, "קבוצות"),
+    question("chapter-1-final-q04", "אם A⊆B בתוך מרחב X, איזו טענה על משלימים נכונה?", ["A^c⊆B^c", "B^c⊆A^c", "A^c=B^c", "A∩B^c=X"], 1, "הכיוון מתהפך: איבר שאינו ב־B ודאי אינו ב־A.", 4, "קבוצות"),
+    question("chapter-1-final-q05", "נסמן A={1−1/n : n∈N, n≥1}. איזו טענה נכונה?", ["min A=0 ו־sup A=1, אבל אין max A", "min A=1 ו־sup A=1", "inf A=1 ו־max A=0", "A אינה חסומה מלעיל"], 0, "האיבר הראשון הוא 0, והאיברים מתקרבים ל־1 מלמטה בלי להגיע אליו.", 5, "חסמים"),
+    question("chapter-1-final-q06", "אם s=sup A ו־t<s, מה חייב להתקיים?", ["t∈A", "קיים a∈A כך ש־t<a≤s", "כל a∈A מקיים a≤t", "s∈A"], 1, "אחרת t היה חסם מלעיל קטן יותר מ־s, בסתירה למינימליות של הסופרמום.", 6, "סופרמום"),
+    question("chapter-1-final-q07", "אם m=inf A ו־t>m, מהו הניסוח המקביל מלרע?", ["קיים a∈A כך ש־m≤a<t", "כל a∈A מקיים a<t", "t הוא חסם מלרע של A", "m חייב להיות מינימום של A"], 0, "אם אין איבר של A מתחת ל־t, אז t עצמו חסם מלרע גדול מ־m.", 7, "אינפימום"),
+    question("chapter-1-final-q08", "נביט בקבוצה C={q∈Q : q^2<2}. מה מדגים המקרה הזה ביחס ל־Q?", ["ב־Q אין יחס סדר", "C אינה חסומה מלעיל", "החסם המלעיל הקטן ביותר הטבעי שלה אינו נמצא ב־Q", "כל חסם מלעיל של C חייב להיות איבר של C"], 2, "החסם המתאים הוא √2, והוא אינו רציונלי; זו אחת הסיבות ש־Q אינו שלם.", 8, "שלמות"),
+    question("chapter-1-final-q09", "בהוכחת צפיפות הרציונליים בין a<b, למה בוחרים n טבעי עם n>1/(b−a)?", ["כדי שהמרחק 1/n יהיה קטן מ־b−a", "כדי להבטיח ש־a ו־b טבעיים", "כדי שהקטע (a,b) יכיל רק רציונליים", "כדי להשתמש באקסיומת השלמות במקום בארכימדיות"], 0, "הבחירה יוצרת רשת בצעדים קטנים מספיק כדי לפגוע בתוך הקטע.", 9, "ארכימדיות"),
+    question("chapter-1-final-q10", "בהוכחה ש־√2 אינו רציונלי מניחים √2=p/q בשבר מצומצם ומקבלים p^2=2q^2. איזה מעבר הוא הקריטי?", ["מ־p^2 זוגי מסיקים p זוגי, ואז מתקבלת זוגיות גם של q", "מ־p^2 זוגי מסיקים q אי־זוגי", "מ־p^2=2q^2 מסיקים p=q", "מעלים בריבוע רק כדי לקבל מספרים חיוביים"], 0, "הסתירה היא ששני חלקי השבר יוצאים זוגיים אף שהשבר נבחר מצומצם.", 10, "אי־רציונליות"),
+    question("chapter-1-final-q11", "אם x<y ורוצים לכפול ב־z, איזו מסקנה מדויקת?", ["אם z>0 אז xz<yz, ואם z<0 אז xz>yz", "אם z≠0 אז תמיד xz<yz", "אם z<0 אז xz<yz, ואם z>0 אין מסקנה", "אם z=0 אז xz<yz"], 0, "כפל באיבר חיובי שומר כיוון, כפל באיבר שלילי הופך כיוון, וב־0 מתקבל שוויון.", 11, "שדה סדור"),
+    question("chapter-1-final-q12", "באומדן של |xy−ab|, איזה פירוק מתאים לשימוש באי־שוויון המשולש?", ["xy−ab=(x−a)y+a(y−b)", "xy−ab=(x−a)(y−b) בלבד", "xy−ab=x(y−a)+b(x−y)", "xy−ab=(x+a)(y+b)"], 0, "הפירוק מפריד את השגיאה בשני המשתנים ומאפשר לאמוד כל חלק.", 12, "אי־שוויונות"),
+    question("chapter-1-final-q13", "איזה צעד מוכיח את נוסחת הסכום 1+q+...+q^n=(1−q^(n+1))/(1−q) עבור q≠1?", ["לכפול את הסכום ב־1−q ולקבל ביטול של האיברים האמצעיים", "להציב n=1 בלבד", "להשתמש בכך שכל סדרה חסומה מתכנסת", "להניח מראש שהסכום שווה לאגף ימין"], 0, "הזהות (1−q)(1+q+...+q^n)=1−q^(n+1) היא כל ההוכחה.", 13, "סכומים"),
+    question("chapter-1-final-q14", "איזה מעבר משתמש נכון באי־שוויון המשולש ההפוך?", ["מ־|x−y| קטן מסיקים ש־||x|−|y|| קטן", "מ־||x|−|y|| קטן מסיקים תמיד ש־|x−y| קטן באותה מידה", "מ־|x+y|≤|x|+|y| מסיקים x=y", "מ־|x|≤|y| מסיקים x≤y"], 0, "המשולש ההפוך נותן ||x|−|y||≤|x−y|, כלומר קרבה של x,y גוררת קרבה של הערכים המוחלטים.", 14, "אי־שוויונות")
   ]
 };
 
@@ -471,6 +485,7 @@ function initInteractiveLearning() {
 
   const readingNote = section.querySelector(".reading-note");
   if (readingNote) readingNote.after(renderInteractiveOverview());
+  bindLearnerProfileActions();
   tagContentsLinksForUnits();
   const renderedGuidedPages = renderGuidedReadingPages(pages);
   interactiveChapterOne.units.forEach((unit, index) => {
@@ -500,6 +515,10 @@ function initInteractiveLearning() {
   bindReadingNavigationLocks();
   bindQuestionOverlay();
   updateInteractiveProgress();
+  updateLearnerProfileDisplay();
+  if (!readLearnerProfile()?.completed) {
+    window.setTimeout(() => openLearnerProfileDialog(), 450);
+  }
 }
 
 function readInteractiveProgress() {
@@ -539,18 +558,17 @@ function renderGuidedReadingPages(pages) {
   if (!sourcePages.size) return false;
 
   const fragment = document.createDocumentFragment();
-  interactiveChapterOne.units.forEach((unit, unitIndex) => {
-    const plan = chapterOneReadingPlan[unit.id] || [{ page: unit.page, id: `page-${unit.page}` }];
-    plan.forEach((segment, segmentIndex) => {
-      const page = sourcePages.get(segment.page);
-      if (!page) return;
-      fragment.append(renderPageSegment(unit, unitIndex, segment, page, segmentIndex));
-    });
+  const pagePlans = buildGuidedPagePlans(sourcePages);
+  const unitEndMarkers = buildUnitEndMarkersByPage();
 
-    const marker = document.createElement("span");
-    marker.hidden = true;
-    marker.dataset.unitEnd = unit.id;
-    fragment.append(marker);
+  pagePlans.forEach((pagePlan, pageIndex) => {
+    fragment.append(renderGuidedPage(pagePlan, pageIndex));
+    (unitEndMarkers.get(pagePlan.number) || []).forEach((unitId) => {
+      const marker = document.createElement("span");
+      marker.hidden = true;
+      marker.dataset.unitEnd = unitId;
+      fragment.append(marker);
+    });
   });
 
   pages.replaceChildren(fragment);
@@ -577,53 +595,100 @@ function collectRenderedPageData(pages) {
   return result;
 }
 
-function renderPageSegment(unit, unitIndex, segment, page, segmentIndex) {
-  const top = normalizeSegmentEdge(segment.top ?? 0, 0);
-  const bottom = normalizeSegmentEdge(segment.bottom ?? 1, 1);
+function buildGuidedPagePlans(sourcePages) {
+  const pagePlans = new Map();
+  sourcePages.forEach((page, pageNumber) => {
+    pagePlans.set(pageNumber, {
+      ...page,
+      segments: []
+    });
+  });
 
+  interactiveChapterOne.units.forEach((unit, unitIndex) => {
+    const plan = chapterOneReadingPlan[unit.id] || [{ page: unit.page, id: `page-${unit.page}` }];
+    plan.forEach((segment) => {
+      const pagePlan = pagePlans.get(segment.page);
+      if (!pagePlan) return;
+      pagePlan.segments.push({
+        ...segment,
+        unitId: unit.id,
+        unitIndex
+      });
+    });
+  });
+
+  return [...pagePlans.values()]
+    .sort((a, b) => a.number - b.number)
+    .map((pagePlan) => ({
+      ...pagePlan,
+      id: pagePlan.segments.find((segment) => segment.id)?.id || `page-${pagePlan.number}`,
+      segments: pagePlan.segments.length
+        ? pagePlan.segments.sort((a, b) => normalizeSegmentEdge(a.top ?? 0, 0) - normalizeSegmentEdge(b.top ?? 0, 0))
+        : [{ page: pagePlan.number, unitId: "", top: 0, bottom: 1 }]
+    }));
+}
+
+function buildUnitEndMarkersByPage() {
+  const result = new Map();
+  interactiveChapterOne.units.forEach((unit) => {
+    const plan = chapterOneReadingPlan[unit.id] || [{ page: unit.page }];
+    const lastSegment = plan[plan.length - 1];
+    if (!lastSegment) return;
+    const pageMarkers = result.get(lastSegment.page) || [];
+    pageMarkers.push(unit.id);
+    result.set(lastSegment.page, pageMarkers);
+  });
+  return result;
+}
+
+function renderGuidedPage(pagePlan, pageIndex) {
+  const firstUnit = pagePlan.segments.find((segment) => segment.unitId)?.unitId || "";
   const figure = document.createElement("figure");
-  figure.className = "page page-segment";
-  if (segment.id) figure.id = segment.id;
-  figure.dataset.pageNumber = String(page.number);
-  figure.dataset.readingUnitId = unit.id;
-  figure.dataset.readingUnitIndex = String(unitIndex);
-  figure.dataset.segmentTop = String(top);
-  figure.dataset.segmentBottom = String(bottom);
+  figure.className = "page page-guided";
+  figure.id = pagePlan.id;
+  figure.dataset.pageNumber = String(pagePlan.number);
+  if (firstUnit) figure.dataset.readingUnitId = firstUnit;
 
   const caption = document.createElement("figcaption");
   caption.append(document.createElement("span"), document.createElement("a"));
-  caption.querySelector("span").textContent = segment.label || `עמוד ${page.number}`;
+  caption.querySelector("span").textContent = `עמוד ${pagePlan.number}`;
   const link = caption.querySelector("a");
-  link.href = page.pdfHref;
+  link.href = pagePlan.pdfHref;
   link.target = "_blank";
   link.rel = "noopener";
   link.textContent = "למקור";
 
   const viewport = document.createElement("div");
   viewport.className = "page-focus";
-  viewport.style.setProperty("--page-width", page.width);
-  viewport.style.setProperty("--focus-top", `${top * 100}%`);
-  viewport.style.setProperty("--focus-bottom", `${(1 - bottom) * 100}%`);
+  viewport.style.setProperty("--page-width", pagePlan.width);
 
   const image = document.createElement("img");
-  image.dataset.src = page.src;
-  image.width = page.width;
-  image.height = page.height;
-  image.loading = segmentIndex === 0 && unitIndex < 2 ? "eager" : "lazy";
+  image.dataset.src = pagePlan.src;
+  image.width = pagePlan.width;
+  image.height = pagePlan.height;
+  image.loading = pageIndex < 3 ? "eager" : "lazy";
   image.decoding = "async";
-  image.alt = `פרק 1 — ${segment.label || `עמוד ${page.number}`}.`;
+  image.alt = `פרק 1 — עמוד ${pagePlan.number}.`;
 
   viewport.append(image);
-  if (top > 0.01) viewport.append(createPageBlur("top", top));
-  if (bottom < 0.99) viewport.append(createPageBlur("bottom", 1 - bottom));
+  pagePlan.segments.forEach((segment) => {
+    const blur = createPageBlur(segment);
+    if (blur) viewport.append(blur);
+  });
   figure.append(caption, viewport);
   return figure;
 }
 
-function createPageBlur(position, ratio) {
+function createPageBlur(segment) {
+  const top = normalizeSegmentEdge(segment.top ?? 0, 0);
+  const bottom = normalizeSegmentEdge(segment.bottom ?? 1, 1);
+  if (!segment.unitId || bottom <= top) return null;
   const blur = document.createElement("div");
-  blur.className = `page-blur page-blur-${position}`;
-  blur.style.setProperty("--blur-size", `${Math.max(0, Math.min(ratio, 1)) * 100}%`);
+  blur.className = "page-blur page-blur-region";
+  blur.dataset.blurUnitId = segment.unitId;
+  blur.style.top = `${top * 100}%`;
+  blur.style.height = `${(bottom - top) * 100}%`;
+  blur.setAttribute("aria-hidden", "true");
   return blur;
 }
 
@@ -665,6 +730,13 @@ function renderInteractiveOverview() {
           <span class="coin-emoji" aria-hidden="true">🪙</span>
           <strong data-coin-count>0</strong>
         </div>
+        <button class="learner-chip" type="button" data-open-learner-profile>
+          <span class="math-avatar" data-learner-avatar aria-hidden="true">?</span>
+          <span>
+            <strong data-learner-name>בחירת פרופיל</strong>
+            <small data-learner-avatar-name>כינוי ואווטאר</small>
+          </span>
+        </button>
       </div>
     </div>
     <details class="interactive-map">
@@ -689,6 +761,182 @@ function renderInteractiveOverview() {
     <div class="learner-insight" data-learner-insight></div>
   `;
   return panel;
+}
+
+function readLearnerProfile() {
+  try {
+    const stored = window.localStorage?.getItem(LEARNER_PROFILE_STORAGE_KEY);
+    const source = stored || learnerProfileMemoryStore;
+    return source ? JSON.parse(source) : null;
+  } catch {
+    try {
+      return learnerProfileMemoryStore ? JSON.parse(learnerProfileMemoryStore) : null;
+    } catch {
+      return null;
+    }
+  }
+}
+
+function writeLearnerProfile(profile) {
+  learnerProfileMemoryStore = JSON.stringify(profile);
+  try {
+    window.localStorage?.setItem(LEARNER_PROFILE_STORAGE_KEY, learnerProfileMemoryStore);
+  } catch {
+    // Profile persistence is progressive enhancement until server auth is connected.
+  }
+  attachLearnerIdToProgress(profile.id);
+  updateLearnerProfileDisplay(profile);
+}
+
+function attachLearnerIdToProgress(learnerId) {
+  if (!learnerId) return;
+  const progress = readInteractiveProgress();
+  const meta = progress[PROGRESS_META_KEY] || {};
+  if (meta.learnerId === learnerId) return;
+  meta.learnerId = learnerId;
+  progress[PROGRESS_META_KEY] = meta;
+  writeInteractiveProgress(progress);
+}
+
+function learnerProfileId() {
+  if (window.crypto?.randomUUID) return window.crypto.randomUUID();
+  return `learner-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+function learnerAvatarById(id) {
+  return learnerAvatars.find((avatar) => avatar.id === id) || learnerAvatars[0];
+}
+
+function currentLearnerProfile() {
+  const profile = readLearnerProfile();
+  if (profile?.completed) return profile;
+  return {
+    id: profile?.id || learnerProfileId(),
+    nickname: "",
+    avatarId: learnerAvatars[0].id,
+    completed: false
+  };
+}
+
+function updateLearnerProfileDisplay(profile = readLearnerProfile()) {
+  const avatar = learnerAvatarById(profile?.avatarId);
+  const nickname = profile?.nickname?.trim();
+  document.querySelectorAll("[data-learner-name]").forEach((node) => {
+    node.textContent = nickname || "בחירת פרופיל";
+  });
+  document.querySelectorAll("[data-learner-avatar-name]").forEach((node) => {
+    node.textContent = nickname ? avatar.name : "כינוי ואווטאר";
+  });
+  document.querySelectorAll("[data-learner-avatar]").forEach((node) => {
+    node.textContent = avatar.symbol;
+    node.dataset.avatarAccent = avatar.accent;
+  });
+}
+
+function bindLearnerProfileActions() {
+  document.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-open-learner-profile]");
+    if (!button) return;
+    event.preventDefault();
+    openLearnerProfileDialog();
+  });
+}
+
+function openLearnerProfileDialog() {
+  const profile = currentLearnerProfile();
+  const overlay = ensureLearnerProfileDialog(profile);
+  overlay.hidden = false;
+  document.body.classList.add("question-modal-open");
+  requestAnimationFrame(() => {
+    const input = overlay.querySelector("[data-profile-nickname]");
+    if (input && !input.value) input.focus({ preventScroll: true });
+    else overlay.querySelector(".profile-dialog")?.focus({ preventScroll: true });
+  });
+}
+
+function closeLearnerProfileDialog() {
+  const overlay = document.querySelector("#learner-profile-overlay");
+  if (!overlay) return;
+  overlay.hidden = true;
+  document.body.classList.remove("question-modal-open");
+}
+
+function ensureLearnerProfileDialog(profile) {
+  let overlay = document.querySelector("#learner-profile-overlay");
+  if (overlay) {
+    populateLearnerProfileDialog(overlay, profile);
+    return overlay;
+  }
+
+  overlay = document.createElement("div");
+  overlay.id = "learner-profile-overlay";
+  overlay.className = "question-overlay profile-overlay";
+  overlay.hidden = true;
+  overlay.innerHTML = `
+    <div class="question-overlay-backdrop" data-close-learner-profile></div>
+    <section class="question-dialog profile-dialog" role="dialog" aria-modal="true" aria-labelledby="profile-dialog-title" tabindex="-1">
+      <button class="question-close" type="button" aria-label="חזרה לקריאה" data-close-learner-profile>×</button>
+      <div class="profile-dialog-head">
+        <p>פרופיל למידה</p>
+        <h3 id="profile-dialog-title">איך תרצי להופיע בקורס?</h3>
+      </div>
+      <form class="profile-form" data-profile-form>
+        <label class="profile-name-field">
+          <span>כינוי</span>
+          <input type="text" maxlength="24" autocomplete="nickname" data-profile-nickname>
+        </label>
+        <fieldset class="avatar-picker">
+          <legend>אווטאר מתמטיקאי/ת</legend>
+          <div class="avatar-options">
+            ${learnerAvatars.map((avatar) => `
+              <label>
+                <input type="radio" name="learner-avatar" value="${avatar.id}">
+                <span class="math-avatar" data-avatar-accent="${avatar.accent}" aria-hidden="true">${avatar.symbol}</span>
+                <strong>${escapeHtml(avatar.name)}</strong>
+                <small>${escapeHtml(avatar.label)}</small>
+              </label>
+            `).join("")}
+          </div>
+        </fieldset>
+        <div class="profile-actions">
+          <button class="action primary" type="submit">שמירת פרופיל</button>
+          <button class="action" type="button" data-close-learner-profile>בהמשך</button>
+        </div>
+      </form>
+    </section>
+  `;
+  document.body.append(overlay);
+  populateLearnerProfileDialog(overlay, profile);
+  overlay.querySelector("[data-profile-form]")?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const currentProfile = currentLearnerProfile();
+    const nickname = overlay.querySelector("[data-profile-nickname]")?.value?.trim();
+    const avatarId = overlay.querySelector("input[name='learner-avatar']:checked")?.value || learnerAvatars[0].id;
+    const nextProfile = {
+      id: currentProfile.id || learnerProfileId(),
+      nickname: nickname || "לומדת חדו״א",
+      avatarId,
+      completed: true,
+      updatedAt: new Date().toISOString()
+    };
+    writeLearnerProfile(nextProfile);
+    closeLearnerProfileDialog();
+  });
+  overlay.addEventListener("click", (event) => {
+    if (!event.target.closest("[data-close-learner-profile]")) return;
+    event.preventDefault();
+    closeLearnerProfileDialog();
+  });
+  return overlay;
+}
+
+function populateLearnerProfileDialog(overlay, profile) {
+  const input = overlay.querySelector("[data-profile-nickname]");
+  if (input) input.value = profile?.nickname || "";
+  const avatarId = profile?.avatarId || learnerAvatars[0].id;
+  const radio = [...overlay.querySelectorAll("input[name='learner-avatar']")]
+    .find((item) => item.value === avatarId);
+  if (radio) radio.checked = true;
 }
 
 function renderLearningCard(unit, index) {
@@ -753,9 +1001,8 @@ function renderHomeworkMilestone(milestone) {
         <span>העלאת פתרון סרוק</span>
         <input type="file" accept="image/*,.pdf" multiple data-homework-upload>
       </label>
-      <p data-homework-upload-status>אפשר לבחור קובץ PDF או תמונות. בדיקה אוטומטית תחובר בשלב הבא.</p>
+      <p data-homework-upload-status>אפשר לבחור קובץ PDF או תמונות.</p>
     </div>
-    <p class="homework-source">${escapeHtml(milestone.source)}</p>
   `;
   const upload = card.querySelector("[data-homework-upload]");
   const status = card.querySelector("[data-homework-upload-status]");
@@ -763,7 +1010,7 @@ function renderHomeworkMilestone(milestone) {
     const files = [...upload.files].map((file) => file.name);
     status.textContent = files.length
       ? `נבחרו ${files.length} קבצים: ${files.join(", ")}`
-      : "אפשר לבחור קובץ PDF או תמונות. בדיקה אוטומטית תחובר בשלב הבא.";
+      : "אפשר לבחור קובץ PDF או תמונות.";
   });
   bindHomeworkHintPurchases(card);
   syncHomeworkHints(card);
@@ -1197,6 +1444,11 @@ function bindQuestionOverlay() {
   });
   document.addEventListener("keydown", (event) => {
     if (event.key !== "Escape") return;
+    const profileOverlay = document.querySelector("#learner-profile-overlay");
+    if (profileOverlay && !profileOverlay.hidden) {
+      closeLearnerProfileDialog();
+      return;
+    }
     const overlay = document.querySelector("#question-overlay");
     if (overlay && !overlay.hidden) closeQuestionOverlay();
   });
@@ -1345,16 +1597,19 @@ function scrollToHomework() {
 function updateReadingLocks(progress) {
   const hiddenUnit = firstHiddenUnit(progress);
   const hiddenFromPage = hiddenUnit ? hiddenUnit.page : Number.POSITIVE_INFINITY;
-  const unitPages = document.querySelectorAll(".page[data-reading-unit-id]");
-  const pages = unitPages.length ? unitPages : document.querySelectorAll(".page[id^='page-']");
+  const pages = document.querySelectorAll(".page[id^='page-']");
   pages.forEach((page) => {
-    const unit = interactiveChapterOne.units.find((candidate) => candidate.id === page.dataset.readingUnitId);
-    const pageNumber = Number(page.dataset.pageNumber || page.id?.replace("page-", ""));
-    const locked = unit ? !isUnitReadable(unit, progress) : pageNumber >= hiddenFromPage;
-    if (!locked) loadPageImage(page);
-    page.hidden = locked;
-    page.classList.toggle("page-locked", locked);
-    page.setAttribute("aria-hidden", locked ? "true" : "false");
+    loadPageImage(page);
+    page.hidden = false;
+    page.classList.remove("page-locked");
+    page.setAttribute("aria-hidden", "false");
+  });
+
+  document.querySelectorAll("[data-blur-unit-id]").forEach((blur) => {
+    const unit = interactiveChapterOne.units.find((candidate) => candidate.id === blur.dataset.blurUnitId);
+    const locked = unit ? !isUnitReadable(unit, progress) : false;
+    blur.hidden = !locked;
+    blur.classList.toggle("is-active", locked);
   });
 
   document.querySelectorAll(".section-list a[href^='#page-']").forEach((link) => {
@@ -1837,6 +2092,10 @@ function mathTextToTex(value) {
     .replace(/≠/g, "\\ne ")
     .replace(/√\[3\]\{?([^{}\s]+)\}?/g, "\\sqrt[3]{$1}")
     .replace(/√([A-Za-z0-9]+)/g, "\\sqrt{$1}")
+    .replace(/\bsup\b/g, "\\sup")
+    .replace(/\binf\b/g, "\\inf")
+    .replace(/\bmax\b/g, "\\max")
+    .replace(/\bmin\b/g, "\\min")
     .replace(/\^\(([^()]+)\)/g, "^{$1}")
     .replace(/\^\{([^{}]+)\}/g, "^{$1}")
     .replace(/\^([A-Za-z0-9]+)/g, "^{$1}")

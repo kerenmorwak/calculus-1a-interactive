@@ -29,10 +29,22 @@ PDFs. Edit the source files, then rebuild; do not edit `_site/` directly.
 - `build_notes.py`: renders PDFs and generates the static site in `_site/`.
 
 The local copy contains two chapter PDFs. Do not assume all chapters or all
-interactive content are complete. Progress and coins are stored in the visitor's
-browser. Moving to another browser or origin does not transfer that progress.
-Homework file selection is present; an automatic AI grading service is not
-connected yet.
+interactive content are complete. Progress, coins, paid hints, and the current
+learner profile are stored in the visitor's browser. Moving to another browser
+or origin does not transfer that progress. Homework file selection is present;
+an automatic AI grading service is not connected yet.
+
+## Users and AI grading
+
+The current implementation is local-first. It includes a lightweight learner
+profile with a nickname and mathematician-inspired avatar so we can shape the
+student experience before connecting real authentication.
+
+The planned production path is documented in `docs/users-and-ai-plan.md`. The
+initial Supabase database schema is in `supabase/schema.sql`; it covers Auth
+profiles, progress, question attempts, coin events, hint purchases, and scanned
+homework submissions. The OpenAI API key must live only in a server function or
+trusted backend, never in browser JavaScript.
 
 ## Repository and access
 
