@@ -621,6 +621,97 @@
     return { ok: true };
   }
 
+  // ---------- Homework submissions ----------
+  // Files go to a private Storage bucket under the learner's own folder:
+  //   {user_id}/{homework_id}/{submission_id}/{n}-{name}
+  // Storage policies (supabase/homework-storage.sql) only let a user read and
+  // write inside their own folder. One row per file is recorded in
+  // public.homework_submissions; a replacement is a new submission_id, and the
+  // newest one is the current submission. Nothing here grades or checks work.
+  const HOMEWORK_BUCKET = "homework-submissions";
+  const HOMEWORK_TYPES = ["application/pdf", "image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"];
+  const HOMEWORK_MAX_BYTES = 20 * 1024 * 1024;
+  const HOMEWORK_MAX_FILES = 10;
+
+  function homeworkFileProblem(files) {
+    if (!files.length) return "צריך לבחור לפחות קובץ אחד.";
+    if (files.length > HOMEWORK_MAX_FILES) return `אפשר להעלות עד ${HOMEWORK_MAX_FILES} קבצים בכל הגשה.`;
+    const wrongType = files.find((file) => !HOMEWORK_TYPES.includes(file.type) && !/\.(pdf|jpe?g|png|webp|heic|heif)$/i.test(file.name));
+    if (wrongType) return `הקובץ ${wrongType.name} אינו PDF או תמונה.`;
+    const tooBig = files.find((file) => file.size > HOMEWORK_MAX_BYTES);
+    if (tooBig) return `הקובץ ${tooBig.name} גדול מ־20MB.`;
+    return "";
+  }
+
+  function storageSafeName(name, index) {
+    const dot = name.lastIndexOf(".");
+    const ext = dot > 0 ? name.slice(dot + 1).toLowerCase().replace(/[^a-z0-9]/g, "") : "";
+    const base = (dot > 0 ? name.slice(0, dot) : name).normalize("NFKD").replace(/[^A-Za-z0-9_-]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60);
+    return `${index + 1}-${base || "file"}${ext ? `.${ext}` : ""}`;
+  }
+
+  function newSubmissionId() {
+    if (window.crypto?.randomUUID) return window.crypto.randomUUID();
+    return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+  }
+
+  async function uploadHomework(homeworkId, fileList) {
+    const files = [...(fileList || [])];
+    if (!isSignedIn()) return { ok: false, error: "צריך להיות מחוברים לחשבון כדי להעלות עבודה." };
+    const problem = homeworkFileProblem(files);
+    if (problem) return { ok: false, error: problem };
+    const submissionId = newSubmissionId();
+    const folder = `${state.user.id}/${homeworkId}/${submissionId}`;
+    const paths = [];
+    for (const [index, file] of files.entries()) {
+      const path = `${folder}/${storageSafeName(file.name, index)}`;
+      const { error } = await client.storage.from(HOMEWORK_BUCKET).upload(path, file, {
+        contentType: file.type || undefined,
+        upsert: false
+      });
+      if (error) return { ok: false, error: homeworkError(error) };
+      paths.push(path);
+    }
+    const rows = paths.map((path) => ({ user_id: state.user.id, homework_id: homeworkId, file_path: path, status: "uploaded" }));
+    const { error } = await client.from("homework_submissions").insert(rows);
+    if (error) return { ok: false, error: homeworkError(error) };
+    return { ok: true, submission: await fetchHomeworkSubmission(homeworkId) };
+  }
+
+  async function fetchHomeworkSubmission(homeworkId) {
+    if (!isSignedIn()) return null;
+    const { data, error } = await client
+      .from("homework_submissions")
+      .select("file_path, status, submitted_at")
+      .eq("user_id", state.user.id)
+      .eq("homework_id", homeworkId)
+      .order("submitted_at", { ascending: false });
+    if (error || !data?.length) return null;
+    const latestFolder = data[0].file_path.split("/").slice(0, 3).join("/");
+    const files = data
+      .filter((row) => row.file_path.startsWith(`${latestFolder}/`))
+      .map((row) => ({ path: row.file_path, name: row.file_path.split("/").pop().replace(/^\d+-/, "") }))
+      .sort((a, b) => a.path.localeCompare(b.path, "en", { numeric: true }));
+    return { submittedAt: data[0].submitted_at, status: data[0].status, files };
+  }
+
+  async function homeworkFileUrl(path) {
+    if (!isSignedIn() || !path?.startsWith(`${state.user.id}/`)) return null;
+    const { data, error } = await client.storage.from(HOMEWORK_BUCKET).createSignedUrl(path, 600);
+    if (error) return null;
+    return data?.signedUrl || null;
+  }
+
+  function homeworkError(error) {
+    const text = String(error?.message || error || "").toLowerCase();
+    if (/bucket not found|not found/.test(text)) return "אחסון העבודות עוד לא הוגדר באתר. העבודה לא הועלתה.";
+    if (/row-level security|policy|unauthorized|not allowed|permission/.test(text)) return "אין הרשאה לשמור את הקובץ. העבודה לא הועלתה.";
+    if (/size|too large|payload/.test(text)) return "אחד הקבצים גדול מדי. העבודה לא הועלתה.";
+    if (/mime|type/.test(text)) return "אחד הקבצים אינו PDF או תמונה. העבודה לא הועלתה.";
+    if (/network|fetch|failed/.test(text)) return "אין חיבור כרגע. העבודה לא הועלתה.";
+    return "השמירה לא הצליחה, והעבודה לא הועלתה. אפשר לנסות שוב.";
+  }
+
   function escapeHtml(value) {
     return String(value)
       .replace(/&/g, "&amp;")
@@ -687,6 +778,9 @@
     saveQuestionAttempts,
     saveCoinEvent,
     saveHintPurchase,
+    uploadHomework,
+    fetchHomeworkSubmission,
+    homeworkFileUrl,
     onChange(callback) {
       const handler = (event) => callback(event.detail);
       document.addEventListener(AUTH_EVENT, handler);

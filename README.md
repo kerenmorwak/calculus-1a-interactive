@@ -120,9 +120,23 @@ restricted to invited users. Sending a URL is not an access grant.
 Run and inspect the existing course before changing its presentation. Preserve
 the mathematical content, Hebrew/left-to-right math handling, progression
 rules, first-answer scoring, and coin accounting. A hint costs 5 coins once and
-remains open after purchase. Writing tasks are self-practice: learners mark
-"כתבתי" for each task, and nothing is uploaded or graded. Do not add wording that
-implies checking until a real checking service exists.
+remains open after purchase.
+
+Homework ("תרגיל להגשה") is submitted by uploading a PDF or images. Files go to
+the private Storage bucket `homework-submissions`, under the learner's own
+folder (`{user_id}/{homework_id}/{submission_id}/…`), with one row per file in
+`public.homework_submissions`. "העבודה הועלתה" is shown only after both the
+upload and the database row succeeded; learners can open their files through
+short-lived signed links and replace the submission (a replacement is a new
+submission; earlier files are kept). There is no checking, grade, solution or
+self-check list yet, and the interface says so: "העבודה נשמרה. בדיקה ומשוב
+עדיין אינם זמינים." Uploading never changes progress. The "כתבתי" toggle exists
+only on the optional writing-practice cards, not on homework.
+
+Before the first real upload, run `supabase/homework-storage.sql` once in the
+Supabase SQL editor. It creates the private bucket (PDF and images, 20 MB per
+file) and the Storage policies that limit each user to their own folder. It
+does not change existing tables.
 
 The question flow: options are shuffled per round (radio values keep the
 original option index, so scoring and analytics are unchanged). A first wrong

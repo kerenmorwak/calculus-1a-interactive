@@ -401,9 +401,10 @@ const chapterOneReadingPlan = {
 
 const homeworkMilestones = [
   {
+    id: "chapter-1-homework-1",
     afterUnitId: "ch01-s069",
-    title: "תרגיל כתיבה מסכם",
-    subtitle: "שמונה שאלות הוכחה על כל החומר של הפרק. כתבי פתרון מלא במחברת, כמו בבחינה, וסמני כאן כל שאלה שכתבת.",
+    title: "תרגיל להגשה 1",
+    subtitle: "שאלות הוכחה על כל החומר של הפרק. כתבי פתרון מלא, סרקי או צלמי אותו, והעלי כאן.",
     tasks: [
       {
         text: "כתבו במפורש את האיחוד, החיתוך, ההפרשים והמשלימים בתוך הממשיים.",
@@ -496,7 +497,7 @@ const chapterFinalQuiz = {
   mode: "final-quiz",
   section: "סיכום",
   title: "בוחן סיכום לפרק 1",
-  goal: "עשר שאלות מכל הפרק, קצת יותר עמוקות מבדיקות הסעיפים. צריך 70% כדי לפתוח את תרגיל הכתיבה המסכם.",
+  goal: "עשר שאלות מכל הפרק, קצת יותר עמוקות מבדיקות הסעיפים. צריך 70% כדי לפתוח את תרגיל ההגשה.",
   attemptSize: 10,
   passRate: 0.7,
   questions: [
@@ -660,6 +661,7 @@ function initInteractiveLearning() {
   bindReadingNavigationLocks();
   bindQuestionOverlay();
   updateInteractiveProgress();
+  refreshHomeworkUploads().catch(() => {});
 }
 
 // Header account area (profile and coins) works on every chapter page.
@@ -1010,7 +1012,7 @@ function updateProgressTicks(progress) {
   if (label) {
     const started = interactiveChapterOne.units.some((unit) => !isIntroUnit(unit) && getUnitProgressState(unit, progress[unit.id]).passed);
     if (current) label.textContent = started ? `להמשך מ־${current.section}` : "להתחלת הקריאה";
-    else label.textContent = finalDone ? "לתרגיל הכתיבה" : "לבוחן הסיכום";
+    else label.textContent = finalDone ? "לתרגיל ההגשה" : "לבוחן הסיכום";
   }
 }
 
@@ -1408,10 +1410,12 @@ function bindLearnerProfileCloudSync() {
     if (!authState?.signedIn || !authState.user?.id) {
       if (authState?.status === "signed-out") lastHydratedAuthUserId = "";
       updateLearnerProfileDisplay();
+      refreshHomeworkUploads().catch(() => {});
       return;
     }
     updateLearnerProfileDisplay();
     hydrateUserDataFromCloud(authState).catch(() => {});
+    refreshHomeworkUploads().catch(() => {});
   });
 }
 
@@ -1595,10 +1599,11 @@ function renderHomeworkMilestone(milestone) {
   const card = document.createElement("section");
   card.className = "homework-card";
   card.dataset.homeworkAfter = milestone.afterUnitId;
+  card.dataset.homeworkId = milestone.id;
   card.hidden = true;
   card.innerHTML = `
     <div class="homework-heading">
-      <p>תרגול כתיבה</p>
+      <p>להגשה</p>
       <h3>${formatInlineText(milestone.title)}</h3>
       <span>${formatInlineText(milestone.subtitle)}</span>
     </div>
@@ -1608,20 +1613,155 @@ function renderHomeworkMilestone(milestone) {
           <div class="homework-question">${formatInlineText(task.text)}</div>
           ${task.tex ? renderTexDisplay(task.tex) : ""}
           ${task.formula ? renderMathDisplay(task.formula) : ""}
-          <div class="task-tools">
-            ${task.hint ? renderHomeworkHint(task, milestone, taskIndex) : ""}
-            ${renderWrittenToggle(writtenTaskKey("homework", milestone, taskIndex))}
-          </div>
+          ${task.hint ? `<div class="task-tools">${renderHomeworkHint(task, milestone, taskIndex)}</div>` : ""}
         </li>
       `).join("")}
     </ol>
-    <p class="writing-footnote">זה תרגול עצמי. אף אחד לא בודק את מה שסימנת, והסימון נשמר רק כדי שתדעי איפה עצרת.</p>
+    <section class="homework-upload" data-homework-upload-panel aria-labelledby="upload-title-${milestone.id}">
+      <h4 id="upload-title-${milestone.id}">העלאת עבודה</h4>
+      <div data-homework-upload-body></div>
+    </section>
   `;
   bindHomeworkHintPurchases(card);
   syncHomeworkHints(card);
-  bindWrittenToggles(card);
+  renderHomeworkUpload(card, { mode: "loading" });
   requestAnimationFrame(() => typesetMath(card));
   return card;
+}
+
+// Upload states: loading → choose → uploading → saved (or choose again with an
+// error). "העבודה הועלתה" appears only after Storage and the database both
+// confirmed the save. Nothing here checks, grades or scores the work.
+const homeworkUploadState = new Map();
+
+function renderHomeworkUpload(card, next = {}) {
+  const id = card.dataset.homeworkId;
+  const state = { ...(homeworkUploadState.get(id) || {}), ...next };
+  homeworkUploadState.set(id, state);
+  const body = card.querySelector("[data-homework-upload-body]");
+  if (!body) return;
+  const auth = window.CalculusAuth;
+  const signedIn = Boolean(auth?.getState?.().signedIn);
+
+  if (state.mode === "loading") {
+    body.innerHTML = `<p class="upload-note">בודקים אם כבר העלית עבודה…</p>`;
+    return;
+  }
+  if (!signedIn) {
+    body.innerHTML = `<p class="upload-note">כדי להעלות עבודה צריך להיות מחוברים לחשבון.</p>`;
+    return;
+  }
+  if (state.mode === "saved" && state.submission?.files?.length) {
+    const when = formatSubmissionTime(state.submission.submittedAt);
+    body.innerHTML = `
+      <div class="upload-saved" role="status">
+        <span class="upload-saved-mark" aria-hidden="true"></span>
+        <div>
+          <strong tabindex="-1" data-upload-saved-title>העבודה הועלתה</strong>
+          <p>העבודה נשמרה. בדיקה ומשוב עדיין אינם זמינים.</p>
+          ${when ? `<p class="upload-when">הועלתה ${when}</p>` : ""}
+        </div>
+      </div>
+      <ul class="upload-files">
+        ${state.submission.files.map((file, index) => `
+          <li>
+            <span class="upload-file-icon" aria-hidden="true"></span>
+            <bdi>${escapeHtml(file.name)}</bdi>
+            <button class="text-button" type="button" data-view-homework-file="${index}">צפייה</button>
+          </li>`).join("")}
+      </ul>
+      <p class="upload-message error" data-upload-message role="alert">${state.viewError ? escapeHtml(state.viewError) : ""}</p>
+      <div class="upload-actions">
+        <button class="action" type="button" data-replace-homework>החלפת העבודה</button>
+      </div>
+    `;
+    body.querySelectorAll("[data-view-homework-file]").forEach((button) => {
+      button.addEventListener("click", async () => {
+        const file = state.submission.files[Number(button.dataset.viewHomeworkFile)];
+        const tab = window.open("", "_blank");
+        if (tab) tab.opener = null;
+        const url = await auth.homeworkFileUrl?.(file?.path);
+        if (url && tab) { tab.location.href = url; return; }
+        if (tab) tab.close();
+        if (url) { window.location.assign(url); return; }
+        renderHomeworkUpload(card, { viewError: "לא הצלחנו לפתוח את הקובץ. אפשר לנסות שוב." });
+      });
+    });
+    body.querySelector("[data-replace-homework]").addEventListener("click", () => {
+      renderHomeworkUpload(card, { mode: "choose", replacing: true, error: "", viewError: "" });
+      body.querySelector("input[type=file]")?.focus();
+    });
+    return;
+  }
+
+  const uploading = state.mode === "uploading";
+  const replacing = Boolean(state.replacing && state.submission?.files?.length);
+  body.innerHTML = `
+    <p class="upload-note">${replacing
+      ? "העבודה הקודמת נשארת שמורה עד שההעלאה החדשה מצליחה."
+      : "קובץ PDF או תמונות של הפתרון (JPG, PNG, HEIC), עד 20MB לקובץ. הקבצים נשמרים בחשבון שלך באחסון פרטי, ומשתמשים אחרים באתר לא יכולים לגשת אליהם."}</p>
+    <label class="upload-picker">
+      <input type="file" accept="application/pdf,image/*,.pdf,.heic,.heif" multiple data-homework-upload ${uploading ? "disabled" : ""}>
+      <span class="upload-picker-button">בחירת קבצים</span>
+      <span class="upload-picker-hint" data-upload-picked>${state.pickedLabel || "עוד לא נבחרו קבצים"}</span>
+    </label>
+    <p class="upload-message error" data-upload-message role="alert">${state.error ? escapeHtml(state.error) : ""}</p>
+    <div class="upload-actions">
+      <button class="action primary" type="button" data-submit-homework ${uploading || !state.pickedLabel ? "disabled" : ""}>${uploading ? "מעלים…" : "העלאת עבודה"}</button>
+      ${replacing && !uploading ? `<button class="action quiet" type="button" data-cancel-replace>ביטול</button>` : ""}
+    </div>
+  `;
+  const input = body.querySelector("[data-homework-upload]");
+  input?.addEventListener("change", () => {
+    const files = [...input.files];
+    state.files = files;
+    const label = files.length
+      ? `${files.length === 1 ? "נבחר קובץ אחד" : `נבחרו ${files.length} קבצים`}: ${files.map((file) => file.name).join(", ")}. העבודה עוד לא הועלתה.`
+      : "";
+    homeworkUploadState.set(id, { ...state, files, pickedLabel: label, error: "" });
+    body.querySelector("[data-upload-picked]").textContent = label || "עוד לא נבחרו קבצים";
+    body.querySelector("[data-submit-homework]").disabled = !files.length;
+    body.querySelector("[data-upload-message]").textContent = "";
+  });
+  body.querySelector("[data-cancel-replace]")?.addEventListener("click", () => {
+    renderHomeworkUpload(card, { mode: "saved", replacing: false, files: [], pickedLabel: "", error: "" });
+  });
+  body.querySelector("[data-submit-homework]")?.addEventListener("click", async () => {
+    const files = homeworkUploadState.get(id)?.files || [];
+    if (!files.length) return;
+    renderHomeworkUpload(card, { mode: "uploading", error: "" });
+    const result = await auth?.uploadHomework?.(id, files) || { ok: false, error: "השמירה לא הצליחה, והעבודה לא הועלתה." };
+    if (result.ok && result.submission?.files?.length) {
+      renderHomeworkUpload(card, { mode: "saved", submission: result.submission, files: [], pickedLabel: "", replacing: false, error: "" });
+      card.querySelector("[data-upload-saved-title]")?.focus({ preventScroll: true });
+      playAvatarReaction(document.querySelector(".profile-chip .math-avatar"), "correct");
+      return;
+    }
+    renderHomeworkUpload(card, { mode: "choose", error: result.error || "השמירה לא הצליחה, והעבודה לא הועלתה." });
+  });
+}
+
+function formatSubmissionTime(value) {
+  const date = new Date(value || "");
+  if (Number.isNaN(date.getTime())) return "";
+  return `ב־${date.toLocaleDateString("he-IL", { day: "numeric", month: "long" })}, ${date.toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" })}`;
+}
+
+async function refreshHomeworkUploads() {
+  const auth = window.CalculusAuth;
+  const cards = [...document.querySelectorAll("[data-homework-id]")];
+  const status = auth?.getState?.().status;
+  if (status === "starting") return;
+  for (const card of cards) {
+    if (!auth?.getState?.().signedIn) {
+      renderHomeworkUpload(card, { mode: "choose", submission: null });
+      continue;
+    }
+    const submission = await auth.fetchHomeworkSubmission?.(card.dataset.homeworkId);
+    renderHomeworkUpload(card, submission?.files?.length
+      ? { mode: "saved", submission }
+      : { mode: "choose", submission: null });
+  }
 }
 
 function renderWritingPracticeMilestone(milestone) {
@@ -2088,7 +2228,7 @@ function finishAttempt(unit, attempt) {
       <div class="learning-actions">
         ${passed && nextUnit ? `<button class="action primary" type="button" data-continue-learning="${unit.id}">להמשך הקריאה</button>` : ""}
         ${passed && !nextUnit && !isFinalQuiz(unit) ? `<button class="action primary" type="button" data-open-final-quiz>לבוחן הסיכום</button>` : ""}
-        ${passed && isFinalQuiz(unit) ? `<button class="action primary" type="button" data-open-homework>לתרגיל הכתיבה</button>` : ""}
+        ${passed && isFinalQuiz(unit) ? `<button class="action primary" type="button" data-open-homework>לתרגיל ההגשה</button>` : ""}
         <button class="action ${passed ? "quiet" : "primary"}" type="button" data-retry-learning="${unit.id}">${passed ? "סבב נוסף" : "לסבב שאלות חדש"}</button>
       </div>
     </div>
@@ -2401,7 +2541,7 @@ function mountDevTools() {
     <span>קפיצה במסלול</span>
     <div>
       <button type="button" data-dev-jump-final>לבוחן</button>
-      <button type="button" data-dev-jump-homework>לתרגיל</button>
+      <button type="button" data-dev-jump-homework>להגשה</button>
       <button type="button" data-dev-reset-progress>איפוס מקומי</button>
     </div>
   `;
@@ -2968,13 +3108,13 @@ function mistakesPhrase(count) {
 function attemptResultMessage(unit, unitState, correct, total, needed, passed, mistakes) {
   if (!passed) {
     if (isFinalQuiz(unit)) {
-      return `ענית נכון על ${correct} מתוך ${total}. כדי לעבור צריך ${needed} תשובות נכונות. אחרי המעבר ייפתח תרגיל הכתיבה המסכם.`;
+      return `ענית נכון על ${correct} מתוך ${total}. כדי לעבור צריך ${needed} תשובות נכונות. אחרי המעבר ייפתח תרגיל ההגשה.`;
     }
     const allowed = mistakesPhrase(interactiveChapterOne.maxMistakes);
     return `בסבב הזה היו ${mistakesPhrase(mistakes)}, ואפשר לעבור עם ${allowed} לכל היותר. כדאי לעבור שוב על המקטע, ואז לנסות סבב עם שאלות אחרות.`;
   }
   if (isFinalQuiz(unit)) {
-    return `ענית נכון על ${correct} מתוך ${total}. תרגיל הכתיבה המסכם פתוח עכשיו.`;
+    return `ענית נכון על ${correct} מתוך ${total}. תרגיל ההגשה פתוח עכשיו.`;
   }
   const how = mistakes ? `עם ${mistakesPhrase(mistakes)} מתוך ${total} שאלות` : "בלי טעויות";
   if (hasNextUnit(unit)) return `סיימת ${how}. הקטע הבא כבר פתוח לקריאה.`;

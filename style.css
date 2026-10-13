@@ -748,3 +748,36 @@ body.auth-required .account-button{display:none}
 /* Sticky actions inside the profile dialog match the dialog padding */
 .profile-dialog .profile-actions{bottom:-28px;margin-bottom:-28px;padding-block:14px 28px;background:linear-gradient(to bottom,rgba(255,255,255,0),#fff 14px)}
 @media(max-width:680px){.profile-dialog .profile-actions{bottom:calc(-20px - env(safe-area-inset-bottom));margin-bottom:calc(-20px - env(safe-area-inset-bottom));padding-bottom:calc(20px + env(safe-area-inset-bottom))}}
+/* Homework upload: a real, private submission (no checking yet) */
+.homework-upload{margin-top:22px;border:1px solid var(--accent-line);border-radius:var(--r-lg);background:linear-gradient(180deg,#fbfdfd,#f2f8f7);padding:18px 20px}
+.homework-upload h4{font-size:1.12rem;margin:0 0 6px}
+.upload-note{margin:0 0 12px;color:var(--ink-soft);font-size:.92rem;line-height:1.65}
+.upload-picker{position:relative;display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 14px;border:1.5px dashed var(--line-strong);border-radius:var(--r-md);background:#fff;cursor:pointer;font-weight:400}
+.upload-picker:hover{border-color:var(--accent-line)}
+.upload-picker:focus-within{outline:3px solid var(--focus);outline-offset:2px}
+.upload-picker input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%}
+.upload-picker-button{display:inline-flex;align-items:center;min-height:38px;padding:6px 14px;border-radius:10px;border:1px solid var(--line-strong);background:#fff;font-weight:700;color:var(--accent)}
+.upload-picker-hint{flex:1 1 200px;color:var(--muted);font-size:.88rem;line-height:1.5;overflow-wrap:anywhere}
+.upload-message{margin:8px 0 0;font-size:.9rem;line-height:1.6}
+.upload-message:empty{display:none}
+.upload-message.error{color:#8a3b12}
+.upload-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.upload-actions .action{min-height:46px;min-width:150px}
+.upload-saved{display:flex;gap:12px;align-items:flex-start}
+.upload-saved-mark{flex:0 0 auto;width:30px;height:30px;border-radius:50%;background:var(--accent);position:relative;margin-top:2px}
+.upload-saved-mark::after{content:"";position:absolute;inset:7px 10px 10px;border:solid #fff;border-width:0 2.5px 2.5px 0;transform:rotate(45deg)}
+.upload-saved strong{display:block;font-family:var(--serif);font-size:1.15rem;color:var(--accent-strong);outline:none}
+.upload-saved p{margin:2px 0 0;color:var(--ink-soft);line-height:1.6}
+.upload-when{font-size:.86rem;color:var(--muted)!important}
+.upload-files{list-style:none;margin:14px 0 0;padding:0;display:grid;gap:6px}
+.upload-files li{display:flex;align-items:center;gap:10px;padding:8px 12px;border:1px solid var(--line);border-radius:10px;background:#fff}
+.upload-files bdi{flex:1 1 auto;min-width:0;overflow-wrap:anywhere;direction:ltr;text-align:right;font-size:.92rem}
+.upload-file-icon{flex:0 0 auto;width:16px;height:20px;border:1.5px solid var(--line-strong);border-radius:2px 6px 2px 2px}
+.upload-files .text-button{min-height:32px;padding:2px 4px}
+@media(max-width:680px){.homework-upload{padding:16px 14px}.upload-actions .action{flex:1 1 100%}}
+.homework-upload .upload-picker{display:flex;font-weight:400;gap:12px}
+.homework-upload .upload-note,.homework-upload .upload-saved p{margin-top:0}
+/* Long formulas scroll inside their box instead of widening the card */
+.homework-tasks,.writing-practice-tasks{grid-template-columns:minmax(0,1fr)}
+.homework-tasks li,.writing-practice-tasks li{min-width:0}
+.homework-tasks .math-display,.writing-practice-tasks .math-display{max-width:100%;min-width:0}
