@@ -401,9 +401,10 @@ const chapterOneReadingPlan = {
 
 const homeworkMilestones = [
   {
+    id: "chapter-1-homework-1",
     afterUnitId: "ch01-s069",
     title: "תרגיל להגשה 1",
-    subtitle: "שאלות הוכחה לפי החומר שכבר כוסה בפרק. כדאי לכתוב פתרון מסודר ולהעלות סריקה לבדיקה.",
+    subtitle: "שאלות הוכחה על כל החומר של הפרק. כתבי פתרון מלא, סרקי או צלמי אותו, והעלי כאן.",
     tasks: [
       {
         text: "כתבו במפורש את האיחוד, החיתוך, ההפרשים והמשלימים בתוך הממשיים.",
@@ -461,7 +462,7 @@ const writingPracticeMilestones = [
   {
     afterUnitId: "ch01-s04",
     title: "תרגול כתיבה קצר א",
-    subtitle: "שתי שאלות פתוחות לתרגול במחברת. אין בדיקה ואין ציון כרגע.",
+    subtitle: "שתי שאלות קצרות לכתיבה במחברת, לפני שממשיכים לקרוא.",
     tasks: [
       {
         text: "כתבו שלילה פורמלית מלאה לטענה.",
@@ -476,7 +477,7 @@ const writingPracticeMilestones = [
   {
     afterUnitId: "ch01-s066",
     title: "תרגול כתיבה קצר ב",
-    subtitle: "תרגול פתוח על חסמים וסופרמום. אפשר לפתור במחברת ולהמשיך.",
+    subtitle: "חסמים וסופרמום, הפעם בכתיבה מלאה במחברת.",
     tasks: [
       {
         text: "מצאו חסם עליון, חסם תחתון, מקסימום ומינימום אם הם קיימים, ונמקו לפי ההגדרות.",
@@ -495,8 +496,8 @@ const chapterFinalQuiz = {
   id: "chapter-1-final-quiz",
   mode: "final-quiz",
   section: "סיכום",
-  title: "קוויז סיכום פרק 1",
-  goal: "שאלות קצרות אבל לא אוטומטיות: צריך לזהות הגדרות, מעברים והנחות בדיוק.",
+  title: "בוחן סיכום לפרק 1",
+  goal: "עשר שאלות מכל הפרק, קצת יותר עמוקות מבדיקות הסעיפים. צריך 70% כדי לפתוח את תרגיל ההגשה.",
   attemptSize: 10,
   passRate: 0.7,
   questions: [
@@ -519,6 +520,14 @@ const chapterFinalQuiz = {
 
 function question(id, prompt, options, answer, feedback, difficulty = null, topic = null) {
   return { id, prompt, options, answer, feedback, difficulty: difficulty ?? questionOrdinal(id), topic };
+}
+
+// Questions whose options are consecutive lines of one argument; shuffling them
+// would break the reading, so they keep their written order.
+const ORDERED_OPTION_QUESTIONS = new Set(["ch01-s03-q08"]);
+
+function keepsOptionOrder(question) {
+  return Boolean(question.keepOptionOrder) || ORDERED_OPTION_QUESTIONS.has(question.id);
 }
 
 function loadQuestionBank() {
@@ -583,7 +592,7 @@ function applyQuestionBank(bank) {
 function questionFromBankItem(item) {
   const options = [...(item.options || [])].sort((a, b) => Number(a.index) - Number(b.index));
   const answer = options.findIndex((option) => option.correct);
-  return question(
+  const result = question(
     item.id,
     item.prompt,
     options.map((option) => option.text),
@@ -592,6 +601,8 @@ function questionFromBankItem(item) {
     item.difficulty,
     item.topic
   );
+  if (item.keepOptionOrder) result.keepOptionOrder = true;
+  return result;
 }
 
 function homeworkTaskFromBankItem(item) {
@@ -609,8 +620,10 @@ function initInteractiveLearning() {
   const pages = document.querySelector(".pages");
   if (!section || !pages) return;
 
-  const readingNote = section.querySelector(".reading-note");
-  if (readingNote) readingNote.after(renderInteractiveOverview());
+  const hero = section.querySelector(".chapter-hero");
+  if (hero) hero.append(renderInteractiveOverview());
+  const contents = section.querySelector(".contents");
+  if (contents) contents.hidden = true; // the chapter map in the header replaces the plain contents list
   interactiveReady = true;
   tagContentsLinksForUnits();
   const renderedGuidedPages = renderGuidedReadingPages(pages);
@@ -648,6 +661,7 @@ function initInteractiveLearning() {
   bindReadingNavigationLocks();
   bindQuestionOverlay();
   updateInteractiveProgress();
+  refreshHomeworkUploads().catch(() => {});
 }
 
 // Header account area (profile and coins) works on every chapter page.
@@ -916,45 +930,90 @@ function addContentsBadges() {
   });
 }
 
+// The chapter header: a number line with one tick per section, the place to
+// continue from, the full section map, and the personal insight.
 function renderInteractiveOverview() {
   const panel = document.createElement("section");
   panel.className = "interactive-overview";
-  panel.setAttribute("aria-labelledby", "interactive-title");
+  panel.setAttribute("aria-label", "ההתקדמות שלך בפרק");
+  const stops = [...interactiveChapterOne.units, chapterFinalQuiz];
   panel.innerHTML = `
-    <div class="interactive-heading">
-      <div>
-        <p class="interactive-kicker">פרק 1</p>
-        <h3 id="interactive-title">התקדמות בקריאה</h3>
+    <div class="progress-row">
+      <div class="progress-figure">
+        <strong id="interactive-percent">0%</strong>
+        <span>מהפרק</span>
       </div>
-      <div class="interactive-stats">
-        <div class="interactive-meter" aria-label="התקדמות בפרק">
-          <strong id="interactive-percent">0%</strong>
-          <span><i id="interactive-bar"></i></span>
-        </div>
+      <div class="number-line" aria-hidden="true">
+        <span class="number-line-track"><i id="interactive-bar"></i></span>
+        <ol class="number-line-ticks">
+          ${stops.map((unit) => `
+            <li class="number-line-tick" data-tick="${unit.id}" title="${escapeHtml(isFinalQuiz(unit) ? unit.title : `${unit.section} ${unit.title}`)}">
+              <span class="tick-mark"></span>
+              <span class="tick-label">${isFinalQuiz(unit) ? "∑" : escapeHtml(unit.section)}</span>
+            </li>
+          `).join("")}
+        </ol>
       </div>
+      <button class="action primary resume-button" type="button" data-resume-reading>
+        <span data-resume-label>להתחלת הקריאה</span>
+      </button>
     </div>
     <details class="interactive-map">
-      <summary>מפת הפרק</summary>
-      <nav class="interactive-unit-list" aria-label="התקדמות בפרק 1">
+      <summary>כל הסעיפים בפרק</summary>
+      <nav class="interactive-unit-list" aria-label="סעיפי פרק 1">
         ${interactiveChapterOne.units.map((unit) => `
           <a href="#learn-${unit.id}" data-progress-link="${unit.id}">
             <span>${unit.section}</span>
-            ${formatInlineText(unit.title)}
-            <bdi>·</bdi>
+            <b>${formatInlineText(unit.title)}</b>
             <em>בהמשך</em>
           </a>
         `).join("")}
           <a href="#learn-${chapterFinalQuiz.id}" data-final-quiz-link>
-            <span>סיכום</span>
-            ${formatInlineText(chapterFinalQuiz.title)}
-            <bdi>·</bdi>
+            <span>∑</span>
+            <b>${formatInlineText(chapterFinalQuiz.title)}</b>
             <em>בהמשך</em>
           </a>
       </nav>
     </details>
-    <div class="learner-insight" data-learner-insight></div>
+    <div class="learner-insight" data-learner-insight hidden></div>
   `;
+  panel.querySelector("[data-resume-reading]").addEventListener("click", () => {
+    const progress = readInteractiveProgress();
+    const unit = currentReadingUnit(progress);
+    if (unit) scrollToUnitStart(unit);
+    else if (finalQuizPassed(progress)) scrollToHomework();
+    else scrollToFinalQuiz();
+  });
+  panel.querySelectorAll("[data-progress-link]").forEach((link) => {
+    link.addEventListener("click", (event) => {
+      if (link.classList.contains("locked")) return;
+      const unit = interactiveChapterOne.units.find((candidate) => candidate.id === link.dataset.progressLink);
+      if (!unit) return;
+      event.preventDefault();
+      scrollToUnitStart(unit);
+    });
+  });
   return panel;
+}
+
+function updateProgressTicks(progress) {
+  const current = currentReadingUnit(progress);
+  const finalOpen = isFinalQuizUnlocked(progress);
+  const finalDone = finalQuizPassed(progress);
+  document.querySelectorAll("[data-tick]").forEach((tick) => {
+    const id = tick.dataset.tick;
+    const unit = interactiveChapterOne.units.find((candidate) => candidate.id === id);
+    const done = unit ? getUnitProgressState(unit, progress[unit.id]).passed : finalDone;
+    const isCurrent = unit ? current?.id === unit.id : (finalOpen && !finalDone);
+    tick.classList.toggle("is-done", done);
+    tick.classList.toggle("is-current", Boolean(isCurrent));
+  });
+  const label = document.querySelector("[data-resume-label]");
+  if (label) {
+    const started = interactiveChapterOne.units.some((unit) => !isIntroUnit(unit) && getUnitProgressState(unit, progress[unit.id]).passed);
+    if (current) label.textContent = started ? `להמשך מ־${current.section}` : "להתחלת הקריאה";
+    else label.textContent = finalDone ? "לתרגיל ההגשה" : "לבוחן הסיכום";
+  }
 }
 
 /* ---------- Learner profile: nickname and mathematician avatar ---------- */
@@ -1351,10 +1410,12 @@ function bindLearnerProfileCloudSync() {
     if (!authState?.signedIn || !authState.user?.id) {
       if (authState?.status === "signed-out") lastHydratedAuthUserId = "";
       updateLearnerProfileDisplay();
+      refreshHomeworkUploads().catch(() => {});
       return;
     }
     updateLearnerProfileDisplay();
     hydrateUserDataFromCloud(authState).catch(() => {});
+    refreshHomeworkUploads().catch(() => {});
   });
 }
 
@@ -1470,7 +1531,8 @@ function mergeProgress(local = {}, cloud = {}) {
     ...olderMeta,
     ...newerMeta,
     coins: Math.max(Number(localMeta.coins) || 0, Number(cloudMeta.coins) || 0),
-    purchasedHints: { ...(cloudMeta.purchasedHints || {}), ...(localMeta.purchasedHints || {}) }
+    purchasedHints: { ...(cloudMeta.purchasedHints || {}), ...(localMeta.purchasedHints || {}) },
+    writtenTasks: { ...(cloudMeta.writtenTasks || {}), ...(localMeta.writtenTasks || {}) }
   };
   return merged;
 }
@@ -1537,14 +1599,13 @@ function renderHomeworkMilestone(milestone) {
   const card = document.createElement("section");
   card.className = "homework-card";
   card.dataset.homeworkAfter = milestone.afterUnitId;
+  card.dataset.homeworkId = milestone.id;
   card.hidden = true;
   card.innerHTML = `
     <div class="homework-heading">
-      <div>
-        <p>להגשה</p>
-        <h3>${formatInlineText(milestone.title)}</h3>
-        <span>${formatInlineText(milestone.subtitle)}</span>
-      </div>
+      <p>להגשה</p>
+      <h3>${formatInlineText(milestone.title)}</h3>
+      <span>${formatInlineText(milestone.subtitle)}</span>
     </div>
     <ol class="homework-tasks">
       ${milestone.tasks.map((task, taskIndex) => `
@@ -1552,30 +1613,155 @@ function renderHomeworkMilestone(milestone) {
           <div class="homework-question">${formatInlineText(task.text)}</div>
           ${task.tex ? renderTexDisplay(task.tex) : ""}
           ${task.formula ? renderMathDisplay(task.formula) : ""}
-          ${task.hint ? renderHomeworkHint(task, milestone, taskIndex) : ""}
+          ${task.hint ? `<div class="task-tools">${renderHomeworkHint(task, milestone, taskIndex)}</div>` : ""}
         </li>
       `).join("")}
     </ol>
-    <div class="homework-upload">
-      <label>
-        <span>העלאת פתרון סרוק</span>
-        <input type="file" accept="image/*,.pdf" multiple data-homework-upload>
-      </label>
-      <p data-homework-upload-status>אפשר לבחור קובץ PDF או תמונות.</p>
-    </div>
+    <section class="homework-upload" data-homework-upload-panel aria-labelledby="upload-title-${milestone.id}">
+      <h4 id="upload-title-${milestone.id}">העלאת עבודה</h4>
+      <div data-homework-upload-body></div>
+    </section>
   `;
-  const upload = card.querySelector("[data-homework-upload]");
-  const status = card.querySelector("[data-homework-upload-status]");
-  upload?.addEventListener("change", () => {
-    const files = [...upload.files].map((file) => file.name);
-    status.textContent = files.length
-      ? `נבחרו ${files.length} קבצים: ${files.join(", ")}`
-      : "אפשר לבחור קובץ PDF או תמונות.";
-  });
   bindHomeworkHintPurchases(card);
   syncHomeworkHints(card);
+  renderHomeworkUpload(card, { mode: "loading" });
   requestAnimationFrame(() => typesetMath(card));
   return card;
+}
+
+// Upload states: loading → choose → uploading → saved (or choose again with an
+// error). "העבודה הועלתה" appears only after Storage and the database both
+// confirmed the save. Nothing here checks, grades or scores the work.
+const homeworkUploadState = new Map();
+
+function renderHomeworkUpload(card, next = {}) {
+  const id = card.dataset.homeworkId;
+  const state = { ...(homeworkUploadState.get(id) || {}), ...next };
+  homeworkUploadState.set(id, state);
+  const body = card.querySelector("[data-homework-upload-body]");
+  if (!body) return;
+  const auth = window.CalculusAuth;
+  const signedIn = Boolean(auth?.getState?.().signedIn);
+
+  if (state.mode === "loading") {
+    body.innerHTML = `<p class="upload-note">בודקים אם כבר העלית עבודה…</p>`;
+    return;
+  }
+  if (!signedIn) {
+    body.innerHTML = `<p class="upload-note">כדי להעלות עבודה צריך להיות מחוברים לחשבון.</p>`;
+    return;
+  }
+  if (state.mode === "saved" && state.submission?.files?.length) {
+    const when = formatSubmissionTime(state.submission.submittedAt);
+    body.innerHTML = `
+      <div class="upload-saved" role="status">
+        <span class="upload-saved-mark" aria-hidden="true"></span>
+        <div>
+          <strong tabindex="-1" data-upload-saved-title>העבודה הועלתה</strong>
+          <p>העבודה נשמרה. בדיקה ומשוב עדיין אינם זמינים.</p>
+          ${when ? `<p class="upload-when">הועלתה ${when}</p>` : ""}
+        </div>
+      </div>
+      <ul class="upload-files">
+        ${state.submission.files.map((file, index) => `
+          <li>
+            <span class="upload-file-icon" aria-hidden="true"></span>
+            <bdi>${escapeHtml(file.name)}</bdi>
+            <button class="text-button" type="button" data-view-homework-file="${index}">צפייה</button>
+          </li>`).join("")}
+      </ul>
+      <p class="upload-message error" data-upload-message role="alert">${state.viewError ? escapeHtml(state.viewError) : ""}</p>
+      <div class="upload-actions">
+        <button class="action" type="button" data-replace-homework>החלפת העבודה</button>
+      </div>
+    `;
+    body.querySelectorAll("[data-view-homework-file]").forEach((button) => {
+      button.addEventListener("click", async () => {
+        const file = state.submission.files[Number(button.dataset.viewHomeworkFile)];
+        const tab = window.open("", "_blank");
+        if (tab) tab.opener = null;
+        const url = await auth.homeworkFileUrl?.(file?.path);
+        if (url && tab) { tab.location.href = url; return; }
+        if (tab) tab.close();
+        if (url) { window.location.assign(url); return; }
+        renderHomeworkUpload(card, { viewError: "לא הצלחנו לפתוח את הקובץ. אפשר לנסות שוב." });
+      });
+    });
+    body.querySelector("[data-replace-homework]").addEventListener("click", () => {
+      renderHomeworkUpload(card, { mode: "choose", replacing: true, error: "", viewError: "" });
+      body.querySelector("input[type=file]")?.focus();
+    });
+    return;
+  }
+
+  const uploading = state.mode === "uploading";
+  const replacing = Boolean(state.replacing && state.submission?.files?.length);
+  body.innerHTML = `
+    <p class="upload-note">${replacing
+      ? "העבודה הקודמת נשארת שמורה עד שההעלאה החדשה מצליחה."
+      : "קובץ PDF או תמונות של הפתרון (JPG, PNG, HEIC), עד 20MB לקובץ. הקבצים נשמרים בחשבון שלך באחסון פרטי, ומשתמשים אחרים באתר לא יכולים לגשת אליהם."}</p>
+    <label class="upload-picker">
+      <input type="file" accept="application/pdf,image/*,.pdf,.heic,.heif" multiple data-homework-upload ${uploading ? "disabled" : ""}>
+      <span class="upload-picker-button">בחירת קבצים</span>
+      <span class="upload-picker-hint" data-upload-picked>${state.pickedLabel || "עוד לא נבחרו קבצים"}</span>
+    </label>
+    <p class="upload-message error" data-upload-message role="alert">${state.error ? escapeHtml(state.error) : ""}</p>
+    <div class="upload-actions">
+      <button class="action primary" type="button" data-submit-homework ${uploading || !state.pickedLabel ? "disabled" : ""}>${uploading ? "מעלים…" : "העלאת עבודה"}</button>
+      ${replacing && !uploading ? `<button class="action quiet" type="button" data-cancel-replace>ביטול</button>` : ""}
+    </div>
+  `;
+  const input = body.querySelector("[data-homework-upload]");
+  input?.addEventListener("change", () => {
+    const files = [...input.files];
+    state.files = files;
+    const label = files.length
+      ? `${files.length === 1 ? "נבחר קובץ אחד" : `נבחרו ${files.length} קבצים`}: ${files.map((file) => file.name).join(", ")}. העבודה עוד לא הועלתה.`
+      : "";
+    homeworkUploadState.set(id, { ...state, files, pickedLabel: label, error: "" });
+    body.querySelector("[data-upload-picked]").textContent = label || "עוד לא נבחרו קבצים";
+    body.querySelector("[data-submit-homework]").disabled = !files.length;
+    body.querySelector("[data-upload-message]").textContent = "";
+  });
+  body.querySelector("[data-cancel-replace]")?.addEventListener("click", () => {
+    renderHomeworkUpload(card, { mode: "saved", replacing: false, files: [], pickedLabel: "", error: "" });
+  });
+  body.querySelector("[data-submit-homework]")?.addEventListener("click", async () => {
+    const files = homeworkUploadState.get(id)?.files || [];
+    if (!files.length) return;
+    renderHomeworkUpload(card, { mode: "uploading", error: "" });
+    const result = await auth?.uploadHomework?.(id, files) || { ok: false, error: "השמירה לא הצליחה, והעבודה לא הועלתה." };
+    if (result.ok && result.submission?.files?.length) {
+      renderHomeworkUpload(card, { mode: "saved", submission: result.submission, files: [], pickedLabel: "", replacing: false, error: "" });
+      card.querySelector("[data-upload-saved-title]")?.focus({ preventScroll: true });
+      playAvatarReaction(document.querySelector(".profile-chip .math-avatar"), "correct");
+      return;
+    }
+    renderHomeworkUpload(card, { mode: "choose", error: result.error || "השמירה לא הצליחה, והעבודה לא הועלתה." });
+  });
+}
+
+function formatSubmissionTime(value) {
+  const date = new Date(value || "");
+  if (Number.isNaN(date.getTime())) return "";
+  return `ב־${date.toLocaleDateString("he-IL", { day: "numeric", month: "long" })}, ${date.toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" })}`;
+}
+
+async function refreshHomeworkUploads() {
+  const auth = window.CalculusAuth;
+  const cards = [...document.querySelectorAll("[data-homework-id]")];
+  const status = auth?.getState?.().status;
+  if (status === "starting") return;
+  for (const card of cards) {
+    if (!auth?.getState?.().signedIn) {
+      renderHomeworkUpload(card, { mode: "choose", submission: null });
+      continue;
+    }
+    const submission = await auth.fetchHomeworkSubmission?.(card.dataset.homeworkId);
+    renderHomeworkUpload(card, submission?.files?.length
+      ? { mode: "saved", submission }
+      : { mode: "choose", submission: null });
+  }
 }
 
 function renderWritingPracticeMilestone(milestone) {
@@ -1585,25 +1771,64 @@ function renderWritingPracticeMilestone(milestone) {
   card.hidden = true;
   card.innerHTML = `
     <div class="writing-practice-heading">
-      <div>
-        <p>תרגול כתיבה</p>
-        <h3>${formatInlineText(milestone.title)}</h3>
-        <span>${formatInlineText(milestone.subtitle)}</span>
-      </div>
+      <p>תרגול כתיבה · רשות</p>
+      <h3>${formatInlineText(milestone.title)}</h3>
+      <span>${formatInlineText(milestone.subtitle)}</span>
     </div>
     <ol class="writing-practice-tasks">
-      ${milestone.tasks.map((task) => `
+      ${milestone.tasks.map((task, taskIndex) => `
         <li>
           <div class="homework-question">${formatInlineText(task.text)}</div>
           ${task.tex ? renderTexDisplay(task.tex) : ""}
           ${task.formula ? renderMathDisplay(task.formula) : ""}
+          <div class="task-tools">${renderWrittenToggle(writtenTaskKey("practice", milestone, taskIndex))}</div>
         </li>
       `).join("")}
     </ol>
-    <p class="writing-practice-note">זה תרגול רשות. אין כאן שליחה לבדיקה, פתרון מוצג או משוב אוטומטי.</p>
   `;
+  bindWrittenToggles(card);
   requestAnimationFrame(() => typesetMath(card));
   return card;
+}
+
+function writtenTaskKey(kind, milestone, taskIndex) {
+  return `${kind}:${milestone.afterUnitId}:${taskIndex + 1}`;
+}
+
+function renderWrittenToggle(key) {
+  return `
+    <button class="written-toggle" type="button" aria-pressed="false" data-written-task="${key}">
+      <span class="written-box" aria-hidden="true"></span>
+      <span>כתבתי</span>
+    </button>
+  `;
+}
+
+function bindWrittenToggles(root) {
+  syncWrittenToggles(root);
+  root.querySelectorAll("[data-written-task]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const progress = readInteractiveProgress();
+      const meta = progress[PROGRESS_META_KEY] || {};
+      const written = { ...(meta.writtenTasks || {}) };
+      const key = button.dataset.writtenTask;
+      if (written[key]) delete written[key];
+      else written[key] = new Date().toISOString();
+      meta.writtenTasks = written;
+      progress[PROGRESS_META_KEY] = meta;
+      writeInteractiveProgress(progress);
+      syncWrittenToggles(document);
+    });
+  });
+}
+
+function syncWrittenToggles(root = document) {
+  const written = readInteractiveProgress()?.[PROGRESS_META_KEY]?.writtenTasks || {};
+  root.querySelectorAll("[data-written-task]").forEach((button) => {
+    const on = Boolean(written[button.dataset.writtenTask]);
+    button.setAttribute("aria-pressed", on ? "true" : "false");
+    button.classList.toggle("is-on", on);
+  });
 }
 
 function renderHomeworkHint(task, milestone, taskIndex) {
@@ -1639,12 +1864,17 @@ function bindHomeworkHintPurchases(root) {
       if (!result.ok) {
         hint.classList.add("needs-coins");
         if (status) {
-          status.textContent = `צריך ${HINT_COST} מטבעות כדי לפתוח את הרמז. כרגע יש ${result.coins}.`;
+          status.textContent = `הרמז עולה ${HINT_COST} מטבעות, וכרגע יש לך ${countPhrase(result.coins, "מטבע אחד", "מטבעות")}. מטבעות מקבלים על כל סעיף שמסיימים.`;
         }
+        playAvatarReaction(document.querySelector(".profile-chip .math-avatar"), "think");
         return;
       }
       hint.classList.remove("needs-coins");
-      revealPurchasedHomeworkHint(hint, result.already ? "הרמז כבר פתוח." : `נפתח תמורת ${HINT_COST} מטבעות.`);
+      if (!result.already) {
+        flyCoinsBetween(document.querySelector(".header-coins"), button, 3);
+        playAvatarReaction(document.querySelector(".profile-chip .math-avatar"), "coin");
+      }
+      revealPurchasedHomeworkHint(hint, result.already ? "הרמז כבר פתוח." : `הרמז נפתח תמורת ${HINT_COST} מטבעות.`);
       requestAnimationFrame(() => typesetMath(hint));
     });
   });
@@ -1736,12 +1966,21 @@ function startUnitAttempt(unit) {
   const progress = readInteractiveProgress();
   if (isFinalQuiz(unit) ? !isFinalQuizUnlocked(progress) : !isUnitUnlocked(unit, progress)) return;
   const questions = selectAttemptQuestions(unit, progress[unit.id], progress);
+  // Options are shown in a fresh random order every attempt. Radio values stay the
+  // original option index, so correctness, saved stats and analytics are unchanged.
+  const optionOrder = {};
+  questions.forEach((question) => {
+    const indices = question.options.map((_, index) => index);
+    optionOrder[question.id] = keepsOptionOrder(question) ? indices : shuffled(indices);
+  });
   const attempt = {
     unitId: unit.id,
     questions,
+    optionOrder,
     current: 0,
     answers: {},
     checked: {},
+    ruledOut: {},
     questionStartedAt: {}
   };
   openQuestionOverlay(unit);
@@ -1813,48 +2052,68 @@ function renderAttempt(unit, attempt) {
   if (!attempt.questionStartedAt[q.id]) attempt.questionStartedAt[q.id] = Date.now();
   const selected = attempt.answers[q.id];
   const checked = attempt.checked[q.id];
-  const completed = Object.values(attempt.checked).filter((item) => item?.correct).length;
-  const mistakes = countAttemptMistakes(attempt);
+  const ruledOut = attempt.ruledOut[q.id] || [];
+  const stage = questionStage(checked);
+  const order = attempt.optionOrder?.[q.id] || q.options.map((_, index) => index);
+  const isLast = attempt.current === attempt.questions.length - 1;
   host.innerHTML = `
-    <div class="question-shell">
-      <div class="question-topline">
-        <span>שאלה ${attempt.current + 1} מתוך ${attempt.questions.length}</span>
-        <span>${completed}/${attempt.questions.length} הושלמו · ${mistakes} טעויות</span>
-      </div>
-      <p class="question-prompt">${formatInlineText(q.prompt)}</p>
+    <div class="question-shell" data-stage="${stage}">
+      ${renderAttemptDots(attempt)}
+      <p class="question-prompt" tabindex="-1">${formatInlineText(q.prompt)}</p>
       <fieldset class="options">
         <legend class="sr-only">אפשרויות תשובה</legend>
-        ${q.options.map((option, optionIndex) => `
-          <label class="${selected === optionIndex ? "selected" : ""}">
-            <input type="radio" name="${q.id}" value="${optionIndex}" ${selected === optionIndex ? "checked" : ""}>
-            <span>${formatInlineText(option)}</span>
-          </label>
-        `).join("")}
+        ${order.map((optionIndex) => {
+          const isRuledOut = ruledOut.includes(optionIndex);
+          const isAnswer = stage === "revealed" && optionIndex === q.answer;
+          const classes = [
+            selected === optionIndex ? "selected" : "",
+            isRuledOut ? "ruled-out" : "",
+            isAnswer ? "is-answer" : "",
+            stage === "solved" && optionIndex === q.answer ? "is-correct" : ""
+          ].filter(Boolean).join(" ");
+          const locked = isRuledOut || stage === "solved";
+          return `
+          <label class="${classes}">
+            <input type="radio" name="${q.id}" value="${optionIndex}" ${selected === optionIndex ? "checked" : ""} ${locked ? "disabled" : ""}>
+            <span>${formatInlineText(q.options[optionIndex])}</span>
+            ${isRuledOut ? `<small class="option-tag">לא זו</small>` : ""}
+            ${isAnswer ? `<small class="option-tag">התשובה</small>` : ""}
+          </label>`;
+        }).join("")}
       </fieldset>
-      <div class="question-feedback ${checked ? (checked.correct ? "correct" : "incorrect") : ""}" ${checked ? "" : "hidden"}>
-        ${checked ? renderQuestionFeedback(q, checked) : ""}
-      </div>
-      <div class="question-actions">
-        <button class="action primary" type="button" data-check-answer>${checked ? "בדיקה חוזרת" : "בדיקת תשובה"}</button>
-        <button class="action" type="button" data-next-question ${checked?.correct ? "" : "disabled"}>${attempt.current === attempt.questions.length - 1 ? "סיום ניסיון" : "השאלה הבאה"}</button>
+      <div class="question-footer">
+        <div class="companion-avatar" data-companion-avatar>${renderCompanionAvatar()}</div>
+        <div class="question-footer-main">
+          <div class="question-feedback ${stage}" role="status" aria-live="polite" ${checked ? "" : "hidden"}>
+            ${checked ? renderQuestionFeedback(q, checked, stage) : ""}
+          </div>
+          <div class="question-actions">
+            ${stage === "solved"
+              ? `<button class="action primary" type="button" data-next-question>${isLast ? "לסיכום הסבב" : "לשאלה הבאה"}</button>`
+              : `<button class="action primary" type="button" data-check-answer>בדיקה</button>`}
+          </div>
+        </div>
       </div>
     </div>
   `;
   host.querySelectorAll("input[type='radio']").forEach((input) => {
     input.addEventListener("change", () => {
       attempt.answers[q.id] = Number(input.value);
-      renderAttempt(unit, attempt);
+      host.querySelectorAll(".options label").forEach((label) => label.classList.toggle("selected", label.contains(input)));
+      const note = host.querySelector(".question-feedback.need-choice");
+      if (note) note.hidden = true;
     });
   });
-  host.querySelector("[data-check-answer]").addEventListener("click", () => {
+  host.querySelector("[data-check-answer]")?.addEventListener("click", () => {
     if (attempt.answers[q.id] === undefined) {
       const feedback = host.querySelector(".question-feedback");
       feedback.hidden = false;
-      feedback.className = "question-feedback incorrect";
-      feedback.textContent = "בחרו תשובה לפני הבדיקה.";
+      feedback.className = "question-feedback need-choice";
+      feedback.textContent = "בחרי תשובה, ואז בדיקה.";
       return;
     }
-    const correct = attempt.answers[q.id] === q.answer;
+    const answer = attempt.answers[q.id];
+    const correct = answer === q.answer;
     const previous = attempt.checked[q.id] || {};
     const firstCheckMs = previous.firstCheckMs || Math.max(0, Date.now() - (attempt.questionStartedAt[q.id] || Date.now()));
     attempt.checked[q.id] = {
@@ -1864,18 +2123,80 @@ function renderAttempt(unit, attempt) {
       firstCheckMs,
       topic: q.topic || unit.title
     };
+    if (!correct) {
+      attempt.ruledOut[q.id] = [...new Set([...(attempt.ruledOut[q.id] || []), answer])];
+      delete attempt.answers[q.id];
+    }
+    attempt.pendingReaction = correct ? "correct" : "think";
     renderAttempt(unit, attempt);
   });
-  host.querySelector("[data-next-question]").addEventListener("click", () => {
-    if (!attempt.checked[q.id]) return;
+  host.querySelector("[data-next-question]")?.addEventListener("click", () => {
+    if (!attempt.checked[q.id]?.correct) return;
     if (attempt.current < attempt.questions.length - 1) {
       attempt.current += 1;
       renderAttempt(unit, attempt);
+      host.querySelector(".question-prompt")?.focus({ preventScroll: true });
     } else {
       finishAttempt(unit, attempt);
     }
   });
+  if (attempt.pendingReaction) {
+    playAvatarReaction(host.querySelector("[data-companion-avatar] .math-avatar"), attempt.pendingReaction);
+    if (stage === "solved") host.querySelector("[data-next-question]")?.focus({ preventScroll: true });
+    else host.querySelector(".options input:not(:disabled)")?.focus({ preventScroll: true });
+    attempt.pendingReaction = null;
+  }
   requestAnimationFrame(() => typesetMath(host));
+}
+
+// "nudge": first wrong try, only a prompt to think again.
+// "revealed": a second wrong try, the explanation and the answer are shown.
+// "solved": answered correctly, the explanation is shown.
+function questionStage(checked) {
+  if (!checked) return "open";
+  if (checked.correct) return "solved";
+  return checked.attempts >= 2 ? "revealed" : "nudge";
+}
+
+function renderAttemptDots(attempt) {
+  const total = attempt.questions.length;
+  const dots = attempt.questions.map((question, index) => {
+    const state = attempt.checked[question.id];
+    const status = state?.correct ? "done" : (index === attempt.current ? "current" : "todo");
+    return `<span class="attempt-dot is-${status}"></span>`;
+  }).join("");
+  return `
+    <div class="attempt-dots" aria-hidden="true">${dots}</div>
+    <p class="sr-only">שאלה ${attempt.current + 1} מתוך ${total}</p>
+  `;
+}
+
+function renderCompanionAvatar() {
+  const profile = readLearnerProfile();
+  const avatar = profile?.completed ? learnerAvatarById(profile.avatarId) : null;
+  return renderMathAvatar(avatar, "is-companion");
+}
+
+function playAvatarReaction(node, kind) {
+  if (!node) return;
+  const classes = ["react-correct", "react-think", "react-celebrate", "react-coin"];
+  node.classList.remove(...classes);
+  void node.offsetWidth;
+  node.classList.add(`react-${kind}`);
+  const holder = node.parentElement;
+  if ((kind === "correct" || kind === "celebrate") && holder && !prefersReducedMotion()) {
+    const burst = document.createElement("span");
+    burst.className = `avatar-burst ${kind === "celebrate" ? "is-big" : ""}`;
+    burst.setAttribute("aria-hidden", "true");
+    burst.innerHTML = "<i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>";
+    holder.append(burst);
+    window.setTimeout(() => burst.remove(), kind === "celebrate" ? 1500 : 900);
+  }
+  window.setTimeout(() => node.classList.remove(`react-${kind}`), kind === "celebrate" ? 1600 : 900);
+}
+
+function prefersReducedMotion() {
+  return Boolean(window.matchMedia?.("(prefers-reduced-motion: reduce)").matches);
 }
 
 function finishAttempt(unit, attempt) {
@@ -1898,14 +2219,17 @@ function finishAttempt(unit, attempt) {
   const nextUnit = nextFlowUnit(unit);
   host.innerHTML = `
     <div class="attempt-result ${passed ? "passed" : "retry"}">
-      <strong>${attemptResultTitle(unit, passed, unitState)}</strong>
-      <p>${attemptResultMessage(unit, unitState, correct, total, needed, passed, mistakes)}</p>
-      ${passed ? renderCoinAward(unitState.coinsAwarded) : ""}
+      <div class="attempt-result-figure" data-result-avatar>${renderMathAvatar(readLearnerProfile()?.completed ? learnerAvatarById(readLearnerProfile().avatarId) : null, "is-result")}</div>
+      <div class="attempt-result-copy">
+        <h4 tabindex="-1">${attemptResultTitle(unit, passed, unitState)}</h4>
+        <p>${attemptResultMessage(unit, unitState, correct, total, needed, passed, mistakes)}</p>
+        ${passed ? renderCoinAward(unitState.coinsAwarded) : ""}
+      </div>
       <div class="learning-actions">
-        ${passed && nextUnit ? `<button class="action primary" type="button" data-continue-learning="${unit.id}">המשך בקריאה</button>` : ""}
-        ${passed && !nextUnit && !isFinalQuiz(unit) ? `<button class="action primary" type="button" data-open-final-quiz>לקוויז הסיכום</button>` : ""}
+        ${passed && nextUnit ? `<button class="action primary" type="button" data-continue-learning="${unit.id}">להמשך הקריאה</button>` : ""}
+        ${passed && !nextUnit && !isFinalQuiz(unit) ? `<button class="action primary" type="button" data-open-final-quiz>לבוחן הסיכום</button>` : ""}
         ${passed && isFinalQuiz(unit) ? `<button class="action primary" type="button" data-open-homework>לתרגיל ההגשה</button>` : ""}
-        <button class="action ${passed ? "" : "primary"}" type="button" data-retry-learning="${unit.id}">${passed ? "ניסיון נוסף" : "ניסיון חוזר"}</button>
+        <button class="action ${passed ? "quiet" : "primary"}" type="button" data-retry-learning="${unit.id}">${passed ? "סבב נוסף" : "לסבב שאלות חדש"}</button>
       </div>
     </div>
   `;
@@ -1925,6 +2249,9 @@ function finishAttempt(unit, attempt) {
   if (passed && unitState.coinsAwarded) {
     requestAnimationFrame(() => animateCoinAward(unitState.coinsAwarded));
   }
+  const resultAvatar = host.querySelector("[data-result-avatar] .math-avatar");
+  playAvatarReaction(resultAvatar, passed ? "celebrate" : "think");
+  host.querySelector(".attempt-result h4")?.focus({ preventScroll: true });
   requestAnimationFrame(() => typesetMath(host));
 }
 
@@ -1957,12 +2284,17 @@ function countAttemptMistakes(attempt) {
   }).length;
 }
 
-function renderQuestionFeedback(question, checked) {
-  const title = checked.correct ? (checked.hadMistake ? "עכשיו נכון." : "יפה.") : "לא בדיוק.";
-  const suffix = checked.correct && checked.hadMistake
-    ? " שימי לב: הטעות הראשונה עדיין נספרת בסבב הזה."
-    : "";
-  return `<strong>${title}</strong> ${formatInlineText(cleanFeedbackPrefix(question.feedback))}${suffix}`;
+function renderQuestionFeedback(question, checked, stage = questionStage(checked)) {
+  if (stage === "nudge") {
+    return `<strong>חשבי שוב.</strong> האפשרות הזו לא מתאימה. כדאי לחזור לשורות האחרונות שקראת, ולבחור שוב.`;
+  }
+  const explanation = formatInlineText(cleanFeedbackPrefix(question.feedback));
+  if (stage === "revealed") {
+    return `<strong>הנה ההסבר.</strong> ${explanation} <span class="feedback-next">התשובה מסומנת. בחרי בה כדי להמשיך.</span>`;
+  }
+  const title = checked.hadMistake ? "עכשיו נכון." : "נכון.";
+  const suffix = checked.hadMistake ? ` <span class="feedback-next">הטעות הראשונה נספרת בסבב הזה.</span>` : "";
+  return `<strong>${title}</strong> ${explanation}${suffix}`;
 }
 
 function updateInteractiveProgress() {
@@ -1999,6 +2331,7 @@ function updateInteractiveProgress() {
     updateLearningCardLock(unit, locked, progress);
   });
   updateFinalQuizLock(progress);
+  updateProgressTicks(progress);
   updateLearnerInsight(progress);
   updateReadingLocks(progress);
   updateFullPdfAccess(progress);
@@ -2135,7 +2468,7 @@ function startButtonLabel(unit) {
 
 function finalQuizButtonLabel(unit) {
   const progress = readInteractiveProgress();
-  return getUnitProgressState(unit, progress[unit.id]).passed ? "ניסיון נוסף" : "התחלת קוויז סיכום";
+  return getUnitProgressState(unit, progress[unit.id]).passed ? "סבב נוסף" : "להתחלת הבוחן";
 }
 
 function currentReadingUnit(progress) {
@@ -2207,7 +2540,7 @@ function mountDevTools() {
     <strong>פיתוח בלבד</strong>
     <span>קפיצה במסלול</span>
     <div>
-      <button type="button" data-dev-jump-final>לקוויז</button>
+      <button type="button" data-dev-jump-final>לבוחן</button>
       <button type="button" data-dev-jump-homework>להגשה</button>
       <button type="button" data-dev-reset-progress>איפוס מקומי</button>
     </div>
@@ -2304,18 +2637,28 @@ function updateReadingLocks(progress) {
   });
 }
 
+// Until the chapter is finished the PDF links are simply not shown: no grey
+// buttons, no repeated labels on every page. One quiet line says when it opens.
 function updateFullPdfAccess(progress) {
   const locked = !chapterIsComplete(progress);
   document.querySelectorAll("a[href*='assets/chapter-1.pdf']").forEach((link) => {
-    link.classList.toggle("locked", locked);
-    link.dataset.readingLocked = locked ? "true" : "false";
-    link.setAttribute("aria-disabled", locked ? "true" : "false");
-    if (!link.dataset.originalTitle) link.dataset.originalTitle = link.textContent.trim();
-    const lockedText = link.closest(".page")
-      ? "בסוף הפרק"
-      : (link.hasAttribute("download") ? "הורדה בסוף הפרק" : "ה־PDF המלא בסוף הפרק");
-    link.textContent = locked ? lockedText : link.dataset.originalTitle;
+    link.hidden = locked;
+    link.classList.remove("locked");
+    link.dataset.readingLocked = "false";
+    link.removeAttribute("aria-disabled");
   });
+  const actions = document.querySelector(".chapter-heading .actions");
+  if (!actions) return;
+  actions.hidden = locked;
+  let note = document.querySelector("[data-pdf-note]");
+  if (!note) {
+    note = document.createElement("p");
+    note.className = "pdf-note";
+    note.dataset.pdfNote = "";
+    note.innerHTML = `<span class="pdf-note-mark" aria-hidden="true"></span><span>קובץ ה־PDF של הפרק ייפתח להורדה כשתסיימי אותו.</span>`;
+    actions.after(note);
+  }
+  note.hidden = !locked;
 }
 
 function updateHomeworkLocks(progress) {
@@ -2503,8 +2846,12 @@ function openQuestionOverlay(unit) {
   const subtitle = overlay.querySelector("[data-question-subtitle]");
   const host = overlay.querySelector("[data-question-modal-host]");
   if (title) title.innerHTML = formatInlineText(unit.title);
-  if (kicker) kicker.textContent = `${unit.section} · ${getUnitMode(unit) === "warmup" ? "חימום" : "בדיקת הבנה"}`;
-  if (subtitle) subtitle.textContent = "כמה שאלות קצרות, ואז חוזרים לקריאה.";
+  if (kicker) kicker.innerHTML = isFinalQuiz(unit)
+    ? "בוחן סיכום"
+    : `<bdi>${unit.section}</bdi> ${getUnitMode(unit) === "warmup" ? "חימום" : "בדיקת הבנה"}`;
+  if (subtitle) subtitle.textContent = isFinalQuiz(unit)
+    ? "שאלות מכל הפרק. אפשר לחזור לרשימות בכל רגע."
+    : "כמה שאלות קצרות על מה שקראת, ואז חוזרים לקריאה.";
   if (host) {
     host.dataset.unitId = unit.id;
     host.innerHTML = "";
@@ -2532,15 +2879,9 @@ function ensureQuestionOverlay() {
     <section class="question-dialog" role="dialog" aria-modal="true" aria-labelledby="question-dialog-title" tabindex="-1">
       <button class="question-close" type="button" aria-label="חזרה לקריאה" data-close-question-overlay>×</button>
       <div class="question-dialog-head">
-        <div>
-          <p data-question-kicker></p>
-          <h3 id="question-dialog-title"></h3>
-          <span data-question-subtitle></span>
-        </div>
-        <div class="coin-hud question-coin-bank" aria-label="מטבעות שנצברו">
-          <span class="coin-emoji" aria-hidden="true">🪙</span>
-          <strong data-coin-count>0</strong>
-        </div>
+        <p data-question-kicker></p>
+        <h3 id="question-dialog-title"></h3>
+        <span data-question-subtitle></span>
       </div>
       <div class="question-modal-host" data-question-modal-host></div>
     </section>
@@ -2570,8 +2911,8 @@ function coinsForUnit(unit) {
 }
 
 function renderCoinAward(amount) {
-  if (!amount) return `<div class="coin-award quiet">כבר נשמר.</div>`;
-  return `<div class="coin-award" data-coin-award="${amount}"><span class="coin-emoji" aria-hidden="true">🪙</span><strong>+${amount}</strong></div>`;
+  if (!amount) return `<div class="coin-award quiet">המטבעות על הסעיף הזה כבר אצלך.</div>`;
+  return `<div class="coin-award" data-coin-award="${amount}"><span class="coin-emoji" aria-hidden="true"></span><strong>+${amount}</strong><span>מטבעות</span></div>`;
 }
 
 function animateCoinAward(amount) {
@@ -2580,7 +2921,7 @@ function animateCoinAward(amount) {
   const overlay = document.querySelector("#question-overlay");
   const dialog = overlay?.querySelector(".question-dialog");
   const start = dialog?.querySelector("[data-coin-award]") || dialog;
-  const target = overlay?.querySelector(".question-coin-bank") || document.querySelector(".header-coins");
+  const target = document.querySelector(".header-coins");
   if (!start || !target) return;
 
   const startRect = start.getBoundingClientRect();
@@ -2589,7 +2930,6 @@ function animateCoinAward(amount) {
   for (let index = 0; index < coinCount; index += 1) {
     const coin = document.createElement("span");
     coin.className = "flying-coin";
-    coin.textContent = "🪙";
     const startX = startRect.left + (startRect.width / 2) + ((index - (coinCount - 1) / 2) * 10);
     const startY = startRect.top + (startRect.height / 2);
     const endX = targetRect.left + (targetRect.width / 2) - startX;
@@ -2601,6 +2941,28 @@ function animateCoinAward(amount) {
     coin.style.animationDelay = `${index * 55}ms`;
     document.body.append(coin);
     window.setTimeout(() => coin.remove(), 1100 + (index * 55));
+  }
+}
+
+// A few coins travel from one element to another (used when a hint is bought).
+function flyCoinsBetween(from, to, count = 3) {
+  pulseCoinHuds();
+  if (!from || !to || prefersReducedMotion()) return;
+  const startRect = from.getBoundingClientRect();
+  const targetRect = to.getBoundingClientRect();
+  if (!startRect.width || !targetRect.width) return;
+  for (let index = 0; index < count; index += 1) {
+    const coin = document.createElement("span");
+    coin.className = "flying-coin";
+    const startX = startRect.left + startRect.width / 2;
+    const startY = startRect.top + startRect.height / 2;
+    coin.style.left = `${startX}px`;
+    coin.style.top = `${startY}px`;
+    coin.style.setProperty("--fly-x", `${targetRect.left + targetRect.width / 2 - startX}px`);
+    coin.style.setProperty("--fly-y", `${targetRect.top + targetRect.height / 2 - startY}px`);
+    coin.style.animationDelay = `${index * 70}ms`;
+    document.body.append(coin);
+    window.setTimeout(() => coin.remove(), 1100 + index * 70);
   }
 }
 
@@ -2628,6 +2990,7 @@ function applyQuestionStats(progress, questionStats) {
       mistakes: 0,
       totalFirstCheckMs: 0,
       slowAnswers: 0,
+      repeatedWrong: 0,
       lastSection: item.section || "",
       lastUnitTitle: item.unitTitle || ""
     };
@@ -2635,6 +2998,7 @@ function applyQuestionStats(progress, questionStats) {
     current.mistakes += item.hadMistake ? 1 : 0;
     current.totalFirstCheckMs += item.firstCheckMs || 0;
     current.slowAnswers += item.firstCheckMs > 45000 ? 1 : 0;
+    current.repeatedWrong = (current.repeatedWrong || 0) + (item.attempts > 2 ? 1 : 0);
     current.lastSection = item.section || current.lastSection;
     current.lastUnitTitle = item.unitTitle || current.lastUnitTitle;
     topics[topic] = current;
@@ -2643,21 +3007,28 @@ function applyQuestionStats(progress, questionStats) {
   progress[PROGRESS_META_KEY] = meta;
 }
 
+// Weakness comes only from mistakes and from needing several tries on one question.
+// Response time is stored for later analysis but never counts as weakness:
+// slow, careful reading is what the course asks for.
 function learnerTopicSummary(progress) {
   const stats = Object.values(progress?.[PROGRESS_META_KEY]?.topicStats || {});
   const scored = stats
     .filter((item) => item.attempts >= 2)
     .map((item) => {
-      const accuracy = item.attempts ? (item.attempts - item.mistakes) / item.attempts : 1;
-      const avgMs = item.attempts ? item.totalFirstCheckMs / item.attempts : 0;
-      const weakness = (1 - accuracy) + Math.min(avgMs / 90000, 0.75) + Math.min((item.slowAnswers || 0) / Math.max(item.attempts, 1), 0.5);
-      const reason = item.mistakes ? `${item.mistakes} טעויות` : (avgMs > 30000 ? "לקח יותר זמן" : `${Math.round(accuracy * 100)}%`);
-      return { ...item, accuracy, avgMs, weakness, reason };
+      const mistakes = Number(item.mistakes) || 0;
+      const repeatedWrong = Number(item.repeatedWrong) || 0;
+      const accuracy = item.attempts ? (item.attempts - mistakes) / item.attempts : 1;
+      const weakness = (1 - accuracy) + Math.min(repeatedWrong / Math.max(item.attempts, 1), 0.5);
+      const reason = repeatedWrong
+        ? `${mistakesPhrase(mistakes)}; ${repeatedWrong === 1 ? "שאלה אחת דרשה" : `${repeatedWrong} שאלות דרשו`} כמה ניסיונות`
+        : mistakesPhrase(mistakes);
+      return { ...item, mistakes, accuracy, weakness, reason };
     });
-  const weakCandidates = scored.filter((item) => item.mistakes > 0 || item.avgMs > 30000 || item.slowAnswers > 0);
+  const weakCandidates = scored.filter((item) => item.mistakes > 0);
   return {
     weak: [...weakCandidates].sort((a, b) => b.weakness - a.weakness).slice(0, 3),
-    strong: [...scored].sort((a, b) => b.accuracy - a.accuracy || a.avgMs - b.avgMs).slice(0, 2)
+    strong: [...scored].filter((item) => item.mistakes === 0)
+      .sort((a, b) => b.accuracy - a.accuracy || b.attempts - a.attempts).slice(0, 2)
   };
 }
 
@@ -2671,16 +3042,17 @@ function updateLearnerInsight(progress) {
     return;
   }
   host.hidden = false;
-  const weak = summary.weak.map((item) => `<li>${escapeHtml(item.topic)} <span>${escapeHtml(item.reason)}</span></li>`).join("");
-  const strong = summary.strong.map((item) => `<li>${escapeHtml(item.topic)} <span>${Math.round(item.accuracy * 100)}%</span></li>`).join("");
+  const weak = summary.weak.map((item) => `<li><span>${formatInlineText(item.topic)}</span><small>${escapeHtml(item.reason)}</small></li>`).join("");
+  const strong = summary.strong.map((item) => `<li><span>${formatInlineText(item.topic)}</span><small>${Math.round(item.accuracy * 100)}% נכון בניסיון ראשון</small></li>`).join("");
   host.innerHTML = `
-    <div>
-      <h4>מבט אישי</h4>
-      <p>האתר מסתכל על טעויות ועל זמן מענה, ובקוויז הסיכום ייתן יותר מקום למה שדורש חיזוק.</p>
+    <div class="insight-intro">
+      <h3>מבט אישי</h3>
+      <p>לפי הבדיקות שעשית עד עכשיו: טעויות בניסיון הראשון, ושאלות שדרשו כמה ניסיונות. הזמן שלוקח לך לחשוב לא נספר.</p>
     </div>
-    ${strong ? `<section><strong>הולך טוב</strong><ul>${strong}</ul></section>` : ""}
-    ${weak ? `<section><strong>לחזק</strong><ul>${weak}</ul></section>` : ""}
+    ${strong ? `<section class="insight-strong"><h4>הולך טוב</h4><ul>${strong}</ul></section>` : ""}
+    ${weak ? `<section class="insight-weak"><h4>כדאי לחזק</h4><ul>${weak}</ul></section>` : ""}
   `;
+  requestAnimationFrame(() => typesetMath(host));
 }
 
 function getUnitProgressState(unit, unitProgress = {}) {
@@ -2718,30 +3090,35 @@ function getUnitProgressState(unit, unitProgress = {}) {
 }
 
 function attemptResultTitle(unit, passed, unitState) {
-  if (!passed) return "כמעט שם.";
-  if (isFinalQuiz(unit)) return "הקוויז עבר.";
+  if (!passed) return "עוד סבב קצר, ונמשיך.";
+  if (isFinalQuiz(unit)) return "עברת את הבוחן.";
   if (getUnitMode(unit) === "warmup") return "יופי, אפשר להמשיך.";
-  if (!unitState.passed) return "יפה, הבדיקה עברה.";
-  return unitState.passed ? "יפה, אפשר להמשיך." : "יפה, הבדיקה עברה.";
+  return hasNextUnit(unit) ? "הסעיף הושלם." : "סיימת את הקריאה בפרק.";
+}
+
+// Hebrew counts: "טעות אחת", "2 טעויות".
+function countPhrase(count, one, many) {
+  return count === 1 ? one : `${count} ${many}`;
+}
+
+function mistakesPhrase(count) {
+  return countPhrase(count, "טעות אחת", "טעויות");
 }
 
 function attemptResultMessage(unit, unitState, correct, total, needed, passed, mistakes) {
   if (!passed) {
     if (isFinalQuiz(unit)) {
-      return `ענית נכון על ${correct} מתוך ${total}. צריך לפחות ${needed} תשובות נכונות, ואז תרגיל ההגשה ייפתח.`;
+      return `ענית נכון על ${correct} מתוך ${total}. כדי לעבור צריך ${needed} תשובות נכונות. אחרי המעבר ייפתח תרגיל ההגשה.`;
     }
-    return `בסבב הזה היו ${mistakes} טעויות. כדאי לקרוא שוב את המקטע ולנסות סט שאלות חדש; אפשר לעבור עם לכל היותר ${interactiveChapterOne.maxMistakes} טעות.`;
+    const allowed = mistakesPhrase(interactiveChapterOne.maxMistakes);
+    return `בסבב הזה היו ${mistakesPhrase(mistakes)}, ואפשר לעבור עם ${allowed} לכל היותר. כדאי לעבור שוב על המקטע, ואז לנסות סבב עם שאלות אחרות.`;
   }
   if (isFinalQuiz(unit)) {
     return `ענית נכון על ${correct} מתוך ${total}. תרגיל ההגשה פתוח עכשיו.`;
   }
-  if (getUnitMode(unit) === "warmup") {
-    return mistakes ? `סיימת עם ${mistakes} טעות מתוך ${total}. נמשיך לסעיף הבא.` : `סיימת בלי טעויות. נמשיך לסעיף הבא.`;
-  }
-  if (hasNextUnit(unit)) {
-    return mistakes ? `סיימת עם ${mistakes} טעות מתוך ${total}. נמשיך לסעיף הבא.` : `סיימת בלי טעויות. נמשיך לסעיף הבא.`;
-  }
-  return mistakes ? `סיימת את פרק 1 עם ${mistakes} טעות בסבב האחרון.` : "סיימת את פרק 1 בלי טעויות בסבב האחרון.";
+  const how = mistakes ? `עם ${mistakesPhrase(mistakes)} מתוך ${total} שאלות` : "בלי טעויות";
+  if (hasNextUnit(unit)) return `סיימת ${how}. הקטע הבא כבר פתוח לקריאה.`;
+  return `סיימת ${how}. בוחן הסיכום של הפרק פתוח.`;
 }
 
 function hasNextUnit(unit) {

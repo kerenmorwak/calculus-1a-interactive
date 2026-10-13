@@ -79,13 +79,33 @@
     gate.hidden = true;
     gate.innerHTML = `
       <section class="auth-gate-card" role="region" aria-labelledby="auth-gate-title">
-        <p class="eyebrow">כניסה נדרשת</p>
-        <h1 id="auth-gate-title">מתחברים כדי להתחיל ללמוד</h1>
-        <p data-auth-gate-copy>כדי להשתמש בקורס צריך ליצור חשבון או להיכנס עם מייל וסיסמה. ההתקדמות, המטבעות והפרופיל יישמרו בחשבון.</p>
-        <div class="auth-gate-actions">
-          <button class="action primary" type="button" data-auth-gate-open>כניסה או הרשמה</button>
+        <div class="gate-intro">
+          <p class="gate-kicker">חדו״א 1א · אוניברסיטת תל אביב</p>
+          <h1 id="auth-gate-title">לומדים את הרשימות, מקטע אחרי מקטע.</h1>
+          <p>הרשימות של שירי ארטשטיין וירון אוסטרובר, עם כמה שאלות קצרות אחרי כל מקטע. כך יודעים שההגדרות יושבות טוב לפני שממשיכים.</p>
+          <svg class="gate-line" viewBox="0 0 420 86" role="img" aria-label="ישר המספרים עם הקטע הפתוח מאפס עד אחת והסופרמום שלו">
+            <line x1="14" y1="48" x2="406" y2="48" class="gl-axis"/>
+            <path d="M398 42 L408 48 L398 54" class="gl-axis"/>
+            <g class="gl-ticks"><line x1="70" y1="42" x2="70" y2="54"/><line x1="210" y1="42" x2="210" y2="54"/><line x1="350" y1="42" x2="350" y2="54"/></g>
+            <line x1="70" y1="48" x2="350" y2="48" class="gl-interval"/>
+            <circle cx="70" cy="48" r="6" class="gl-open"/><circle cx="350" cy="48" r="6" class="gl-open"/>
+            <text x="70" y="78" class="gl-num">0</text><text x="210" y="78" class="gl-num">½</text><text x="350" y="78" class="gl-num">1</text>
+            <text x="350" y="24" class="gl-sup">sup</text>
+          </svg>
+          <ol class="gate-steps">
+            <li><strong>קוראים</strong><span>מקטע קצר מתוך הרשימות</span></li>
+            <li><strong>בודקים</strong><span>ארבע שאלות על מה שנקרא</span></li>
+            <li><strong>ממשיכים</strong><span>ואוספים מטבעות לרמזים</span></li>
+          </ol>
         </div>
-        <p class="auth-gate-note" data-auth-gate-note role="status"></p>
+        <div class="gate-signin">
+          <h2>כניסה לקורס</h2>
+          <p data-auth-gate-copy>החשבון שומר את ההתקדמות, המטבעות והפרופיל, כך שאפשר להמשיך מכל מכשיר.</p>
+          <div class="auth-gate-actions">
+            <button class="action primary" type="button" data-auth-gate-open>כניסה או יצירת חשבון</button>
+          </div>
+          <p class="auth-gate-note" data-auth-gate-note role="status"></p>
+        </div>
       </section>
     `;
     gate.querySelector("[data-auth-gate-open]")?.addEventListener("click", (event) => {
@@ -116,23 +136,23 @@
       if (!hasConfig) {
         copy.textContent = "הכניסה לא מוגדרת כרגע, ולכן הקורס נעול. צריך להגדיר Supabase לפני שימוש באתר.";
       } else if (state.status === "starting") {
-        copy.textContent = "בודקים אם כבר יש חיבור לחשבון במכשיר הזה.";
+        copy.textContent = "רגע, בודקים אם כבר נכנסת מהמכשיר הזה.";
       } else if (state.status === "link-sent") {
         copy.textContent = `שלחנו קישור כניסה${lastEmail ? ` ל־${lastEmail}` : ""}. אחרי פתיחת הקישור הקורס ייפתח כאן.`;
       } else if (state.status === "error") {
-        copy.textContent = "לא הצלחנו להפעיל את מערכת הכניסה. כדאי לרענן את הדף או לבדוק את החיבור.";
+        copy.textContent = "הכניסה לא נטענה. כדאי לבדוק את החיבור לאינטרנט ולרענן את הדף.";
       } else {
-        copy.textContent = "כדי להשתמש בקורס צריך ליצור חשבון או להיכנס עם מייל וסיסמה. ההתקדמות, המטבעות והפרופיל יישמרו בחשבון.";
+        copy.textContent = "החשבון שומר את ההתקדמות, המטבעות והפרופיל, כך שאפשר להמשיך מכל מכשיר.";
       }
     }
     if (note) {
       note.textContent = state.status === "link-sent"
         ? "פתחי את הקישור מהמייל באותו דפדפן."
-        : "הסיסמה היא לחשבון באתר בלבד, לא סיסמת המייל האישי.";
+        : "כניסה עם מייל וסיסמה שבוחרים לאתר הזה.";
     }
     if (button) {
       button.disabled = !canOpen;
-      button.textContent = state.status === "link-sent" ? "פתיחת מסך הכניסה" : "כניסה או הרשמה";
+      button.textContent = state.status === "link-sent" ? "פתיחת מסך הכניסה" : "כניסה או יצירת חשבון";
     }
   }
 
@@ -239,8 +259,9 @@
     if (/invalid login|invalid credentials|credentials/.test(text)) return "המייל או הסיסמה לא נכונים.";
     if (/already registered|already exists|user.*exists/.test(text)) return "כבר יש חשבון לכתובת הזו. אפשר לעבור לכניסה.";
     if (/password|weak|short|characters/.test(text)) return "הסיסמה צריכה להיות לפחות 6 תווים.";
-    if (/signup|signups|not allowed|disabled/.test(text)) return "ההרשמה סגורה כרגע בהגדרות Supabase.";
-    if (/confirm|confirmed/.test(text)) return "החשבון נוצר, אבל Supabase עדיין דורש אישור מייל. צריך לכבות Confirm email או לאשר מהמייל.";
+    if (/not authorized/.test(text)) return "אי אפשר לשלוח קישור לכתובת הזו כרגע. אפשר להיכנס עם סיסמה.";
+    if (/signup|signups|not allowed|disabled/.test(text)) return "יצירת חשבונות חדשים סגורה כרגע. כדאי לפנות לצוות הקורס.";
+    if (/confirm|confirmed/.test(text)) return "החשבון נוצר. צריך לאשר אותו מהקישור שנשלח למייל, ואז להיכנס.";
     if (/invalid|email/.test(text)) return "כתובת המייל לא נראית תקינה. כדאי לבדוק ולנסות שוב.";
     if (/network|fetch|failed/.test(text)) return "אין חיבור כרגע. צריך חיבור כדי להיכנס לקורס.";
     return "לא הצלחנו להשלים את הפעולה כרגע. אפשר לנסות שוב בעוד רגע.";
@@ -303,7 +324,7 @@
         <form class="auth-form" data-auth-magic-form novalidate>
           <label for="auth-email">כתובת מייל</label>
           <input id="auth-email" type="email" autocomplete="email" inputmode="email" dir="ltr" required data-auth-email value="${escapeHtml(lastEmail)}" aria-describedby="auth-message">
-          <p class="auth-hint">נשלח קישור כניסה. האפשרות הזו תלויה במשלוח מיילים מ־Supabase.</p>
+          <p class="auth-hint">נשלח אלייך קישור כניסה למייל. אם הוא לא מגיע תוך כמה דקות, אפשר להיכנס עם סיסמה.</p>
           <p class="auth-message${state.error ? " error" : ""}" id="auth-message" data-auth-message role="alert">${state.error ? escapeHtml(state.error) : ""}</p>
           <button class="action primary" type="submit">שליחת קישור כניסה</button>
         </form>
@@ -427,7 +448,7 @@
     return {
       ok: true,
       signedIn: false,
-      message: "החשבון נוצר, אבל Supabase עדיין דורש אישור מייל. אם כיבית Confirm email, רענני ונסי להיכנס."
+      message: "החשבון נוצר. כדי להיכנס צריך לאשר אותו מהקישור שנשלח למייל."
     };
   }
 
@@ -600,6 +621,97 @@
     return { ok: true };
   }
 
+  // ---------- Homework submissions ----------
+  // Files go to a private Storage bucket under the learner's own folder:
+  //   {user_id}/{homework_id}/{submission_id}/{n}-{name}
+  // Storage policies (supabase/homework-storage.sql) only let a user read and
+  // write inside their own folder. One row per file is recorded in
+  // public.homework_submissions; a replacement is a new submission_id, and the
+  // newest one is the current submission. Nothing here grades or checks work.
+  const HOMEWORK_BUCKET = "homework-submissions";
+  const HOMEWORK_TYPES = ["application/pdf", "image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"];
+  const HOMEWORK_MAX_BYTES = 20 * 1024 * 1024;
+  const HOMEWORK_MAX_FILES = 10;
+
+  function homeworkFileProblem(files) {
+    if (!files.length) return "צריך לבחור לפחות קובץ אחד.";
+    if (files.length > HOMEWORK_MAX_FILES) return `אפשר להעלות עד ${HOMEWORK_MAX_FILES} קבצים בכל הגשה.`;
+    const wrongType = files.find((file) => !HOMEWORK_TYPES.includes(file.type) && !/\.(pdf|jpe?g|png|webp|heic|heif)$/i.test(file.name));
+    if (wrongType) return `הקובץ ${wrongType.name} אינו PDF או תמונה.`;
+    const tooBig = files.find((file) => file.size > HOMEWORK_MAX_BYTES);
+    if (tooBig) return `הקובץ ${tooBig.name} גדול מ־20MB.`;
+    return "";
+  }
+
+  function storageSafeName(name, index) {
+    const dot = name.lastIndexOf(".");
+    const ext = dot > 0 ? name.slice(dot + 1).toLowerCase().replace(/[^a-z0-9]/g, "") : "";
+    const base = (dot > 0 ? name.slice(0, dot) : name).normalize("NFKD").replace(/[^A-Za-z0-9_-]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60);
+    return `${index + 1}-${base || "file"}${ext ? `.${ext}` : ""}`;
+  }
+
+  function newSubmissionId() {
+    if (window.crypto?.randomUUID) return window.crypto.randomUUID();
+    return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+  }
+
+  async function uploadHomework(homeworkId, fileList) {
+    const files = [...(fileList || [])];
+    if (!isSignedIn()) return { ok: false, error: "צריך להיות מחוברים לחשבון כדי להעלות עבודה." };
+    const problem = homeworkFileProblem(files);
+    if (problem) return { ok: false, error: problem };
+    const submissionId = newSubmissionId();
+    const folder = `${state.user.id}/${homeworkId}/${submissionId}`;
+    const paths = [];
+    for (const [index, file] of files.entries()) {
+      const path = `${folder}/${storageSafeName(file.name, index)}`;
+      const { error } = await client.storage.from(HOMEWORK_BUCKET).upload(path, file, {
+        contentType: file.type || undefined,
+        upsert: false
+      });
+      if (error) return { ok: false, error: homeworkError(error) };
+      paths.push(path);
+    }
+    const rows = paths.map((path) => ({ user_id: state.user.id, homework_id: homeworkId, file_path: path, status: "uploaded" }));
+    const { error } = await client.from("homework_submissions").insert(rows);
+    if (error) return { ok: false, error: homeworkError(error) };
+    return { ok: true, submission: await fetchHomeworkSubmission(homeworkId) };
+  }
+
+  async function fetchHomeworkSubmission(homeworkId) {
+    if (!isSignedIn()) return null;
+    const { data, error } = await client
+      .from("homework_submissions")
+      .select("file_path, status, submitted_at")
+      .eq("user_id", state.user.id)
+      .eq("homework_id", homeworkId)
+      .order("submitted_at", { ascending: false });
+    if (error || !data?.length) return null;
+    const latestFolder = data[0].file_path.split("/").slice(0, 3).join("/");
+    const files = data
+      .filter((row) => row.file_path.startsWith(`${latestFolder}/`))
+      .map((row) => ({ path: row.file_path, name: row.file_path.split("/").pop().replace(/^\d+-/, "") }))
+      .sort((a, b) => a.path.localeCompare(b.path, "en", { numeric: true }));
+    return { submittedAt: data[0].submitted_at, status: data[0].status, files };
+  }
+
+  async function homeworkFileUrl(path) {
+    if (!isSignedIn() || !path?.startsWith(`${state.user.id}/`)) return null;
+    const { data, error } = await client.storage.from(HOMEWORK_BUCKET).createSignedUrl(path, 600);
+    if (error) return null;
+    return data?.signedUrl || null;
+  }
+
+  function homeworkError(error) {
+    const text = String(error?.message || error || "").toLowerCase();
+    if (/bucket not found|not found/.test(text)) return "אחסון העבודות עוד לא הוגדר באתר. העבודה לא הועלתה.";
+    if (/row-level security|policy|unauthorized|not allowed|permission/.test(text)) return "אין הרשאה לשמור את הקובץ. העבודה לא הועלתה.";
+    if (/size|too large|payload/.test(text)) return "אחד הקבצים גדול מדי. העבודה לא הועלתה.";
+    if (/mime|type/.test(text)) return "אחד הקבצים אינו PDF או תמונה. העבודה לא הועלתה.";
+    if (/network|fetch|failed/.test(text)) return "אין חיבור כרגע. העבודה לא הועלתה.";
+    return "השמירה לא הצליחה, והעבודה לא הועלתה. אפשר לנסות שוב.";
+  }
+
   function escapeHtml(value) {
     return String(value)
       .replace(/&/g, "&amp;")
@@ -666,6 +778,9 @@
     saveQuestionAttempts,
     saveCoinEvent,
     saveHintPurchase,
+    uploadHomework,
+    fetchHomeworkSubmission,
+    homeworkFileUrl,
     onChange(callback) {
       const handler = (event) => callback(event.detail);
       document.addEventListener(AUTH_EVENT, handler);
