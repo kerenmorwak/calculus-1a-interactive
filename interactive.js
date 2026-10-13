@@ -6,10 +6,12 @@ const WARMUP_COINS = 3;
 const CHECKPOINT_COINS = 8;
 const FINAL_QUIZ_COINS = 12;
 const HINT_COST = 5;
+const QUESTION_BANK_URL = "docs/question-bank.json";
 let interactiveMemoryStore = "{}";
 let learnerProfileMemoryStore = "";
 let lastHydratedAuthUserId = "";
 let progressCloudWritePaused = false;
+let questionBankLoadPromise = null;
 
 const learnerAvatars = [
   { id: "noether", name: "אמי נתר", symbol: "N", accent: "algebra", label: "מבנים וסימטריות" },
@@ -448,6 +450,40 @@ A\cup B,\ A\cap B,\ A\setminus B,\ B\setminus A,\ A^c,\ B^c`,
   }
 ];
 
+const writingPracticeMilestones = [
+  {
+    afterUnitId: "ch01-s04",
+    title: "תרגול כתיבה קצר א",
+    subtitle: "שתי שאלות פתוחות לתרגול במחברת. אין בדיקה ואין ציון כרגע.",
+    tasks: [
+      {
+        text: "כתבו שלילה פורמלית מלאה לטענה.",
+        tex: String.raw`\forall\varepsilon>0\ \exists n\in\mathbb{N}:\ \frac{1}{n}<\varepsilon`
+      },
+      {
+        text: "הוכיחו את השוויון בעזרת שתי הכלות.",
+        tex: String.raw`A\setminus(B\cup C)=(A\setminus B)\cap(A\setminus C)`
+      }
+    ]
+  },
+  {
+    afterUnitId: "ch01-s066",
+    title: "תרגול כתיבה קצר ב",
+    subtitle: "תרגול פתוח על חסמים וסופרמום. אפשר לפתור במחברת ולהמשיך.",
+    tasks: [
+      {
+        text: "מצאו חסם עליון, חסם תחתון, מקסימום ומינימום אם הם קיימים, ונמקו לפי ההגדרות.",
+        tex: String.raw`A=\left\{1-\frac{1}{n}:n\in\mathbb{N},\ n\ge 1\right\}`
+      },
+      {
+        text: "נסחו והוכיחו את הכיוון: אם s הוא הסופרמום של A, אז מתקיים אפיון האפסילון.",
+        tex: String.raw`s=\sup A\Longrightarrow
+\forall\varepsilon>0\ \exists a\in A:\ a>s-\varepsilon`
+      }
+    ]
+  }
+];
+
 const chapterFinalQuiz = {
   id: "chapter-1-final-quiz",
   mode: "final-quiz",
@@ -478,6 +514,87 @@ function question(id, prompt, options, answer, feedback, difficulty = null, topi
   return { id, prompt, options, answer, feedback, difficulty: difficulty ?? questionOrdinal(id), topic };
 }
 
+function loadQuestionBank() {
+  if (questionBankLoadPromise) return questionBankLoadPromise;
+  if (!window.fetch) return Promise.resolve(false);
+  questionBankLoadPromise = window.fetch(QUESTION_BANK_URL, { cache: "no-cache" })
+    .then((response) => response.ok ? response.json() : null)
+    .then((bank) => {
+      if (!bank || !Array.isArray(bank.items)) return false;
+      applyQuestionBank(bank);
+      return true;
+    })
+    .catch(() => false);
+  return questionBankLoadPromise;
+}
+
+function applyQuestionBank(bank) {
+  const checksByUnit = new Map();
+  const homeworkByUnit = new Map();
+  const writingPracticeByUnit = new Map();
+  const finalQuestions = [];
+
+  bank.items.forEach((item) => {
+    if (item.kind === "check") {
+      const bucket = checksByUnit.get(item.unitId) || [];
+      bucket.push(questionFromBankItem(item));
+      checksByUnit.set(item.unitId, bucket);
+      return;
+    }
+    if (item.kind === "finalQuiz") {
+      finalQuestions.push(questionFromBankItem(item));
+      return;
+    }
+    if (item.kind === "homework") {
+      const bucket = homeworkByUnit.get(item.unitId) || [];
+      bucket.push(homeworkTaskFromBankItem(item));
+      homeworkByUnit.set(item.unitId, bucket);
+      return;
+    }
+    if (item.kind === "writingPractice") {
+      const bucket = writingPracticeByUnit.get(item.unitId) || [];
+      bucket.push(homeworkTaskFromBankItem(item));
+      writingPracticeByUnit.set(item.unitId, bucket);
+    }
+  });
+
+  interactiveChapterOne.units.forEach((unit) => {
+    const questions = checksByUnit.get(unit.id);
+    if (questions?.length) unit.questions = questions;
+  });
+  if (finalQuestions.length) chapterFinalQuiz.questions = finalQuestions;
+  homeworkMilestones.forEach((milestone) => {
+    const tasks = homeworkByUnit.get(milestone.afterUnitId);
+    if (tasks?.length) milestone.tasks = tasks;
+  });
+  writingPracticeMilestones.forEach((milestone) => {
+    const tasks = writingPracticeByUnit.get(milestone.afterUnitId);
+    if (tasks?.length) milestone.tasks = tasks;
+  });
+}
+
+function questionFromBankItem(item) {
+  const options = [...(item.options || [])].sort((a, b) => Number(a.index) - Number(b.index));
+  const answer = options.findIndex((option) => option.correct);
+  return question(
+    item.id,
+    item.prompt,
+    options.map((option) => option.text),
+    answer >= 0 ? answer : 0,
+    item.feedback || "",
+    item.difficulty,
+    item.topic
+  );
+}
+
+function homeworkTaskFromBankItem(item) {
+  return {
+    text: item.prompt || "",
+    tex: item.tex || "",
+    hint: item.hint || ""
+  };
+}
+
 function initInteractiveLearning() {
   const chapter = Number(new URLSearchParams(location.search).get("chapter") || 1);
   if (chapter !== 1) return;
@@ -500,6 +617,13 @@ function initInteractiveLearning() {
       const learningCard = renderLearningCard(unit, index);
       marker.after(learningCard);
       let anchor = learningCard;
+      writingPracticeMilestones
+        .filter((milestone) => milestone.afterUnitId === unit.id)
+        .forEach((milestone) => {
+          const practiceCard = renderWritingPracticeMilestone(milestone);
+          anchor.after(practiceCard);
+          anchor = practiceCard;
+        });
       homeworkMilestones
         .filter((milestone) => milestone.afterUnitId === unit.id)
         .forEach((milestone) => {
@@ -519,7 +643,8 @@ function initInteractiveLearning() {
   bindQuestionOverlay();
   updateInteractiveProgress();
   updateLearnerProfileDisplay();
-  if (!readLearnerProfile()?.completed) {
+  mountDevTools();
+  if (!isDevToolsEnabled() && !readLearnerProfile()?.completed) {
     window.setTimeout(() => openLearnerProfileDialog(), 450);
   }
 }
@@ -1084,6 +1209,34 @@ function renderHomeworkMilestone(milestone) {
   return card;
 }
 
+function renderWritingPracticeMilestone(milestone) {
+  const card = document.createElement("section");
+  card.className = "writing-practice-card";
+  card.dataset.writingPracticeAfter = milestone.afterUnitId;
+  card.hidden = true;
+  card.innerHTML = `
+    <div class="writing-practice-heading">
+      <div>
+        <p>תרגול כתיבה</p>
+        <h3>${formatInlineText(milestone.title)}</h3>
+        <span>${formatInlineText(milestone.subtitle)}</span>
+      </div>
+    </div>
+    <ol class="writing-practice-tasks">
+      ${milestone.tasks.map((task) => `
+        <li>
+          <div class="homework-question">${formatInlineText(task.text)}</div>
+          ${task.tex ? renderTexDisplay(task.tex) : ""}
+          ${task.formula ? renderMathDisplay(task.formula) : ""}
+        </li>
+      `).join("")}
+    </ol>
+    <p class="writing-practice-note">זה תרגול רשות. אין כאן שליחה לבדיקה, פתרון מוצג או משוב אוטומטי.</p>
+  `;
+  requestAnimationFrame(() => typesetMath(card));
+  return card;
+}
+
 function renderHomeworkHint(task, milestone, taskIndex) {
   const key = homeworkHintKey(milestone, taskIndex);
   return `
@@ -1480,6 +1633,7 @@ function updateInteractiveProgress() {
   updateLearnerInsight(progress);
   updateReadingLocks(progress);
   updateFullPdfAccess(progress);
+  updateWritingPracticeLocks(progress);
   updateHomeworkLocks(progress);
 }
 
@@ -1668,6 +1822,91 @@ function scrollToHomework() {
   });
 }
 
+function isDevToolsEnabled() {
+  const params = new URLSearchParams(location.search);
+  const localHostnames = new Set(["", "127.0.0.1", "localhost"]);
+  return localHostnames.has(location.hostname) && (params.get("dev") === "1" || params.has("devtools"));
+}
+
+function mountDevTools() {
+  if (!isDevToolsEnabled() || document.querySelector("[data-dev-tools]")) return;
+  const panel = document.createElement("aside");
+  panel.className = "dev-tools-panel";
+  panel.dataset.devTools = "";
+  panel.setAttribute("aria-label", "כלי בדיקה לפיתוח בלבד");
+  panel.innerHTML = `
+    <strong>פיתוח בלבד</strong>
+    <span>קפיצה במסלול</span>
+    <div>
+      <button type="button" data-dev-jump-final>לקוויז</button>
+      <button type="button" data-dev-jump-homework>להגשה</button>
+      <button type="button" data-dev-reset-progress>איפוס מקומי</button>
+    </div>
+  `;
+  panel.querySelector("[data-dev-jump-final]")?.addEventListener("click", unlockFinalQuizForDev);
+  panel.querySelector("[data-dev-jump-homework]")?.addEventListener("click", unlockHomeworkForDev);
+  panel.querySelector("[data-dev-reset-progress]")?.addEventListener("click", resetProgressForDev);
+  document.body.append(panel);
+}
+
+function buildDevPassedProgress(unit, timestamp) {
+  const total = Math.min(unit.attemptSize || interactiveChapterOne.attemptSize, unit.questions?.length || interactiveChapterOne.attemptSize);
+  return {
+    quizPassed: true,
+    continued: isIntroUnit(unit) || undefined,
+    passed: true,
+    best: total,
+    mistakes: 0,
+    total,
+    lastQuestionIds: (unit.questions || []).slice(0, total).map((question) => question.id),
+    updatedAt: timestamp
+  };
+}
+
+function markReadingCompleteForDev(progress) {
+  const timestamp = new Date().toISOString();
+  interactiveChapterOne.units.forEach((unit) => {
+    progress[unit.id] = {
+      ...(progress[unit.id] || {}),
+      ...buildDevPassedProgress(unit, timestamp)
+    };
+  });
+  const meta = progress[PROGRESS_META_KEY] || {};
+  meta.coins = Math.max(Number(meta.coins) || 0, 50);
+  meta.devUnlockedAt = timestamp;
+  progress[PROGRESS_META_KEY] = meta;
+}
+
+function unlockFinalQuizForDev() {
+  const progress = readInteractiveProgress();
+  markReadingCompleteForDev(progress);
+  writeInteractiveProgress(progress, { skipCloud: true });
+  updateInteractiveProgress();
+  scrollToFinalQuiz();
+}
+
+function unlockHomeworkForDev() {
+  const progress = readInteractiveProgress();
+  markReadingCompleteForDev(progress);
+  progress[chapterFinalQuiz.id] = {
+    ...(progress[chapterFinalQuiz.id] || {}),
+    ...buildDevPassedProgress(chapterFinalQuiz, new Date().toISOString())
+  };
+  writeInteractiveProgress(progress, { skipCloud: true });
+  updateInteractiveProgress();
+  scrollToHomework();
+}
+
+function resetProgressForDev() {
+  interactiveMemoryStore = "{}";
+  try {
+    window.localStorage?.removeItem(INTERACTIVE_STORAGE_KEY);
+  } catch {
+    // Local development helpers should keep working even if browser storage is blocked.
+  }
+  updateInteractiveProgress();
+}
+
 function updateReadingLocks(progress) {
   const hiddenUnit = firstHiddenUnit(progress);
   const hiddenFromPage = hiddenUnit ? hiddenUnit.page : Number.POSITIVE_INFINITY;
@@ -1713,6 +1952,13 @@ function updateFullPdfAccess(progress) {
 function updateHomeworkLocks(progress) {
   document.querySelectorAll("[data-homework-after]").forEach((card) => {
     card.hidden = !finalQuizPassed(progress);
+  });
+}
+
+function updateWritingPracticeLocks(progress) {
+  document.querySelectorAll("[data-writing-practice-after]").forEach((card) => {
+    const unit = interactiveChapterOne.units.find((candidate) => candidate.id === card.dataset.writingPracticeAfter);
+    card.hidden = !(unit && getUnitProgressState(unit, progress[unit.id]).passed);
   });
 }
 
@@ -2166,7 +2412,7 @@ function cleanFeedbackPrefix(value) {
 
 function formatInlineText(value) {
   const text = normalizeMathSyntaxForDisplay(value).replace(/([\u0590-\u05ff])-/g, "$1־");
-  const mathAtom = String.raw`(?:[A-Za-z]+|[α-ωΑ-Ωε]|√|∑|∞|∅|[0-9]+|[∈∉∪∩⊆⊂⊇⊃⇒⇔≤≥≠=+\-−·*\/\\^²{}()[\]|:,._<>])`;
+  const mathAtom = String.raw`(?:[A-Za-z]+|[α-ωΑ-Ωε]|√|∑|∞|∅|[0-9]+|[∀∃¬∧∨∈∉∪∩⊆⊂⊇⊃⇒⇔≤≥≠=+\-−·*\/\\^²{}()[\]|:,._<>])`;
   const mathRunPattern = new RegExp(`${mathAtom}(?:\\s*${mathAtom})+`, "gu");
   let html = "";
   let lastIndex = 0;
@@ -2234,6 +2480,11 @@ function mathTextToTex(value) {
     .trim()
     .replace(/−/g, "-")
     .replace(/∞/g, "\\infty")
+    .replace(/∀/g, "\\forall ")
+    .replace(/∃/g, "\\exists ")
+    .replace(/¬/g, "\\neg ")
+    .replace(/∧/g, "\\land ")
+    .replace(/∨/g, "\\lor ")
     .replace(/∪/g, "\\cup ")
     .replace(/∩/g, "\\cap ")
     .replace(/⊆/g, "\\subseteq ")
@@ -2293,8 +2544,12 @@ function escapeHtml(value) {
   }[char]));
 }
 
+function startInteractiveLearning() {
+  loadQuestionBank().finally(initInteractiveLearning);
+}
+
 if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", initInteractiveLearning);
+  document.addEventListener("DOMContentLoaded", startInteractiveLearning);
 } else {
-  initInteractiveLearning();
+  startInteractiveLearning();
 }

@@ -1,0 +1,97 @@
+{
+  "snapshotDate": "2026-10-13",
+  "policy": {
+    "keepRepositoryLight": true,
+    "storeHeavyArchivesInGit": false,
+    "reason": "Exam PDFs, page images, source files, and full extracted archives are too large for ordinary Git review and should stay outside the app repository.",
+    "shareFullArchiveVia": [
+      "GitHub Release asset",
+      "Google Drive",
+      "local output directory"
+    ]
+  },
+  "inGit": [
+    {
+      "id": "runtime_question_bank",
+      "path": "docs/question-bank.json",
+      "readablePath": "docs/question-bank.md",
+      "purpose": "Runtime source for understanding checks, final quiz, and homework tasks used by the app.",
+      "itemCounts": {
+        "total": 146,
+        "checks": 120,
+        "writingPractice": 4,
+        "finalQuiz": 14,
+        "homework": 8
+      },
+      "metadata": [
+        "difficulty level",
+        "question layer",
+        "skills",
+        "review status",
+        "source pool"
+      ]
+    },
+    {
+      "id": "bank_source_map",
+      "path": "docs/question-bank-sources.md",
+      "purpose": "Human-readable map of all known question sources without copying heavy archives into Git."
+    },
+    {
+      "id": "learning_design_plan",
+      "path": "docs/learning-design-plan.md",
+      "purpose": "Pedagogical rules for question quality, logic practice, skill tracking, and future homework splits."
+    }
+  ],
+  "externalArchives": [
+    {
+      "id": "exams_bank",
+      "relativePathFromRepo": "../output/bank_packages/2026-10-13/exams_bank",
+      "approxSize": "166M",
+      "kind": "exam archive",
+      "contexts": 43,
+      "questionOccurrences": 175,
+      "distinctQuestionRecords": 174,
+      "dataFiles": [
+        "data/questions.json",
+        "data/occurrences.json",
+        "data/catalog.csv",
+        "data/topic_memberships.csv",
+        "data/review_queue.csv",
+        "data/audit.json"
+      ],
+      "heavyAssets": [
+        "sources/",
+        "source_images/"
+      ]
+    },
+    {
+      "id": "homework_bank",
+      "relativePathFromRepo": "../output/bank_packages/2026-10-13/homework_bank",
+      "approxSize": "5.8M",
+      "kind": "homework archive",
+      "contexts": 14,
+      "questionOccurrences": 173,
+      "distinctQuestionRecords": 158,
+      "questionsWithExtractedSolution": 92,
+      "dataFiles": [
+        "data/questions.json",
+        "data/occurrences.json",
+        "data/catalog.csv",
+        "data/topic_memberships.csv",
+        "data/review_queue.csv",
+        "data/audit.json"
+      ],
+      "heavyAssets": [
+        "sources/",
+        "solutions/"
+      ]
+    }
+  ],
+  "doNotCommit": [
+    "../output/",
+    "_site/",
+    "*.zip",
+    ".env",
+    ".env.*"
+  ]
+}

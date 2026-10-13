@@ -120,6 +120,18 @@ body.question-modal-open{overflow:hidden}
 .homework-upload label{display:grid;gap:8px;font-weight:700;color:var(--ink)}
 .homework-upload input{font:inherit}
 .homework-upload p{margin:8px 0 0;color:var(--muted);font-size:.92rem;line-height:1.6}
+.writing-practice-card{max-width:900px;margin:0 auto 28px;border:1px solid #dbe7e8;border-radius:8px;background:#fff;box-shadow:0 6px 22px #172d3e0a;padding:18px 20px}
+.writing-practice-card[hidden]{display:none}
+.writing-practice-heading{border-bottom:1px solid var(--line);padding-bottom:13px;margin-bottom:12px}
+.writing-practice-heading p{margin:0 0 6px;color:var(--accent);font-size:.9rem;font-weight:700}
+.writing-practice-heading h3{margin:0 0 6px;font-size:1.18rem;line-height:1.35}
+.writing-practice-heading span{display:block;color:var(--muted);line-height:1.65}
+.writing-practice-tasks{counter-reset:writing-practice;margin:0;padding:0;display:grid}
+.writing-practice-tasks li{counter-increment:writing-practice;display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px 14px;padding:15px 0;border-bottom:1px solid #edf1f3;line-height:1.75}
+.writing-practice-tasks li::before{content:counter(writing-practice) ".";grid-row:1 / span 2;color:var(--muted);font-weight:700;min-width:2ch;text-align:left;direction:ltr}
+.writing-practice-tasks li:last-child{border-bottom:0}
+.writing-practice-tasks .math-display{grid-column:2;margin:9px 0 6px;background:#fbfcfc}
+.writing-practice-note{margin:10px 0 0;color:var(--muted);font-size:.9rem;line-height:1.65}
 .final-quiz-card{border-color:#c8ddde;background:linear-gradient(180deg,#fff,#f8fbfb)}
 .learner-insight{border-top:1px solid var(--line);padding-top:14px;display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:14px;align-items:start}
 .learner-insight[hidden]{display:none}
@@ -161,10 +173,17 @@ body.question-modal-open{overflow:hidden}
 .avatar-options strong{font-size:.92rem;line-height:1.25}
 .avatar-options small{font-size:.78rem;line-height:1.35;color:var(--muted)}
 .profile-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-start}
+.dev-tools-panel{position:fixed;inset-inline-start:16px;inset-block-end:16px;z-index:80;display:grid;gap:7px;min-width:190px;border:1px solid #e6c98b;background:#fffaf0;color:#3f2a0a;border-radius:8px;padding:10px 11px;box-shadow:0 14px 36px #172d3e24;font-size:.84rem;text-align:right}
+.dev-tools-panel strong{font-size:.82rem;color:#8a5414}
+.dev-tools-panel span{color:#5d4930}
+.dev-tools-panel div{display:flex;gap:6px;flex-wrap:wrap}
+.dev-tools-panel button{border:1px solid #d9b36c;background:#fff;color:#6d430d;border-radius:999px;padding:5px 9px;font:inherit;font-weight:700;cursor:pointer}
+.dev-tools-panel button:hover{border-color:#9a6418;background:#fff4dc}
 @keyframes coinFly{0%{opacity:0;transform:translate(-50%,-50%) translate(0,8px) scale(.72) rotate(-14deg)}18%{opacity:1;transform:translate(-50%,-50%) translate(0,-8px) scale(1.1) rotate(8deg)}100%{opacity:0;transform:translate(-50%,-50%) translate(var(--fly-x),var(--fly-y)) scale(.55) rotate(28deg)}}
 @keyframes coinPulse{0%,100%{transform:scale(1)}45%{transform:scale(1.08);box-shadow:0 8px 24px #b8772030}}
 @media(max-width:850px){.interactive-stats{justify-items:start;margin-top:14px}.interactive-meter{margin-top:0}.question-dialog{padding:20px 14px}.learner-insight{grid-template-columns:1fr}.avatar-options{grid-template-columns:repeat(2,minmax(0,1fr))}.profile-dialog-head{padding-left:38px}.learner-chip{max-width:100%}}
 @media(max-width:500px){.learner-chip{width:100%;justify-content:flex-start;border-radius:12px}.profile-dialog{width:calc(100vw - 22px)}.avatar-options{gap:8px}.avatar-options label{min-height:116px;padding:10px 7px}.profile-actions .action{flex:1 1 130px;text-align:center}.math-avatar{width:34px;height:34px}}
+@media(max-width:500px){.dev-tools-panel{inset-inline:10px;inset-block-end:10px;min-width:0}.dev-tools-panel div{justify-content:flex-start}.dev-tools-panel button{flex:1 1 auto}}
 @media(max-width:680px){
   html{scroll-padding-top:18px}
   main{padding-inline:12px}
@@ -179,13 +198,13 @@ body.question-modal-open{overflow:hidden}
   .page{margin-bottom:18px}
   .page figcaption{padding-inline:2px;gap:8px;flex-wrap:wrap}
   .page-guided .page-focus{border-inline:0;border-radius:0}
-  .learning-card,.homework-card{max-width:none;margin-inline:0;border-radius:6px}
+  .learning-card,.homework-card,.writing-practice-card{max-width:none;margin-inline:0;border-radius:6px}
   .lesson-step-heading{padding:13px 14px}
   .learning-body{padding:14px}
-  .homework-card{padding:16px 14px}
-  .homework-tasks li{display:block;padding:15px 0}
-  .homework-tasks li::before{display:block;margin-bottom:8px;text-align:right}
-  .homework-tasks .math-display,.homework-tasks .homework-hint{grid-column:auto}
+  .homework-card,.writing-practice-card{padding:16px 14px}
+  .homework-tasks li,.writing-practice-tasks li{display:block;padding:15px 0}
+  .homework-tasks li::before,.writing-practice-tasks li::before{display:block;margin-bottom:8px;text-align:right}
+  .homework-tasks .math-display,.homework-tasks .homework-hint,.writing-practice-tasks .math-display{grid-column:auto}
   .question-overlay{padding:0;place-items:stretch}
   .question-dialog{width:100vw;max-height:100dvh;min-height:100dvh;border-radius:0;border-inline:0;padding:18px 14px 22px}
   .question-dialog-head{padding-left:42px;margin-bottom:14px}

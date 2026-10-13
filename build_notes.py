@@ -48,6 +48,11 @@ def main():
     site.mkdir()
     for name in ['index.html', 'style.css', 'runtime-config.js', 'auth.js', 'app.js', 'interactive.js']:
         shutil.copy2(name, site / name)
+    docs_source = Path('docs/question-bank.json')
+    if docs_source.exists():
+        docs_target = site / 'docs'
+        docs_target.mkdir()
+        shutil.copy2(docs_source, docs_target / docs_source.name)
     shutil.copytree('assets', site / 'assets')
     pages_root = site / 'assets/pages'
     if pages_root.exists():

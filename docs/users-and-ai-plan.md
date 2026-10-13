@@ -68,6 +68,10 @@ bank with metadata:
 The app can choose reinforcement questions from this bank using mistakes and
 answer time.
 
+Question quality and the staged plan for logic practice, reinforcement,
+challenge questions, and possible mini-submissions are tracked in
+`docs/learning-design-plan.md`.
+
 ## Phase 5: scanned homework review
 
 This is where the OpenAI API belongs:
