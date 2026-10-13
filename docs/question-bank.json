@@ -1821,7 +1821,7 @@
         {
           "index": 2,
           "label": "C",
-          "text": "{x∈R : x<a או x>b}",
+          "text": "{x∈R : x<a ∨ x>b}",
           "correct": false
         },
         {

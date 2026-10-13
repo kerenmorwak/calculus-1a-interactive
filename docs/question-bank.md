@@ -1205,7 +1205,7 @@ a+\frac{1}{a}\in\mathbb{Z} \Longrightarrow a^3+\frac{1}{a^3}\in\mathbb{Z},\qquad
 ```text
   A. {x∈R : a≤x≤b}
   B. {x∈R : a<x<b} ← תשובה נכונה
-  C. {x∈R : x<a או x>b}
+  C. {x∈R : x<a ∨ x>b}
   D. {x∈R : a∈x∈b}
 ```
 
