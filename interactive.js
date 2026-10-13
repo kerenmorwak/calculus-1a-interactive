@@ -3209,6 +3209,7 @@ function renderTexDisplay(value) {
 function mathTextToTex(value) {
   return String(value)
     .trim()
+    .replace(/(?<!\\)\{([^{}]*,[^{}]*)\}/g, "\\{$1\\}")
     .replace(/−/g, "-")
     .replace(/∞/g, "\\infty")
     .replace(/∀/g, "\\forall ")
