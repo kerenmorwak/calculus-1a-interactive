@@ -196,3 +196,109 @@ body.question-modal-open{overflow:hidden}
   .profile-actions .action{flex:1 1 140px;text-align:center}
 }
 @media(prefers-reduced-motion:reduce){.coin-pulse,.flying-coin{animation:none}}
+
+/* ===== Account area: coins, profile, sign-in (header) ===== */
+.masthead{position:sticky;top:0;z-index:30;min-height:72px;padding-block:10px;background:rgba(255,255,255,.97)}
+html{scroll-padding-top:92px}
+.account-bar{display:flex;align-items:center;gap:8px;margin-inline-start:auto;flex-wrap:nowrap}
+.header-coins{min-height:40px;padding:6px 12px 6px 9px;box-shadow:none;gap:7px}
+.header-coins strong{font-size:1rem;font-variant-numeric:tabular-nums;min-width:1.4ch;text-align:center;color:#3f2a0a}
+.coin-icon{display:block;width:20px;height:20px}
+.coin-emoji,.coin-mark{background:url(assets/coin.svg) center/contain no-repeat;border:0;box-shadow:none}
+.coin-emoji::after{content:none}
+.coin-mark{width:15px;height:15px}
+.profile-chip{display:inline-flex;align-items:center;gap:9px;min-height:40px;max-width:220px;border:1px solid #d9e4e6;background:#fff;border-radius:999px;padding:3px 4px 3px 13px;color:var(--ink);cursor:pointer;font-weight:700;font-size:.92rem}
+.profile-chip:hover{border-color:var(--accent)}
+.profile-chip .math-avatar{width:32px;height:32px;font-size:1rem}
+.profile-chip-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.profile-chip.is-empty{color:var(--accent)}
+.account-button{min-height:40px;padding:7px 15px}
+.account-button[hidden]{display:none}
+
+/* Avatar medallions: a monogram struck like a seal, quiet colour per mathematician */
+.math-avatar{--ring:#9fbdba;--ink-a:#165f64;--face:#f4f9f8;direction:ltr;display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;width:40px;height:40px;border-radius:50%;background:var(--face);color:var(--ink-a);border:1.5px solid var(--ring);box-shadow:inset 0 0 0 3px #fff,inset 0 0 0 4px var(--ring);font-family:Georgia,"Times New Roman",serif;font-weight:700;font-size:1.2rem;line-height:1}
+.math-avatar.is-large{width:64px;height:64px;font-size:1.9rem;box-shadow:inset 0 0 0 4px #fff,inset 0 0 0 5px var(--ring)}
+.math-avatar.is-empty{--ring:#c5d3d8;--face:#f7f9fa;border-style:dashed;box-shadow:none}
+.math-avatar[data-avatar-accent="algebra"]{--ring:#d9b98c;--ink-a:#7c4c12;--face:#fdf7ee}
+.math-avatar[data-avatar-accent="prime"]{--ring:#d5a9bb;--ink-a:#843f5d;--face:#fcf3f6}
+.math-avatar[data-avatar-accent="sum"]{--ring:#9cc0d0;--ink-a:#155c78;--face:#f2f8fb}
+.math-avatar[data-avatar-accent="epsilon"]{--ring:#9fc6c4;--ink-a:#166067;--face:#f1f8f7}
+.math-avatar[data-avatar-accent="zeta"]{--ring:#bcaad6;--ink-a:#5e3f86;--face:#f7f3fc}
+.math-avatar[data-avatar-accent="infinity"]{--ring:#d6bd8f;--ink-a:#7d5512;--face:#fcf8ef}
+.math-avatar[data-avatar-accent="delta"]{--ring:#a8c9b1;--ink-a:#28633d;--face:#f2f9f4}
+.math-avatar[data-avatar-accent="classic"]{--ring:#cfb595;--ink-a:#7e5420;--face:#fbf6ef}
+.math-avatar[data-avatar-accent="partial"]{--ring:#b7b3d9;--ink-a:#433d86;--face:#f4f3fb}
+.math-avatar[data-avatar-accent="euler"]{--ring:#a7c3d9;--ink-a:#24507a;--face:#f2f6fb}
+.math-avatar[data-avatar-accent="archimedes"]{--ring:#cdb48a;--ink-a:#6e5018;--face:#faf6ec}
+.math-avatar[data-avatar-accent="dedekind"]{--ring:#9fc0b8;--ink-a:#1d5a52;--face:#f1f8f6}
+
+/* ===== Profile and sign-in dialogs ===== */
+.profile-dialog{width:min(720px,calc(100vw - 34px))}
+.auth-dialog{width:min(480px,calc(100vw - 34px))}
+.profile-dialog .profile-dialog-head,.auth-dialog .profile-dialog-head{padding:0 0 14px 48px;margin-bottom:18px}
+.profile-dialog-head h3{font-size:1.4rem}
+.dialog-lead{margin:6px 0 0!important;color:var(--muted)!important;font-weight:400!important;font-size:.95rem!important;line-height:1.6}
+.profile-form{gap:20px}
+.profile-preview{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:10px;background:linear-gradient(180deg,#f8fbfb,#f3f7f8);border:1px solid #e1eaec}
+.profile-preview strong{display:block;font-size:1.15rem;line-height:1.3;overflow-wrap:anywhere}
+.profile-preview div>span{display:block;color:var(--muted);font-size:.88rem;margin-top:2px}
+.profile-name-field{gap:6px}
+.profile-name-field label{font-weight:700}
+.profile-name-field input{min-height:46px;font-size:1rem}
+.field-note{margin:0;color:var(--muted);font-size:.84rem;font-weight:400}
+.field-note.error{color:#8a3b12}
+.avatar-picker legend{padding:0;margin-bottom:8px}
+.avatar-options{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.avatar-options .avatar-option{display:grid;justify-items:center;align-content:start;gap:5px;min-height:112px;padding:12px 6px 10px;border:1px solid #dde6e9;border-radius:10px;background:#fff;cursor:pointer;text-align:center;transition:border-color .15s,background .15s}
+.avatar-options .avatar-option strong{font-size:.9rem;line-height:1.25}
+.avatar-options .avatar-option small{font-size:.76rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.avatar-options .avatar-option:hover{border-color:#9fbdba}
+.avatar-options .avatar-option:has(input:checked){border-color:var(--accent);background:#f3faf9;box-shadow:inset 0 0 0 1px var(--accent)}
+.avatar-options .avatar-option:has(input:focus-visible){outline:3px solid #b87720;outline-offset:2px}
+.profile-account{display:flex;align-items:center;justify-content:space-between;gap:10px 14px;flex-wrap:wrap;padding:12px 14px;border-radius:10px;background:#fbfcfc;border:1px solid var(--line);color:var(--muted);font-size:.9rem;line-height:1.5}
+.profile-account bdi{color:var(--ink);font-weight:700}
+.text-button{border:0;background:none;padding:6px 2px;color:var(--accent);font-weight:700;cursor:pointer;text-decoration:underline;text-underline-offset:3px;min-height:40px}
+.profile-actions .action{min-height:46px;min-width:140px;cursor:pointer}
+.auth-form{display:grid;gap:8px}
+.auth-form label{font-weight:700}
+.auth-form input{min-height:46px}
+.auth-hint{margin:0;color:var(--muted);font-size:.86rem}
+.auth-message:empty{display:none}
+.auth-message.error{color:#8a3b12}
+.auth-form .action{margin-top:8px;min-height:46px;cursor:pointer}
+.auth-sent{display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border-radius:10px;background:#f2faf8;border:1px solid #bfd9d5;margin-bottom:16px}
+.auth-sent-mark{display:grid;place-items:center;flex:0 0 auto;width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;font-weight:700}
+.auth-sent strong{display:block;margin-bottom:3px}
+.auth-sent p{margin:0;color:var(--muted);line-height:1.6;overflow-wrap:anywhere}
+.auth-signed-in{direction:rtl;display:grid;gap:3px;margin-bottom:16px}
+.auth-signed-in span{color:var(--muted);font-size:.9rem}
+.auth-signed-in bdi{font-weight:700;overflow-wrap:anywhere}
+
+@media(max-width:850px){
+  .account-bar{gap:6px}
+  .profile-chip{max-width:170px}
+}
+@media(max-width:680px){
+  .masthead{min-height:60px;padding:8px 12px;gap:10px}
+  html{scroll-padding-top:74px}
+  .brand span{font-size:1rem}
+  .brand-photo{width:52px;height:30px}
+  .profile-chip{padding:3px;max-width:none}
+  .profile-chip-name{display:none}
+  .header-coins{padding:5px 10px 5px 7px}
+  .account-button{padding:7px 12px}
+  .profile-dialog,.auth-dialog{width:100vw;display:flex;flex-direction:column}
+  .profile-dialog [data-profile-dialog-body],.profile-form{display:flex;flex-direction:column;flex:1}
+  .profile-form{gap:16px}
+  .avatar-options{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .avatar-options .avatar-option{min-height:104px;padding:10px 4px 8px}
+  .profile-actions{position:sticky;bottom:0;margin-top:auto;padding-top:12px;background:linear-gradient(to bottom,rgba(255,255,255,0),#fff 12px)}
+  .profile-actions .action{min-width:0}
+}
+@media(max-width:360px){
+  .avatar-options{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .brand span{display:none}
+}
+.profile-dialog .question-close,.auth-dialog .question-close{width:40px;height:40px}
+.profile-dialog .profile-actions{position:sticky;bottom:-26px;margin-bottom:-26px;padding-block:12px 26px;background:linear-gradient(to bottom,rgba(255,255,255,0),#fff 12px);z-index:1}
+@media(max-width:680px){.profile-dialog .profile-actions{bottom:-22px;margin-bottom:-22px;padding-bottom:calc(22px + env(safe-area-inset-bottom))}}

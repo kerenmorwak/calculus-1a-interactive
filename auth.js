@@ -38,18 +38,20 @@
     };
   }
 
+  // Header: the sign-in button exists only when sign-in can actually work.
   function renderAuthPanel() {
-    const panel = document.querySelector("[data-auth-panel]");
-    if (!panel) return;
-    panel.hidden = !hasConfig;
-    const button = panel.querySelector("[data-auth-open]");
-    const status = panel.querySelector("[data-auth-status]");
-    if (status) {
-      if (state.status === "signed-in") status.textContent = safeEmail(state.user);
-      else if (state.status === "error") status.textContent = "כניסה לא זמינה";
-      else status.textContent = "שמירה בחשבון";
+    const canSignIn = hasConfig && ["signed-out", "link-sent"].includes(state.status);
+    document.querySelectorAll("[data-auth-open]").forEach((button) => {
+      button.hidden = !canSignIn;
+    });
+    document.querySelectorAll("[data-account-state]").forEach((node) => {
+      node.dataset.accountState = state.status;
+    });
+    const overlay = document.querySelector("#auth-overlay");
+    if (overlay && !overlay.hidden) {
+      if (state.status === "signed-in") closeAuthDialog();
+      else renderAuthDialog(overlay);
     }
-    if (button) button.textContent = state.status === "signed-in" ? "חשבון" : "כניסה";
   }
 
   function bindAuthPanel() {
@@ -57,7 +59,7 @@
       const opener = event.target.closest("[data-auth-open]");
       if (!opener) return;
       event.preventDefault();
-      openAuthDialog();
+      openAuthDialog(opener);
     });
   }
 
@@ -71,10 +73,10 @@
     overlay.innerHTML = `
       <div class="question-overlay-backdrop" data-close-auth-dialog></div>
       <section class="question-dialog auth-dialog" role="dialog" aria-modal="true" aria-labelledby="auth-dialog-title" tabindex="-1">
-        <button class="question-close" type="button" aria-label="חזרה לקורס" data-close-auth-dialog>×</button>
+        <button class="question-close" type="button" aria-label="סגירה" data-close-auth-dialog>×</button>
         <div class="profile-dialog-head">
-          <p>חשבון אישי</p>
-          <h3 id="auth-dialog-title">כניסה לקורס</h3>
+          <h3 id="auth-dialog-title">כניסה</h3>
+          <p class="dialog-lead">ההתקדמות, המטבעות והפרופיל יישמרו בחשבון, ויחכו לך בכל מכשיר.</p>
         </div>
         <div class="auth-dialog-body" data-auth-dialog-body></div>
       </section>
@@ -85,25 +87,57 @@
       event.preventDefault();
       closeAuthDialog();
     });
+    overlay.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        closeAuthDialog();
+      } else if (event.key === "Tab") {
+        trapFocus(event, overlay.querySelector(".auth-dialog"));
+      }
+    });
     return overlay;
   }
 
-  function openAuthDialog() {
-    if (!hasConfig) return;
+  let authReturnFocus = null;
+
+  function openAuthDialog(opener = document.activeElement) {
+    if (!hasConfig || state.status === "error" || state.status === "starting") return;
+    authReturnFocus = opener;
+    if (state.error) state = { ...state, error: null };
     const overlay = ensureAuthDialog();
     renderAuthDialog(overlay);
     overlay.hidden = false;
     document.body.classList.add("question-modal-open");
     requestAnimationFrame(() => {
-      overlay.querySelector("input, button, .auth-dialog")?.focus({ preventScroll: true });
+      (overlay.querySelector("[data-auth-email]") || overlay.querySelector(".auth-dialog"))?.focus({ preventScroll: true });
     });
   }
 
   function closeAuthDialog() {
     const overlay = document.querySelector("#auth-overlay");
-    if (!overlay) return;
+    if (!overlay || overlay.hidden) return;
     overlay.hidden = true;
-    document.body.classList.remove("question-modal-open");
+    if (!document.querySelector(".question-overlay:not([hidden])")) {
+      document.body.classList.remove("question-modal-open");
+    }
+    if (authReturnFocus?.isConnected && !authReturnFocus.closest("[hidden]")) authReturnFocus.focus({ preventScroll: true });
+    authReturnFocus = null;
+  }
+
+  function trapFocus(event, container) {
+    if (!container) return;
+    const focusable = [...container.querySelectorAll("button:not([disabled]), input:not([disabled]), a[href]")]
+      .filter((node) => node.offsetParent !== null);
+    if (!focusable.length) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
   }
 
   function loadSupabaseSdk() {
@@ -125,67 +159,104 @@
     });
   }
 
+  // Supabase errors arrive in English; learners see a short Hebrew explanation instead.
+  function friendlyError(error) {
+    const text = String(error?.message || error || "").toLowerCase();
+    if (/rate|too many|seconds/.test(text)) return "נשלחו כמה קישורים ברצף. אפשר לנסות שוב בעוד דקה.";
+    if (/invalid|email/.test(text)) return "כתובת המייל לא נראית תקינה. כדאי לבדוק ולנסות שוב.";
+    if (/network|fetch|failed/.test(text)) return "אין חיבור כרגע. אפשר להמשיך ללמוד, וההתקדמות נשמרת במכשיר הזה.";
+    return "לא הצלחנו לשלוח קישור כרגע. אפשר לנסות שוב בעוד רגע.";
+  }
+
+  let lastEmail = "";
+
   function renderAuthDialog(overlay = document.querySelector("#auth-overlay")) {
     if (!overlay) return;
     const body = overlay.querySelector("[data-auth-dialog-body]");
     if (!body) return;
     if (state.status === "signed-in") {
       body.innerHTML = `
-        <p class="auth-copy">ההתקדמות תישמר בחשבון הזה.</p>
         <div class="auth-signed-in">
-          <strong>${escapeHtml(safeEmail(state.user))}</strong>
-          <button class="action" type="button" data-auth-sign-out>יציאה</button>
+          <span>מחוברים לחשבון</span>
+          <bdi>${escapeHtml(safeEmail(state.user))}</bdi>
+        </div>
+        <div class="profile-actions">
+          <button class="action" type="button" data-auth-sign-out>יציאה מהחשבון</button>
         </div>
       `;
       body.querySelector("[data-auth-sign-out]")?.addEventListener("click", async () => {
         await signOut();
-        renderAuthDialog(overlay);
+        closeAuthDialog();
       });
       return;
     }
-    const message = state.error
-      ? `<p class="auth-message error">${escapeHtml(state.error)}</p>`
-      : `<p class="auth-copy">נשלח אלייך קישור כניסה למייל. אחרי הכניסה ההתקדמות תישמר בחשבון.</p>`;
+    if (state.status === "link-sent") {
+      body.innerHTML = `
+        <div class="auth-sent" role="status">
+          <span class="auth-sent-mark" aria-hidden="true">✓</span>
+          <div>
+            <strong>שלחנו קישור כניסה</strong>
+            <p>לכתובת <bdi>${escapeHtml(lastEmail)}</bdi>. כדאי לפתוח אותו באותו מכשיר ובאותו דפדפן.</p>
+          </div>
+        </div>
+        <div class="profile-actions">
+          <button class="action primary" type="button" data-close-auth-dialog>חזרה לקורס</button>
+          <button class="action" type="button" data-auth-change-email>שליחה לכתובת אחרת</button>
+        </div>
+      `;
+      body.querySelector("[data-auth-change-email]")?.addEventListener("click", () => {
+        setState({ status: "signed-out", error: null });
+        renderAuthDialog(overlay);
+        overlay.querySelector("[data-auth-email]")?.focus();
+      });
+      return;
+    }
     body.innerHTML = `
-      ${message}
-      <form class="auth-form" data-auth-form>
-        <label>
-          <span>אימייל</span>
-          <input type="email" autocomplete="email" inputmode="email" required data-auth-email>
-        </label>
+      <form class="auth-form" data-auth-form novalidate>
+        <label for="auth-email">כתובת מייל</label>
+        <input id="auth-email" type="email" autocomplete="email" inputmode="email" dir="ltr" required data-auth-email value="${escapeHtml(lastEmail)}" aria-describedby="auth-message">
+        <p class="auth-hint">נשלח קישור כניסה. אין צורך בסיסמה.</p>
+        <p class="auth-message${state.error ? " error" : ""}" id="auth-message" data-auth-message role="alert">${state.error ? escapeHtml(state.error) : ""}</p>
         <button class="action primary" type="submit">שליחת קישור כניסה</button>
       </form>
-      <p class="auth-message" data-auth-message></p>
     `;
     body.querySelector("[data-auth-form]")?.addEventListener("submit", async (event) => {
       event.preventDefault();
       const form = event.currentTarget;
-      const email = form.querySelector("[data-auth-email]")?.value?.trim();
+      const input = form.querySelector("[data-auth-email]");
+      const email = input?.value?.trim() || "";
       const messageNode = body.querySelector("[data-auth-message]");
-      if (!email) return;
-      form.querySelector("button")?.setAttribute("disabled", "disabled");
-      if (messageNode) messageNode.textContent = "";
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        messageNode.textContent = "כדאי לבדוק את כתובת המייל.";
+        messageNode.classList.add("error");
+        input?.focus();
+        return;
+      }
+      const button = form.querySelector("button[type='submit']");
+      button?.setAttribute("disabled", "disabled");
+      if (button) button.textContent = "שולחים…";
+      messageNode.textContent = "";
+      lastEmail = email;
       const result = await signInWithEmail(email);
-      form.querySelector("button")?.removeAttribute("disabled");
-      if (messageNode) {
-        messageNode.textContent = result.ok
-          ? "הקישור נשלח. אפשר להשאיר את העמוד פתוח ולחזור אחרי האישור במייל."
-          : result.error || "לא הצלחנו לשלוח קישור כרגע.";
-        messageNode.classList.toggle("error", !result.ok);
+      if (!result.ok) {
+        button?.removeAttribute("disabled");
+        if (button) button.textContent = "שליחת קישור כניסה";
+        messageNode.textContent = result.error;
+        messageNode.classList.add("error");
       }
     });
   }
 
   async function signInWithEmail(email) {
-    if (!client) return { ok: false, error: "הכניסה עדיין לא מחוברת." };
+    if (!client) return { ok: false, error: friendlyError("") };
     const redirectTo = location.href.split("#")[0];
     const { error } = await client.auth.signInWithOtp({
       email,
       options: { emailRedirectTo: redirectTo }
     });
     if (error) {
-      setState({ status: "signed-out", error: error.message });
-      return { ok: false, error: error.message };
+      setState({ status: "signed-out", error: friendlyError(error) });
+      return { ok: false, error: friendlyError(error) };
     }
     setState({ status: "link-sent", error: null });
     return { ok: true };
@@ -347,7 +418,8 @@
     }
     const sdkReady = await loadSupabaseSdk();
     if (!sdkReady || !window.supabase?.createClient) {
-      setState({ status: "error", error: "Supabase לא נטען." });
+      // Sign-in stays hidden; the course keeps working on this device.
+      setState({ status: "error", error: null });
       return;
     }
     client = window.supabase.createClient(supabaseUrl, supabaseKey, {
@@ -368,7 +440,7 @@
     });
     const { data, error } = await client.auth.getSession();
     if (error) {
-      setState({ status: "error", error: error.message, session: null, user: null });
+      setState({ status: "error", error: null, session: null, user: null });
       return;
     }
     setState({
@@ -381,6 +453,8 @@
 
   window.CalculusAuth = {
     getState,
+    isAvailable: () => hasConfig,
+    openSignIn: openAuthDialog,
     signInWithEmail,
     signOut,
     fetchProfile,
