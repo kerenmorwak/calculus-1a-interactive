@@ -680,12 +680,12 @@
       "section": "1.3",
       "unitTitle": "מעט לוגיקה",
       "topic": "מעט לוגיקה",
-      "prompt": "אם ידוע ש־P ⇒ Q וידוע ש־P אמת, מה מותר להסיק?",
+      "prompt": "אם ידוע ש־P ⇒ S וידוע ש־P אמת, מה מותר להסיק?",
       "options": [
         {
           "index": 0,
           "label": "A",
-          "text": "Q אמת",
+          "text": "S אמת",
           "correct": true
         },
         {
@@ -697,13 +697,13 @@
         {
           "index": 2,
           "label": "C",
-          "text": "Q שקר",
+          "text": "S שקר",
           "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "Q ⇒ P",
+          "text": "S ⇒ P",
           "correct": false
         }
       ],
@@ -731,35 +731,35 @@
       "section": "1.3",
       "unitTitle": "מעט לוגיקה",
       "topic": "מעט לוגיקה",
-      "prompt": "נתונה הטענה P ⇒ Q. איזו טענה שקולה לה תמיד?",
+      "prompt": "נתונה הטענה P ⇒ S. איזו טענה שקולה לה תמיד?",
       "options": [
         {
           "index": 0,
           "label": "A",
-          "text": "Q ⇒ P",
+          "text": "S ⇒ P",
           "correct": false
         },
         {
           "index": 1,
           "label": "B",
-          "text": "¬P ⇒ ¬Q",
+          "text": "¬P ⇒ ¬S",
           "correct": false
         },
         {
           "index": 2,
           "label": "C",
-          "text": "¬Q ⇒ ¬P",
+          "text": "¬S ⇒ ¬P",
           "correct": true
         },
         {
           "index": 3,
           "label": "D",
-          "text": "P ∧ Q",
+          "text": "P ∧ S",
           "correct": false
         }
       ],
       "correctOption": "C",
-      "feedback": "יפה. הקונטרה־פוזיטיב ¬Q ⇒ ¬P שקול לגרירה המקורית; הגרירה ההפוכה אינה שקולה לה.",
+      "feedback": "יפה. הקונטרה־פוזיטיב ¬S ⇒ ¬P שקול לגרירה המקורית; הגרירה ההפוכה אינה שקולה לה.",
       "layer": "base",
       "questionMode": "conceptual-application",
       "skills": [
@@ -782,30 +782,30 @@
       "section": "1.3",
       "unitTitle": "מעט לוגיקה",
       "topic": "מעט לוגיקה",
-      "prompt": "מהי השלילה של הטענה P ⇒ Q?",
+      "prompt": "מהי השלילה של הטענה P ⇒ S?",
       "options": [
         {
           "index": 0,
           "label": "A",
-          "text": "P ∧ ¬Q",
+          "text": "P ∧ ¬S",
           "correct": true
         },
         {
           "index": 1,
           "label": "B",
-          "text": "¬P ⇒ ¬Q",
+          "text": "¬P ⇒ ¬S",
           "correct": false
         },
         {
           "index": 2,
           "label": "C",
-          "text": "Q ⇒ P",
+          "text": "S ⇒ P",
           "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "¬P ∨ Q",
+          "text": "¬P ∨ S",
           "correct": false
         }
       ],
@@ -833,30 +833,30 @@
       "section": "1.3",
       "unitTitle": "מעט לוגיקה",
       "topic": "מעט לוגיקה",
-      "prompt": "מהי השלילה של הטענה P ∨ Q?",
+      "prompt": "מהי השלילה של הטענה P ∨ S?",
       "options": [
         {
           "index": 0,
           "label": "A",
-          "text": "¬P ∨ ¬Q",
+          "text": "¬P ∨ ¬S",
           "correct": false
         },
         {
           "index": 1,
           "label": "B",
-          "text": "¬P ∧ ¬Q",
+          "text": "¬P ∧ ¬S",
           "correct": true
         },
         {
           "index": 2,
           "label": "C",
-          "text": "P ∧ Q",
+          "text": "P ∧ S",
           "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "P ⇒ Q",
+          "text": "P ⇒ S",
           "correct": false
         }
       ],
