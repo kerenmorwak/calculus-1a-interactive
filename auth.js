@@ -81,9 +81,9 @@
       <section class="auth-gate-card" role="region" aria-labelledby="auth-gate-title">
         <p class="eyebrow">כניסה נדרשת</p>
         <h1 id="auth-gate-title">מתחברים כדי להתחיל ללמוד</h1>
-        <p data-auth-gate-copy>כדי להשתמש בקורס צריך להיכנס עם מייל. ההתקדמות, המטבעות והפרופיל יישמרו בחשבון.</p>
+        <p data-auth-gate-copy>כדי להשתמש בקורס צריך ליצור חשבון או להיכנס עם מייל וסיסמה. ההתקדמות, המטבעות והפרופיל יישמרו בחשבון.</p>
         <div class="auth-gate-actions">
-          <button class="action primary" type="button" data-auth-gate-open>כניסה עם מייל</button>
+          <button class="action primary" type="button" data-auth-gate-open>כניסה או הרשמה</button>
         </div>
         <p class="auth-gate-note" data-auth-gate-note role="status"></p>
       </section>
@@ -122,17 +122,17 @@
       } else if (state.status === "error") {
         copy.textContent = "לא הצלחנו להפעיל את מערכת הכניסה. כדאי לרענן את הדף או לבדוק את החיבור.";
       } else {
-        copy.textContent = "כדי להשתמש בקורס צריך להיכנס עם מייל. ההתקדמות, המטבעות והפרופיל יישמרו בחשבון.";
+        copy.textContent = "כדי להשתמש בקורס צריך ליצור חשבון או להיכנס עם מייל וסיסמה. ההתקדמות, המטבעות והפרופיל יישמרו בחשבון.";
       }
     }
     if (note) {
       note.textContent = state.status === "link-sent"
         ? "פתחי את הקישור מהמייל באותו דפדפן."
-        : "אין צורך בסיסמה.";
+        : "הסיסמה היא לחשבון באתר בלבד, לא סיסמת המייל האישי.";
     }
     if (button) {
       button.disabled = !canOpen;
-      button.textContent = state.status === "link-sent" ? "פתיחת מסך הכניסה" : "כניסה עם מייל";
+      button.textContent = state.status === "link-sent" ? "פתיחת מסך הכניסה" : "כניסה או הרשמה";
     }
   }
 
@@ -149,7 +149,7 @@
         <button class="question-close" type="button" aria-label="סגירה" data-close-auth-dialog>×</button>
         <div class="profile-dialog-head">
           <h3 id="auth-dialog-title">כניסה</h3>
-          <p class="dialog-lead">ההתקדמות, המטבעות והפרופיל יישמרו בחשבון, ויחכו לך בכל מכשיר.</p>
+          <p class="dialog-lead">יצירת חשבון או כניסה עם סיסמה. ההתקדמות, המטבעות והפרופיל יחכו לך בכל מכשיר.</p>
         </div>
         <div class="auth-dialog-body" data-auth-dialog-body></div>
       </section>
@@ -235,13 +235,19 @@
   // Supabase errors arrive in English; learners see a short Hebrew explanation instead.
   function friendlyError(error) {
     const text = String(error?.message || error || "").toLowerCase();
-    if (/rate|too many|seconds/.test(text)) return "נשלחו כמה קישורים ברצף. אפשר לנסות שוב בעוד דקה.";
+    if (/rate|too many|seconds/.test(text)) return "נשלחו יותר מדי בקשות ברצף. אפשר לנסות שוב בעוד דקה.";
+    if (/invalid login|invalid credentials|credentials/.test(text)) return "המייל או הסיסמה לא נכונים.";
+    if (/already registered|already exists|user.*exists/.test(text)) return "כבר יש חשבון לכתובת הזו. אפשר לעבור לכניסה.";
+    if (/password|weak|short|characters/.test(text)) return "הסיסמה צריכה להיות לפחות 6 תווים.";
+    if (/signup|signups|not allowed|disabled/.test(text)) return "ההרשמה סגורה כרגע בהגדרות Supabase.";
+    if (/confirm|confirmed/.test(text)) return "החשבון נוצר, אבל Supabase עדיין דורש אישור מייל. צריך לכבות Confirm email או לאשר מהמייל.";
     if (/invalid|email/.test(text)) return "כתובת המייל לא נראית תקינה. כדאי לבדוק ולנסות שוב.";
     if (/network|fetch|failed/.test(text)) return "אין חיבור כרגע. צריך חיבור כדי להיכנס לקורס.";
-    return "לא הצלחנו לשלוח קישור כרגע. אפשר לנסות שוב בעוד רגע.";
+    return "לא הצלחנו להשלים את הפעולה כרגע. אפשר לנסות שוב בעוד רגע.";
   }
 
   let lastEmail = "";
+  let authMode = "password-sign-in";
 
   function renderAuthDialog(overlay = document.querySelector("#auth-overlay")) {
     if (!overlay) return;
@@ -279,22 +285,51 @@
         </div>
       `;
       body.querySelector("[data-auth-change-email]")?.addEventListener("click", () => {
+        authMode = "magic-link";
         setState({ status: "signed-out", error: null });
         renderAuthDialog(overlay);
         overlay.querySelector("[data-auth-email]")?.focus();
       });
       return;
     }
+    const isSignUp = authMode === "sign-up";
+    const isMagicLink = authMode === "magic-link";
     body.innerHTML = `
-      <form class="auth-form" data-auth-form novalidate>
-        <label for="auth-email">כתובת מייל</label>
-        <input id="auth-email" type="email" autocomplete="email" inputmode="email" dir="ltr" required data-auth-email value="${escapeHtml(lastEmail)}" aria-describedby="auth-message">
-        <p class="auth-hint">נשלח קישור כניסה. אין צורך בסיסמה.</p>
-        <p class="auth-message${state.error ? " error" : ""}" id="auth-message" data-auth-message role="alert">${state.error ? escapeHtml(state.error) : ""}</p>
-        <button class="action primary" type="submit">שליחת קישור כניסה</button>
-      </form>
+      <div class="auth-mode-switch" aria-label="בחירת פעולה">
+        <button type="button" class="${authMode === "password-sign-in" ? "is-active" : ""}" aria-pressed="${authMode === "password-sign-in"}" data-auth-mode="password-sign-in">כניסה</button>
+        <button type="button" class="${isSignUp ? "is-active" : ""}" aria-pressed="${isSignUp}" data-auth-mode="sign-up">יצירת חשבון</button>
+      </div>
+      ${isMagicLink ? `
+        <form class="auth-form" data-auth-magic-form novalidate>
+          <label for="auth-email">כתובת מייל</label>
+          <input id="auth-email" type="email" autocomplete="email" inputmode="email" dir="ltr" required data-auth-email value="${escapeHtml(lastEmail)}" aria-describedby="auth-message">
+          <p class="auth-hint">נשלח קישור כניסה. האפשרות הזו תלויה במשלוח מיילים מ־Supabase.</p>
+          <p class="auth-message${state.error ? " error" : ""}" id="auth-message" data-auth-message role="alert">${state.error ? escapeHtml(state.error) : ""}</p>
+          <button class="action primary" type="submit">שליחת קישור כניסה</button>
+        </form>
+        <p class="auth-alt"><button class="text-button" type="button" data-auth-mode="password-sign-in">חזרה לכניסה עם סיסמה</button></p>
+      ` : `
+        <form class="auth-form" data-auth-password-form novalidate>
+          <label for="auth-email">כתובת מייל</label>
+          <input id="auth-email" type="email" autocomplete="email" inputmode="email" dir="ltr" required data-auth-email value="${escapeHtml(lastEmail)}" aria-describedby="auth-message">
+          <label for="auth-password">סיסמה</label>
+          <input id="auth-password" type="password" autocomplete="${isSignUp ? "new-password" : "current-password"}" minlength="6" required data-auth-password aria-describedby="auth-message">
+          <p class="auth-hint">${isSignUp ? "בחרי סיסמה לאתר הזה בלבד. לא להשתמש בסיסמת המייל או האוניברסיטה." : "הכניסה היא עם הסיסמה שבחרת בהרשמה לאתר."}</p>
+          <p class="auth-message${state.error ? " error" : ""}" id="auth-message" data-auth-message role="alert">${state.error ? escapeHtml(state.error) : ""}</p>
+          <button class="action primary" type="submit">${isSignUp ? "יצירת חשבון" : "כניסה"}</button>
+        </form>
+        <p class="auth-alt"><button class="text-button" type="button" data-auth-mode="magic-link">כניסה בקישור למייל</button></p>
+      `}
     `;
-    body.querySelector("[data-auth-form]")?.addEventListener("submit", async (event) => {
+    body.querySelectorAll("[data-auth-mode]").forEach((button) => {
+      button.addEventListener("click", () => {
+        authMode = button.dataset.authMode || "password-sign-in";
+        if (state.error) state = { ...state, error: null };
+        renderAuthDialog(overlay);
+        overlay.querySelector("[data-auth-email]")?.focus();
+      });
+    });
+    body.querySelector("[data-auth-magic-form]")?.addEventListener("submit", async (event) => {
       event.preventDefault();
       const form = event.currentTarget;
       const input = form.querySelector("[data-auth-email]");
@@ -319,6 +354,81 @@
         messageNode.classList.add("error");
       }
     });
+    body.querySelector("[data-auth-password-form]")?.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const form = event.currentTarget;
+      const emailInput = form.querySelector("[data-auth-email]");
+      const passwordInput = form.querySelector("[data-auth-password]");
+      const email = emailInput?.value?.trim() || "";
+      const password = passwordInput?.value || "";
+      const messageNode = body.querySelector("[data-auth-message]");
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        messageNode.textContent = "כדאי לבדוק את כתובת המייל.";
+        messageNode.classList.add("error");
+        emailInput?.focus();
+        return;
+      }
+      if (password.length < 6) {
+        messageNode.textContent = "הסיסמה צריכה להיות לפחות 6 תווים.";
+        messageNode.classList.add("error");
+        passwordInput?.focus();
+        return;
+      }
+      const button = form.querySelector("button[type='submit']");
+      button?.setAttribute("disabled", "disabled");
+      if (button) button.textContent = isSignUp ? "יוצרים חשבון…" : "נכנסים…";
+      messageNode.textContent = "";
+      messageNode.classList.remove("error");
+      lastEmail = email;
+      const result = isSignUp
+        ? await signUpWithPassword(email, password)
+        : await signInWithPassword(email, password);
+      if (!result.ok) {
+        button?.removeAttribute("disabled");
+        if (button) button.textContent = isSignUp ? "יצירת חשבון" : "כניסה";
+        messageNode.textContent = result.error;
+        messageNode.classList.add("error");
+        return;
+      }
+      if (result.message) {
+        button?.removeAttribute("disabled");
+        if (button) button.textContent = isSignUp ? "יצירת חשבון" : "כניסה";
+        messageNode.textContent = result.message;
+        messageNode.classList.remove("error");
+      }
+    });
+  }
+
+  async function signInWithPassword(email, password) {
+    if (!client) return { ok: false, error: friendlyError("") };
+    const { data, error } = await client.auth.signInWithPassword({ email, password });
+    if (error) {
+      setState({ status: "signed-out", error: friendlyError(error) });
+      return { ok: false, error: friendlyError(error) };
+    }
+    if (data?.session?.user) {
+      setState({ status: "signed-in", session: data.session, user: data.session.user, error: null });
+      return { ok: true, signedIn: true };
+    }
+    return { ok: true, signedIn: false, message: "הכניסה נקלטה, אבל לא נוצר session. כדאי לרענן ולנסות שוב." };
+  }
+
+  async function signUpWithPassword(email, password) {
+    if (!client) return { ok: false, error: friendlyError("") };
+    const { data, error } = await client.auth.signUp({ email, password });
+    if (error) {
+      setState({ status: "signed-out", error: friendlyError(error) });
+      return { ok: false, error: friendlyError(error) };
+    }
+    if (data?.session?.user) {
+      setState({ status: "signed-in", session: data.session, user: data.session.user, error: null });
+      return { ok: true, signedIn: true };
+    }
+    return {
+      ok: true,
+      signedIn: false,
+      message: "החשבון נוצר, אבל Supabase עדיין דורש אישור מייל. אם כיבית Confirm email, רענני ונסי להיכנס."
+    };
   }
 
   async function signInWithEmail(email) {

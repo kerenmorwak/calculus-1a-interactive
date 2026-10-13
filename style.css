@@ -292,6 +292,9 @@ body.auth-required .profile-chip{display:none}
 .profile-account bdi{color:var(--ink);font-weight:700}
 .text-button{border:0;background:none;padding:6px 2px;color:var(--accent);font-weight:700;cursor:pointer;text-decoration:underline;text-underline-offset:3px;min-height:40px}
 .profile-actions .action{min-height:46px;min-width:140px;cursor:pointer}
+.auth-mode-switch{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;margin-bottom:10px;border:1px solid var(--line);border-radius:999px;background:#f3f6f7}
+.auth-mode-switch button{min-height:38px;border:0;border-radius:999px;background:transparent;color:var(--muted);font-weight:700;cursor:pointer}
+.auth-mode-switch button.is-active{background:#fff;color:var(--accent);box-shadow:0 1px 4px #172d3e14}
 .auth-form{display:grid;gap:8px}
 .auth-form label{font-weight:700}
 .auth-form input{min-height:46px}
@@ -299,6 +302,7 @@ body.auth-required .profile-chip{display:none}
 .auth-message:empty{display:none}
 .auth-message.error{color:#8a3b12}
 .auth-form .action{margin-top:8px;min-height:46px;cursor:pointer}
+.auth-alt{margin:2px 0 0;text-align:center}
 .auth-sent{display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border-radius:10px;background:#f2faf8;border:1px solid #bfd9d5;margin-bottom:16px}
 .auth-sent-mark{display:grid;place-items:center;flex:0 0 auto;width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;font-weight:700}
 .auth-sent strong{display:block;margin-bottom:3px}
