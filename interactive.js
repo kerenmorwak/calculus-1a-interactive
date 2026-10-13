@@ -535,18 +535,58 @@ function initLearnerAccount() {
   offerProfileOnFirstVisit();
 }
 
+// Local-only sites: a small note under the profile button invites the learner to
+// pick a nickname; it never covers the reading. With accounts, the profile step
+// comes right after sign-in instead.
 function offerProfileOnFirstVisit(waited = 0) {
   const profile = readLearnerProfile();
   if (profile?.completed || profile?.dismissedAt) return;
-  const authState = window.CalculusAuth?.getState?.();
-  if (authState?.signedIn) return; // signing in has its own profile step
-  if (authState?.status === "starting" && waited < 4000) {
+  const mode = headerAccountMode();
+  if (mode === "starting" && waited < 4000) {
     window.setTimeout(() => offerProfileOnFirstVisit(waited + 250), 250);
     return;
   }
-  window.setTimeout(() => {
-    if (!document.querySelector(".question-overlay:not([hidden])")) openLearnerProfileDialog({ returnFocus: null });
-  }, waited ? 0 : 600);
+  if (mode !== "local") return;
+  window.setTimeout(showProfileNudge, 1200);
+}
+
+function showProfileNudge() {
+  if (readLearnerProfile()?.completed || document.querySelector("[data-profile-nudge]")) return;
+  const bar = document.querySelector(".account-bar");
+  if (!bar) return;
+  const nudge = document.createElement("div");
+  nudge.className = "profile-nudge";
+  nudge.dataset.profileNudge = "";
+  nudge.setAttribute("role", "note");
+  nudge.innerHTML = `
+    <p>אפשר לבחור כינוי ואווטאר לקורס.</p>
+    <div>
+      <button class="action primary" type="button" data-nudge-open>בחירה</button>
+      <button class="text-button" type="button" data-nudge-later>לא עכשיו</button>
+    </div>
+  `;
+  bar.append(nudge);
+  nudge.querySelector("[data-nudge-open]").addEventListener("click", () => {
+    hideProfileNudge();
+    openLearnerProfileDialog({ returnFocus: document.querySelector("[data-open-learner-profile]") });
+  });
+  nudge.querySelector("[data-nudge-later]").addEventListener("click", () => {
+    hideProfileNudge();
+    rememberProfileDismissed();
+  });
+}
+
+function hideProfileNudge() {
+  document.querySelectorAll("[data-profile-nudge]").forEach((node) => node.remove());
+}
+
+function rememberProfileDismissed() {
+  const profile = readLearnerProfile();
+  if (profile?.completed) return;
+  learnerProfileMemoryStore = JSON.stringify({ ...(profile || {}), id: profile?.id || learnerProfileId(), dismissedAt: new Date().toISOString() });
+  try {
+    window.localStorage?.setItem(LEARNER_PROFILE_STORAGE_KEY, learnerProfileMemoryStore);
+  } catch {}
 }
 
 function refreshProgressUi() {
@@ -861,15 +901,32 @@ function renderMathAvatar(avatar, size = "") {
   return `<span class="math-avatar ${size}" data-avatar-accent="${avatar.accent}" aria-hidden="true"><img src="assets/avatars/${avatar.id}.svg" alt="" width="64" height="64" decoding="async"></span>`;
 }
 
+// The header shows only: avatar and "היי, {כינוי}". The mathematician's name
+// appears only inside the avatar picker. Before sign-in (when sign-in exists)
+// the header shows "כניסה" alone.
+function headerAccountMode() {
+  const auth = window.CalculusAuth;
+  const state = auth?.getState?.() || {};
+  const accountsOn = Boolean(auth?.isAvailable?.()) && state.status !== "error";
+  if (!accountsOn) return "local";
+  if (state.signedIn) return "signed-in";
+  return state.status === "starting" ? "starting" : "signed-out";
+}
+
 function updateLearnerProfileDisplay(profile = readLearnerProfile()) {
+  const mode = headerAccountMode();
   const ready = Boolean(profile?.completed && profile?.nickname);
   const avatar = ready ? learnerAvatarById(profile.avatarId) : null;
+  const showChip = mode === "local" || mode === "signed-in";
   document.querySelectorAll("[data-open-learner-profile]").forEach((chip) => {
+    chip.hidden = !showChip;
     chip.classList.toggle("is-empty", !ready);
-    chip.setAttribute("aria-label", ready ? `הפרופיל שלי: ${profile.nickname}` : "הפרופיל שלי");
+    chip.setAttribute("aria-label", ready ? `הפרופיל שלי: ${profile.nickname}` : "בחירת פרופיל");
+    chip.title = ready ? `היי, ${profile.nickname}` : "בחירת פרופיל";
   });
+  if (ready || !showChip) hideProfileNudge();
   document.querySelectorAll("[data-learner-name]").forEach((node) => {
-    node.textContent = ready ? profile.nickname : "הפרופיל שלי";
+    node.textContent = ready ? `היי, ${profile.nickname}` : "בחירת פרופיל";
   });
   document.querySelectorAll("[data-learner-avatar]").forEach((node) => {
     node.outerHTML = renderMathAvatar(avatar).replace("<span ", "<span data-learner-avatar ");
@@ -910,16 +967,8 @@ function closeLearnerProfileDialog({ dismissed = false } = {}) {
   if (!document.querySelector(".question-overlay:not([hidden])")) {
     document.body.classList.remove("question-modal-open");
   }
-  if (dismissed) {
-    const profile = readLearnerProfile();
-    if (!profile?.completed) {
-      // Remember the "not now" so the picker does not reopen on every visit.
-      learnerProfileMemoryStore = JSON.stringify({ ...(profile || {}), id: profile?.id || learnerProfileId(), dismissedAt: new Date().toISOString() });
-      try {
-        window.localStorage?.setItem(LEARNER_PROFILE_STORAGE_KEY, learnerProfileMemoryStore);
-      } catch {}
-    }
-  }
+  // Remember the "not now" so the picker does not reopen on every visit.
+  if (dismissed) rememberProfileDismissed();
   if (profileReturnFocus?.isConnected && !profileReturnFocus.closest("[hidden]")) profileReturnFocus.focus({ preventScroll: true });
   profileReturnFocus = null;
 }
@@ -1025,7 +1074,7 @@ function renderLearnerProfileDialog(overlay, profile, mode) {
       <div class="profile-preview" aria-hidden="true" data-profile-preview>
         ${renderMathAvatar(learnerAvatarById(selectedId), "is-large")}
         <div>
-          <strong data-preview-name>${escapeHtml(profile.nickname || "הכינוי שלך")}</strong>
+          <strong data-preview-name>${escapeHtml(profile.nickname ? `היי, ${profile.nickname}` : "היי, …")}</strong>
           <span data-preview-avatar>${escapeHtml(learnerAvatarById(selectedId)?.name || "בחרו אווטאר")}</span>
         </div>
       </div>
@@ -1062,7 +1111,7 @@ function renderLearnerProfileDialog(overlay, profile, mode) {
     const chosen = learnerAvatarById(form.querySelector("input[name='learner-avatar']:checked")?.value);
     const preview = form.querySelector("[data-profile-preview]");
     preview.querySelector(".math-avatar").outerHTML = renderMathAvatar(chosen, "is-large");
-    preview.querySelector("[data-preview-name]").textContent = input.value.trim() || "הכינוי שלך";
+    preview.querySelector("[data-preview-name]").textContent = `היי, ${input.value.trim() || "…"}`;
     preview.querySelector("[data-preview-avatar]").textContent = chosen?.name || "בחרו אווטאר";
   };
   form.addEventListener("input", syncPreview);
@@ -1166,6 +1215,7 @@ function bindLearnerProfileCloudSync() {
       updateLearnerProfileDisplay();
       return;
     }
+    updateLearnerProfileDisplay();
     hydrateUserDataFromCloud(authState).catch(() => {});
   });
 }

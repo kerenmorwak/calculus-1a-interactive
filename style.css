@@ -297,7 +297,6 @@ html{scroll-padding-top:92px}
 }
 @media(max-width:360px){
   .avatar-options{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .brand span{display:none}
 }
 .profile-dialog .question-close,.auth-dialog .question-close{width:40px;height:40px}
 .profile-dialog .profile-actions{position:sticky;bottom:-26px;margin-bottom:-26px;padding-block:12px 26px;background:linear-gradient(to bottom,rgba(255,255,255,0),#fff 12px);z-index:1}
@@ -312,3 +311,36 @@ html{scroll-padding-top:92px}
 .confirm-line{flex:1 0 100%;margin:0 0 4px;font-weight:700;color:#7a2f12}
 .action.danger{background:#9a3412;border-color:#9a3412;color:#fff}
 .action.danger:hover{background:#7c2d12}
+
+/* Header profile chip: avatar + "היי, {כינוי}", one line, never wraps */
+.account-bar{position:relative}
+.profile-chip{gap:8px;padding:3px 12px 3px 4px;font-weight:600;font-size:.92rem;white-space:nowrap}
+.profile-chip[hidden]{display:none}
+.profile-chip-name{display:block;max-width:15ch}
+.profile-chip.is-empty{padding:3px 12px 3px 4px;color:var(--muted);font-weight:500;border-style:dashed}
+.profile-chip.is-empty .math-avatar{width:28px;height:28px}
+/* A small invitation under the chip (local-only sites); it does not cover the page */
+.profile-nudge{position:absolute;top:calc(100% + 10px);inset-inline-end:0;z-index:40;width:max-content;max-width:min(300px,calc(100vw - 24px));padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:#fff;box-shadow:0 10px 30px #172d3e1f;animation:nudgeIn .25s ease-out}
+.profile-nudge::before{content:"";position:absolute;top:-6px;inset-inline-end:28px;width:10px;height:10px;background:#fff;border-top:1px solid var(--line);border-left:1px solid var(--line);transform:rotate(45deg)}
+.profile-nudge p{margin:0 0 10px;color:var(--ink);font-size:.92rem;line-height:1.5;white-space:normal}
+.profile-nudge div{display:flex;align-items:center;gap:10px}
+.profile-nudge .action{min-height:38px;padding:7px 14px;cursor:pointer}
+@keyframes nudgeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.profile-nudge{animation:none}}
+@media(max-width:680px){
+  .profile-chip{padding:3px 10px 3px 3px;max-width:none}
+  .profile-chip-name{display:block;max-width:8ch;font-size:.86rem}
+  .profile-chip.is-empty .profile-chip-name{max-width:none}
+}
+@media(max-width:380px){
+  .profile-chip{padding:3px}
+  .profile-chip-name{display:none}
+}
+
+/* Keep the site title on one line next to the account area */
+.brand{min-width:0}
+.brand>span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:420px){
+  .brand-photo{display:none}
+  .brand>span{font-size:.98rem}
+}
