@@ -1,19 +1,41 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="מטבע">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="מטבע">
+  <!-- Drawn after the Calculoot reference coin: bronze-gold rim, deep purple face, script C. -->
   <defs>
-    <radialGradient id="face" cx="38%" cy="32%" r="72%">
-      <stop offset="0" stop-color="#FBE7A8"/>
-      <stop offset=".55" stop-color="#E2B04E"/>
-      <stop offset="1" stop-color="#B7832A"/>
+    <linearGradient id="rim" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#F1D3A0"/>
+      <stop offset=".45" stop-color="#C99A5B"/>
+      <stop offset="1" stop-color="#8E6232"/>
+    </linearGradient>
+    <linearGradient id="rimInner" x1="1" y1="1" x2="0" y2="0">
+      <stop offset="0" stop-color="#F0D19C"/>
+      <stop offset="1" stop-color="#9A6C39"/>
+    </linearGradient>
+    <radialGradient id="face" cx="38%" cy="30%" r="75%">
+      <stop offset="0" stop-color="#7A3FB0"/>
+      <stop offset=".55" stop-color="#4E2382"/>
+      <stop offset="1" stop-color="#2E1352"/>
     </radialGradient>
-    <linearGradient id="rim" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#C9963A"/>
-      <stop offset="1" stop-color="#8A5F17"/>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#F6DDB0"/>
+      <stop offset=".5" stop-color="#D6A867"/>
+      <stop offset="1" stop-color="#A9773F"/>
     </linearGradient>
   </defs>
-  <circle cx="16" cy="16" r="15" fill="url(#rim)"/>
-  <circle cx="16" cy="16" r="12.6" fill="url(#face)"/>
-  <circle cx="16" cy="16" r="10.9" fill="none" stroke="#9C6C1E" stroke-opacity=".45" stroke-width=".8"/>
-  <!-- engraved integral sign -->
-  <path d="M19.4 8.6c-1.5-.9-3.1.1-3.4 2l-1.3 9.1c-.3 1.9-1.9 2.9-3.4 2" fill="none" stroke="#7A5212" stroke-width="1.9" stroke-linecap="round"/>
-  <path d="M19.4 8.6c-1.5-.9-3.1.1-3.4 2l-1.3 9.1c-.3 1.9-1.9 2.9-3.4 2" fill="none" stroke="#FFF1C4" stroke-opacity=".55" stroke-width=".7" stroke-linecap="round" transform="translate(-.45 -.45)"/>
+  <circle cx="32" cy="32" r="31" fill="url(#rim)"/>
+  <circle cx="32" cy="32" r="29.6" fill="none" stroke="#7C5428" stroke-opacity=".35" stroke-width=".8"/>
+  <circle cx="32" cy="32" r="22.6" fill="url(#rimInner)"/>
+  <circle cx="32" cy="32" r="21" fill="url(#face)"/>
+  <circle cx="32" cy="32" r="19.4" fill="none" stroke="#C99A5B" stroke-opacity=".55" stroke-width=".7"/>
+  <!-- rim studs, as on the reference -->
+  <circle cx="5.6" cy="32" r="1.3" fill="#8E6232"/>
+  <circle cx="58.4" cy="32" r="1.3" fill="#8E6232"/>
+  <circle cx="32" cy="58.4" r="1.3" fill="#8E6232"/>
+  <circle cx="32" cy="5.6" r="1.3" fill="#8E6232"/>
+  <!-- script C -->
+  <path d="M41.6 22.6c-1.2-3.4-4.4-5.3-8.1-5.1-6.6.4-11.7 6.9-11.8 14-.1 6.1 3.6 10.6 9.1 10.6 3.8 0 6.9-2 8.9-5.3"
+        fill="none" stroke="#2A1048" stroke-opacity=".45" stroke-width="4.4" stroke-linecap="round" transform="translate(.7 .9)"/>
+  <path d="M41.6 22.6c-1.2-3.4-4.4-5.3-8.1-5.1-6.6.4-11.7 6.9-11.8 14-.1 6.1 3.6 10.6 9.1 10.6 3.8 0 6.9-2 8.9-5.3"
+        fill="none" stroke="url(#gold)" stroke-width="4.2" stroke-linecap="round"/>
+  <circle cx="41.9" cy="23.4" r="2.6" fill="url(#gold)"/>
+  <path d="M33.5 18.6c-4.6.6-8.3 5.6-8.4 11.2" fill="none" stroke="#FFF1D6" stroke-opacity=".6" stroke-width="1" stroke-linecap="round"/>
 </svg>
