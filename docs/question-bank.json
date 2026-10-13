@@ -374,35 +374,35 @@
       "section": "1.2",
       "unitTitle": "לאן הגעתם, איך מדברים כאן",
       "topic": "לאן הגעתם, איך מדברים כאן",
-      "prompt": "מה הבעיה בניסוח 'בערך נכון' בהקשר של טענה מתמטית?",
+      "prompt": "סטודנט כותב בהוכחה: 'הטענה בערך נכונה, כי היא עובדת כמעט תמיד'. מה הבעיה?",
       "options": [
         {
           "index": 0,
           "label": "A",
-          "text": "אין בעיה אם האינטואיציה טובה",
-          "correct": false
+          "text": "טענה מתמטית היא נכונה או לא נכונה; 'כמעט תמיד' אינו ערך אמת",
+          "correct": true
         },
         {
           "index": 1,
           "label": "B",
-          "text": "טענה מתמטית צריכה להיות נכונה או לא נכונה, לא בערך",
-          "correct": true
+          "text": "אין בעיה, אם הוא מוסיף דוגמה אחת שבה הטענה עובדת",
+          "correct": false
         },
         {
           "index": 2,
           "label": "C",
-          "text": "זה מותר רק בפרק 1",
+          "text": "אין בעיה, אם הטענה עובדת לכל המספרים הטבעיים הקטנים מ־100",
           "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "זה מותר אם יש הרבה דוגמאות",
+          "text": "הבעיה רק בניסוח; את אותו טיעון מותר לכתוב במילים אחרות",
           "correct": false
         }
       ],
-      "correctOption": "B",
-      "feedback": "נכון. בקורס הזה לא משאירים טענות במצב עמום.",
+      "correctOption": "A",
+      "feedback": "נכון. לטענה מתמטית יש ערך אמת מוגדר. אם יש אפילו מקרה אחד שבו היא נכשלת, טענת 'לכל' שקרית.",
       "layer": "base",
       "questionMode": "conceptual-application",
       "skills": [
@@ -578,35 +578,35 @@
       "section": "1.2",
       "unitTitle": "לאן הגעתם, איך מדברים כאן",
       "topic": "לאן הגעתם, איך מדברים כאן",
-      "prompt": "מה צריך להיות ברור בהוכחה טובה?",
+      "prompt": "מה צריך להיות ברור לקוראת של הוכחה טובה?",
       "options": [
         {
           "index": 0,
           "label": "A",
-          "text": "רק השורה האחרונה",
-          "correct": false
+          "text": "מהן ההנחות, מהי המסקנה, ומאיזה נימוק נובע כל צעד",
+          "correct": true
         },
         {
           "index": 1,
           "label": "B",
-          "text": "מה ההנחות, מה המסקנה, ואיך כל צעד נובע",
-          "correct": true
+          "text": "שהמסקנה נכונה, גם אם חלק מהצעדים קופצים על פרטים",
+          "correct": false
         },
         {
           "index": 2,
           "label": "C",
-          "text": "רק האינטואיציה מאחורי הטענה",
+          "text": "שהטענה נבדקה בכמה דוגמאות מגוונות",
           "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "רק דוגמה מספרית אחת",
+          "text": "שהאינטואיציה מאחורי הטענה משכנעת",
           "correct": false
         }
       ],
-      "correctOption": "B",
-      "feedback": "נכון. הקורא צריך לראות את המעבר המדויק מההנחות למסקנה.",
+      "correctOption": "A",
+      "feedback": "נכון. הוכחה מאפשרת לבדוק כל מעבר בנפרד: מה הניחו, מה רוצים להראות, ולמה כל שורה נובעת מהקודמות.",
       "layer": "base",
       "questionMode": "proof-step",
       "skills": [
@@ -629,35 +629,35 @@
       "section": "1.2",
       "unitTitle": "לאן הגעתם, איך מדברים כאן",
       "topic": "לאן הגעתם, איך מדברים כאן",
-      "prompt": "למה חשוב שטענה תהיה מנוסחת היטב?",
+      "prompt": "למה חשוב לנסח טענה במדויק לפני שמנסים להוכיח אותה?",
       "options": [
         {
           "index": 0,
           "label": "A",
-          "text": "כדי שתהיה ארוכה יותר",
-          "correct": false
+          "text": "כי רק אז אפשר לדעת מה בדיוק צריך להוכיח, ומה ייחשב דוגמה נגדית",
+          "correct": true
         },
         {
           "index": 1,
           "label": "B",
-          "text": "כדי שלא יהיה צורך בהוכחה",
+          "text": "כי ניסוח מדויק חוסך את הצורך בהוכחה",
           "correct": false
         },
         {
           "index": 2,
           "label": "C",
-          "text": "כדי שאפשר יהיה לדעת מה בדיוק נטען ומה צריך להוכיח",
-          "correct": true
+          "text": "כי טענה מנוסחת היטב נכונה תמיד",
+          "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "כדי להשתמש ביותר סימונים",
+          "text": "כי הניסוח קובע באילו אקסיומות מותר להשתמש",
           "correct": false
         }
       ],
-      "correctOption": "C",
-      "feedback": "נכון. ניסוח חד הוא תנאי מוקדם לבדיקה ולהוכחה.",
+      "correctOption": "A",
+      "feedback": "נכון. ניסוח חד קובע מה ההנחות ומה המסקנה. בלי זה אי אפשר לבדוק הוכחה, וגם לא לדעת מה מפריך את הטענה.",
       "layer": "base",
       "questionMode": "application",
       "skills": [
@@ -986,35 +986,35 @@
       "section": "1.3",
       "unitTitle": "מעט לוגיקה",
       "topic": "מעט לוגיקה",
-      "prompt": "מה ההבדל בין ∀x∃y: y>x לבין ∃y∀x: y>x?",
+      "prompt": "x ו־y הם מספרים ממשיים. מה ההבדל בין ∀x∃y: y>x לבין ∃y∀x: y>x?",
       "options": [
         {
           "index": 0,
           "label": "A",
-          "text": "הראשונה אומרת שלכל x אפשר למצוא y גדול ממנו; השנייה דורשת y אחד שגדול מכל x",
+          "text": "בראשונה y נבחר אחרי x ויכול להיות תלוי בו; בשנייה y אחד צריך להתאים לכל x",
           "correct": true
         },
         {
           "index": 1,
           "label": "B",
-          "text": "אלו שתי דרכים זהות לכתוב אותה טענה",
+          "text": "אין הבדל: אותם כמתים מופיעים בשתי הטענות, רק בסדר אחר",
           "correct": false
         },
         {
           "index": 2,
           "label": "C",
-          "text": "השנייה חלשה יותר כי היא משתמשת בפחות כמתים",
+          "text": "השנייה נכונה ב־R והראשונה לא, כי בשנייה y קבוע",
           "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "הראשונה שקרית בכל קבוצה לא ריקה",
+          "text": "הראשונה גוררת את השנייה: אם לכל x יש y, אפשר לקחת את הגדול מביניהם",
           "correct": false
         }
       ],
       "correctOption": "A",
-      "feedback": "נכון. סדר הכמתים משנה את מי נבחר אחרי מי, וזה משנה את משמעות הטענה.",
+      "feedback": "נכון. ב־R הראשונה נכונה (y=x+1) והשנייה שקרית, כי y אחד לא יכול להיות גדול מכל x, ובפרט מ־y עצמו. 'לקחת את הגדול מביניהם' לא עובד כשיש אינסוף x.",
       "layer": "base",
       "questionMode": "conceptual-application",
       "skills": [
@@ -1105,7 +1105,7 @@
         {
           "index": 2,
           "label": "C",
-          "text": "∀n∈N ∃x∈R: x>n",
+          "text": "∀x∈R (x>0 ∧ ∃n∈N: n>x)",
           "correct": false
         },
         {
@@ -1116,7 +1116,7 @@
         }
       ],
       "correctOption": "A",
-      "feedback": "יפה. קודם בוחרים מספר ממשי חיובי שרירותי, ואז מותר לבחור טבעי שתלוי בו.",
+      "feedback": "נכון. את 'לכל x חיובי' כותבים בעזרת גרירה מהתנאי x>0. עם ∧ הטענה אומרת שכל ממשי הוא חיובי, וזה שקר. בניסוח שמתחיל ב־∃n, אותו n היה צריך להתאים לכל x.",
       "layer": "base",
       "questionMode": "conceptual-application",
       "skills": [
@@ -1156,18 +1156,18 @@
         {
           "index": 2,
           "label": "C",
-          "text": "x=2",
+          "text": "x=0.000001",
           "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "x=10",
+          "text": "x=1/2",
           "correct": false
         }
       ],
       "correctOption": "B",
-      "feedback": "נכון. אם x=0, אין מספר y שהוא גם חיובי וגם קטן מ־0.",
+      "feedback": "נכון. ל־x=0 אין y עם 0<y<0. לכל x חיובי, גם קטן מאוד, y=x/2 מתאים, ולכן x חיובי לא מפריך את הטענה.",
       "layer": "base",
       "questionMode": "application",
       "skills": [
@@ -1513,13 +1513,13 @@
         {
           "index": 2,
           "label": "C",
-          "text": "מחליפים את x בקבוצה A",
+          "text": "מסיקים x∈A, כי A מופיעה ראשונה באגף ימין",
           "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "צריך להניח מראש ש־A⊆B",
+          "text": "מניחים מראש ש־A⊆B, ואז שני הצדדים שווים",
           "correct": false
         }
       ],
@@ -1609,7 +1609,7 @@
         {
           "index": 1,
           "label": "B",
-          "text": "מ־x∈A מקבלים תמיד x∈A−B",
+          "text": "מ־x∈A מקבלים x∈A−B",
           "correct": false
         },
         {
@@ -1621,7 +1621,7 @@
         {
           "index": 3,
           "label": "D",
-          "text": "מ־A−B≠∅ מקבלים A⊆B",
+          "text": "מ־x∈A−B מקבלים x∈B, ולכן x∈A",
           "correct": false
         }
       ],
@@ -1655,30 +1655,30 @@
         {
           "index": 0,
           "label": "A",
-          "text": "נבחר x∈A, מההכלה הראשונה נקבל x∈B, ומהשנייה נקבל x∈C",
+          "text": "נבחר x∈A; מההכלה הראשונה x∈B, ומהשנייה x∈C",
           "correct": true
         },
         {
           "index": 1,
           "label": "B",
-          "text": "נבחר x∈C ונחזיר אותו אחורה עד A",
+          "text": "נבחר x∈C ונראה שהוא שייך ל־A",
           "correct": false
         },
         {
           "index": 2,
           "label": "C",
-          "text": "נשתמש בכך ש־A∈C",
+          "text": "נבחר x∈A, ומההכלה B⊆C נקבל ישר x∈C",
           "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "נבדוק רק שהקבוצות מכילות אותו מספר איברים",
+          "text": "נראה ש־C⊆A, ואז A⊆C נובע",
           "correct": false
         }
       ],
       "correctOption": "A",
-      "feedback": "נכון. ההכלה עוברת דרך איבר שרירותי, לא דרך השוואת גדלים.",
+      "feedback": "נכון. B⊆C אומרת משהו רק על איברים של B, ולכן צריך קודם להשתמש ב־A⊆B כדי לדעת ש־x∈B.",
       "layer": "base",
       "questionMode": "application",
       "skills": [
@@ -1827,7 +1827,7 @@
         {
           "index": 3,
           "label": "D",
-          "text": "{x∈R : a∈x∈b}",
+          "text": "{x∈R : a<x≤b}",
           "correct": false
         }
       ],
@@ -1855,30 +1855,30 @@
       "section": "1.5",
       "unitTitle": "קבוצות חשובות של מספרים",
       "topic": "קבוצות חשובות של מספרים",
-      "prompt": "מה צריך להיזהר בו לגבי N ברשימות?",
+      "prompt": "מה נכון לגבי הסימון N ברשימות?",
       "options": [
         {
           "index": 0,
           "label": "A",
-          "text": "N לעולם אינה כוללת 0",
+          "text": "N לעולם אינה כוללת את 0",
           "correct": false
         },
         {
           "index": 1,
           "label": "B",
-          "text": "N לעולם כוללת 0",
+          "text": "N כוללת גם את המספרים השליליים",
           "correct": false
         },
         {
           "index": 2,
           "label": "C",
-          "text": "צריך להבין בכל הקשר האם מתכוונים לטבעיים עם 0 או בלי 0",
+          "text": "צריך לבדוק בכל הקשר אם מתכוונים לטבעיים עם 0 או בלי 0",
           "correct": true
         },
         {
           "index": 3,
           "label": "D",
-          "text": "N אינה משמשת בקורס",
+          "text": "N ו־Z הן שני שמות לאותה קבוצה",
           "correct": false
         }
       ],
@@ -1906,35 +1906,35 @@
       "section": "1.5",
       "unitTitle": "קבוצות חשובות של מספרים",
       "topic": "קבוצות חשובות של מספרים",
-      "prompt": "איזה ניסוח מתאים למספר רציונלי?",
+      "prompt": "איזו הגדרה של מספר רציונלי מדויקת?",
       "options": [
         {
           "index": 0,
           "label": "A",
-          "text": "מספר שאי אפשר לכתוב כשבר",
+          "text": "מספר מהצורה p/q, כאשר p ו־q שלמים",
           "correct": false
         },
         {
           "index": 1,
           "label": "B",
-          "text": "p/q כאשר p שלם ו־q טבעי שאינו אפס",
+          "text": "מספר מהצורה p/q, כאשר p שלם, q טבעי ו־q≠0",
           "correct": true
         },
         {
           "index": 2,
           "label": "C",
-          "text": "מספר שאינו ממשי",
+          "text": "מספר מהצורה p/q, כאשר p ו־q טבעיים ו־q≠0",
           "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "מספר שהוא תמיד שלם",
+          "text": "מספר שהפיתוח העשרוני שלו סופי",
           "correct": false
         }
       ],
       "correctOption": "B",
-      "feedback": "נכון. רציונלי הוא מנה של שלם ומכנה טבעי שאינו אפס.",
+      "feedback": "נכון. בלי q≠0 הביטוי p/q לא מוגדר. כשהמונה רק טבעי מפספסים את הרציונליים השליליים, ו־1/3 רציונלי אף שהפיתוח העשרוני שלו אינסופי.",
       "layer": "base",
       "questionMode": "conceptual-application",
       "skills": [
@@ -1957,35 +1957,35 @@
       "section": "1.5",
       "unitTitle": "קבוצות חשובות של מספרים",
       "topic": "קבוצות חשובות של מספרים",
-      "prompt": "מה מתאר הקטע [a,b]?",
+      "prompt": "נתון a<b. לאילו מהקבוצות (a,b), [a,b), (a,b], [a,b] שייך המספר b?",
       "options": [
         {
           "index": 0,
           "label": "A",
-          "text": "a<x<b",
-          "correct": false
+          "text": "רק ל־(a,b] ול־[a,b]",
+          "correct": true
         },
         {
           "index": 1,
           "label": "B",
-          "text": "a<x≤b",
+          "text": "רק ל־[a,b]",
           "correct": false
         },
         {
           "index": 2,
           "label": "C",
-          "text": "a≤x≤b",
-          "correct": true
+          "text": "לכל ארבע הקבוצות",
+          "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "x<a או x>b",
+          "text": "רק ל־(a,b) ול־[a,b)",
           "correct": false
         }
       ],
-      "correctOption": "C",
-      "feedback": "נכון. קטע סגור כולל את שתי נקודות הקצה.",
+      "correctOption": "A",
+      "feedback": "נכון. סוגר מרובע ליד b אומר ש־b כלול; סוגר עגול אומר שהוא לא כלול. מה שקורה ליד a לא משנה את השייכות של b.",
       "layer": "base",
       "questionMode": "conceptual-application",
       "skills": [
@@ -2059,35 +2059,35 @@
       "section": "1.5",
       "unitTitle": "קבוצות חשובות של מספרים",
       "topic": "קבוצות חשובות של מספרים",
-      "prompt": "מה המשמעות של |x−y| על הישר הממשי?",
+      "prompt": "מהי קבוצת הפתרונות של |x−3|≤2?",
       "options": [
         {
           "index": 0,
           "label": "A",
-          "text": "הסכום של x ו־y",
+          "text": "(1,5)",
           "correct": false
         },
         {
           "index": 1,
           "label": "B",
-          "text": "המרחק בין x לבין y",
+          "text": "[1,5]",
           "correct": true
         },
         {
           "index": 2,
           "label": "C",
-          "text": "המספר הגדול מבין x,y",
+          "text": "(−∞,1]∪[5,∞)",
           "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "הסימן של x−y",
+          "text": "[−5,5]",
           "correct": false
         }
       ],
       "correctOption": "B",
-      "feedback": "נכון. ערך מוחלט של הפרש מודד מרחק.",
+      "feedback": "נכון. האי־שוויון אומר שהמרחק של x מ־3 הוא לכל היותר 2, כלומר 1≤x≤5. שני הקצוות כלולים כי האי־שוויון אינו חד.",
       "layer": "base",
       "questionMode": "conceptual-application",
       "skills": [
@@ -2115,13 +2115,13 @@
         {
           "index": 0,
           "label": "A",
-          "text": "ציור הישר לבדו",
+          "text": "ציור של ישר המספרים",
           "correct": false
         },
         {
           "index": 1,
           "label": "B",
-          "text": "התכונות שהוגדרו או הוכרזו במפורש",
+          "text": "התכונות של R שנקבעו במפורש: שדה סדור, ארכימדי ושלם",
           "correct": true
         },
         {
@@ -2133,12 +2133,12 @@
         {
           "index": 3,
           "label": "D",
-          "text": "העובדה שכל מספר ממשי הוא רציונלי או טבעי",
+          "text": "בנייה של R בחתכי דדקינד, שנעשית בפרק",
           "correct": false
         }
       ],
       "correctOption": "B",
-      "feedback": "נכון. בשלב הזה הרשימות נותנות תכונות עבודה, וההוכחות נשענות עליהן.",
+      "feedback": "נכון. הרשימות לא בונות את R; הן קובעות את התכונות שמותר להשתמש בהן, וכל טענה אחרת צריך לגזור מהן.",
       "layer": "base",
       "questionMode": "proof-step",
       "skills": [
@@ -2214,35 +2214,35 @@
       "section": "1.6",
       "unitTitle": "המספרים הממשיים",
       "topic": "שדה סדור",
-      "prompt": "מופיע הטיעון: “אם x<y אז גם x^2<y^2”. איזו בדיקה פורמלית מראה שהטיעון שגוי?",
+      "prompt": "מופיע הטיעון: 'אם x<y אז x²<y²'. מתי הוא נכון?",
       "options": [
         {
           "index": 0,
           "label": "A",
-          "text": "הטענה נכונה לכל x<y, ולכן אין בעיה",
+          "text": "לכל x<y בשדה סדור",
           "correct": false
         },
         {
           "index": 1,
           "label": "B",
-          "text": "בודקים סימנים או דוגמה נגדית: למשל x=-2 ו־y=1, אז x<y אבל x^2>y^2",
+          "text": "כאשר 0≤x<y",
           "correct": true
         },
         {
           "index": 2,
           "label": "C",
-          "text": "מספיק להוסיף 1 לשני האגפים",
+          "text": "כאשר x<y<0",
           "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "הבעיה היא שריבוע מוגדר רק למספרים טבעיים",
+          "text": "כאשר x ו־y שלמים",
           "correct": false
         }
       ],
       "correctOption": "B",
-      "feedback": "נכון. אי אפשר להפעיל מונוטוניות של הריבוע על כל R; צריך תנאי סימן או דוגמה נגדית.",
+      "feedback": "נכון. אם 0≤x<y, אפשר לכפול באי־שוויון במספרים לא שליליים ולקבל x²<y². בלי תנאי סימן הטיעון נופל, למשל עבור x=−2 ו־y=1. כאשר x<y<0 הכיוון מתהפך.",
       "layer": "base",
       "questionMode": "counterexample",
       "skills": [
@@ -2266,35 +2266,35 @@
       "section": "1.6",
       "unitTitle": "המספרים הממשיים",
       "topic": "המספרים הממשיים",
-      "prompt": "איזו חבילה של תכונות היא בסיסית להמשך העבודה עם R?",
+      "prompt": "גם Q וגם R הם שדות סדורים וארכימדיים. איזו תכונה יש ל־R ואין ל־Q?",
       "options": [
         {
           "index": 0,
           "label": "A",
-          "text": "רק תכונות ציוריות",
+          "text": "קיום הופכי לכל איבר שונה מ־0",
           "correct": false
         },
         {
           "index": 1,
           "label": "B",
-          "text": "רק חיבור וחיסור",
-          "correct": false
+          "text": "שלמות: לכל קבוצה לא ריקה וחסומה מלעיל יש חסם מלעיל קטן ביותר",
+          "correct": true
         },
         {
           "index": 2,
           "label": "C",
-          "text": "שדה סדור, ארכימדיות ושלמות",
-          "correct": true
+          "text": "השוואה של כל שני מספרים",
+          "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "רק תכונות של מספרים טבעיים",
+          "text": "חוק הפילוג",
           "correct": false
         }
       ],
-      "correctOption": "C",
-      "feedback": "נכון. אלה התכונות שמהן מתחילים לבנות את הטיעונים הבאים.",
+      "correctOption": "B",
+      "feedback": "נכון. השלמות היא מה שחסר ל־Q. למשל לקבוצה {q∈Q : q²<2} אין ב־Q חסם מלעיל קטן ביותר.",
       "layer": "base",
       "questionMode": "conceptual-application",
       "skills": [
@@ -2323,7 +2323,7 @@
         {
           "index": 0,
           "label": "A",
-          "text": "מ־x<y להסיק x+z<y+z",
+          "text": "מ־x<y ו־y<z להסיק x<z",
           "correct": false
         },
         {
@@ -2335,18 +2335,18 @@
         {
           "index": 2,
           "label": "C",
-          "text": "מ־x+y=y+x להסיק x<y",
+          "text": "מ־x<y להסיק xz<yz לכל z",
           "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "מ־x∈R להסיק x∈Q",
+          "text": "מ־x<y להסיק x+z<y+z",
           "correct": false
         }
       ],
       "correctOption": "B",
-      "feedback": "נכון. זו תכונת התאמה בין הסדר לבין הכפל.",
+      "feedback": "נכון. 0<x ו־0<y ⇒ 0<xy היא תכונת הכפל בשדה סדור. כפל ב־z שלילי הופך את האי־שוויון, ולכן 'לכל z' שגוי.",
       "layer": "base",
       "questionMode": "proof-step",
       "skills": [
@@ -2427,30 +2427,30 @@
         {
           "index": 0,
           "label": "A",
-          "text": "כי כל שבר הוא שלם",
+          "text": "כי R כוללת גם את השלמים, והם אינם שברים",
           "correct": false
         },
         {
           "index": 1,
           "label": "B",
-          "text": "כי R כוללת גם מספרים שאינם רציונליים",
+          "text": "כי R כוללת גם מספרים שאינם רציונליים, כמו √2",
           "correct": true
         },
         {
           "index": 2,
           "label": "C",
-          "text": "כי אין שברים שליליים",
+          "text": "כי שברים שליליים אינם שייכים ל־R",
           "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "כי Q אינה תת־קבוצה של R",
+          "text": "כי ב־R מותר לחלק ב־0 וב־Q לא",
           "correct": false
         }
       ],
       "correctOption": "B",
-      "feedback": "נכון. כבר בשלב זה צריך להבחין בין Q לבין R.",
+      "feedback": "נכון. ההכלה Q⊆R היא ממש, כי √2∈R ואינו רציונלי. שלמים הם כן שברים, למשל 3=3/1.",
       "layer": "base",
       "questionMode": "conceptual-application",
       "skills": [
@@ -2474,35 +2474,35 @@
       "section": "1.6",
       "unitTitle": "המספרים הממשיים",
       "topic": "המספרים הממשיים",
-      "prompt": "בהוכחה מופיע המעבר: “אם x<y אז x+z<y+z”. מה צריך להיאמר כדי שהצעד יהיה מוצדק?",
+      "prompt": "איזו מהטענות הבאות אינה נובעת רק מכך ש־R שדה סדור?",
       "options": [
         {
           "index": 0,
           "label": "A",
-          "text": "שזה נכון רק בדוגמאות שבהן z חיובי",
-          "correct": false
+          "text": "לכל קבוצה לא ריקה וחסומה מלעיל יש חסם מלעיל קטן ביותר",
+          "correct": true
         },
         {
           "index": 1,
           "label": "B",
-          "text": "שאחרי ההוספה צריך לבדוק מחדש כל דוגמה בנפרד",
+          "text": "x+0=x לכל x",
           "correct": false
         },
         {
           "index": 2,
           "label": "C",
-          "text": "התאמת הסדר לחיבור בשדה סדור",
-          "correct": true
+          "text": "אם 0<x ו־0<y אז 0<xy",
+          "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "שצריך קודם להוכיח ש־x ו־y טבעיים",
+          "text": "אם x<y אז x+z<y+z",
           "correct": false
         }
       ],
-      "correctOption": "C",
-      "feedback": "נכון. המעבר נשען על אקסיומת הסדר שמתאימה לחיבור: הוספת אותו איבר לשני האגפים שומרת על אי־השוויון.",
+      "correctOption": "A",
+      "feedback": "נכון. זו אקסיומת השלמות. גם Q שדה סדור, ובו הטענה נכשלת.",
       "layer": "base",
       "questionMode": "proof-step",
       "skills": [
@@ -2578,35 +2578,35 @@
       "section": "1.6.1",
       "unitTitle": "שדה ושדה סדור",
       "topic": "שדה ושדה סדור",
-      "prompt": "איזו תכונה מערבת גם סדר וגם חיבור?",
+      "prompt": "איזו תכונה מקשרת בין הסדר לבין הכפל?",
       "options": [
         {
           "index": 0,
           "label": "A",
-          "text": "אם x<y אז x+z<y+z",
-          "correct": true
+          "text": "x·y=y·x",
+          "correct": false
         },
         {
           "index": 1,
           "label": "B",
-          "text": "x+y=y+x",
-          "correct": false
+          "text": "אם x<y ו־0<z אז xz<yz",
+          "correct": true
         },
         {
           "index": 2,
           "label": "C",
-          "text": "x·1=x",
+          "text": "x·(y+z)=x·y+x·z",
           "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "x+0=x",
+          "text": "אם x<y ו־y<z אז x<z",
           "correct": false
         }
       ],
-      "correctOption": "A",
-      "feedback": "נכון. זו תכונת התאמה בין יחס הסדר לפעולת החיבור.",
+      "correctOption": "B",
+      "feedback": "נכון. זו התאמת הסדר לכפל במספר חיובי. השאר הן תכונות של הכפל לבדו או של הסדר לבדו.",
       "layer": "base",
       "questionMode": "conceptual-application",
       "skills": [
@@ -2686,30 +2686,30 @@
         {
           "index": 0,
           "label": "A",
-          "text": "יחס סדר שמתאים לפעולות",
+          "text": "יחס סדר מלא שמתאים לחיבור ולכפל",
           "correct": true
         },
         {
           "index": 1,
           "label": "B",
-          "text": "רק עוד סימון",
+          "text": "אקסיומת השלמות",
           "correct": false
         },
         {
           "index": 2,
           "label": "C",
-          "text": "אקסיומת השלמות",
+          "text": "קיום הופכי לכל איבר",
           "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "הגדרה של גבול",
+          "text": "חוק הפילוג",
           "correct": false
         }
       ],
       "correctOption": "A",
-      "feedback": "נכון. הסדר צריך להתנהג היטב ביחס לפעולות השדה.",
+      "feedback": "נכון. שדה סדור הוא שדה עם יחס סדר מלא, שמתאים לחיבור ולכפל במספר חיובי. שלמות היא דרישה נוספת, וחוק הפילוג כבר שייך לשדה.",
       "layer": "base",
       "questionMode": "proof-step",
       "skills": [
@@ -2737,7 +2737,7 @@
         {
           "index": 0,
           "label": "A",
-          "text": "כופלים את שני האגפים ב־a ואז מחלקים באותו מספר",
+          "text": "כופלים את שני האגפים ב־1/a",
           "correct": false
         },
         {
@@ -2749,13 +2749,13 @@
         {
           "index": 2,
           "label": "C",
-          "text": "מחליפים את a ב־1/a גם אם a=0",
+          "text": "מחברים את a לשני האגפים",
           "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "מסיקים מיד ש־x=a+b",
+          "text": "כותבים a+x=b במקום x+a=b",
           "correct": false
         }
       ],
@@ -2789,13 +2789,13 @@
         {
           "index": 0,
           "label": "A",
-          "text": "לכל איבר כולל 0",
+          "text": "לכל איבר, כולל 0",
           "correct": false
         },
         {
           "index": 1,
           "label": "B",
-          "text": "רק לאיבר 0",
+          "text": "רק לאיברים חיוביים",
           "correct": false
         },
         {
@@ -2807,7 +2807,7 @@
         {
           "index": 3,
           "label": "D",
-          "text": "רק למספרים טבעיים",
+          "text": "רק ל־1 ול־−1",
           "correct": false
         }
       ],
@@ -2840,7 +2840,7 @@
         {
           "index": 0,
           "label": "A",
-          "text": "אם x<y אז x+z>y+z",
+          "text": "אם x<y אז xz<yz לכל z",
           "correct": false
         },
         {
@@ -2852,18 +2852,18 @@
         {
           "index": 2,
           "label": "C",
-          "text": "אין יחס סדר",
+          "text": "אם x<y אז −x<−y",
           "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "כל איבר חיובי הוא 1",
+          "text": "אם 0<x אז x<x²",
           "correct": false
         }
       ],
       "correctOption": "B",
-      "feedback": "נכון. חיוביות נשמרת בכפל של חיוביים בשדה סדור.",
+      "feedback": "נכון. האחרות נכשלות: כפל ב־z שלילי הופך את הסדר, −x>−y כש־x<y, ו־x=1/2 מקיים x²<x.",
       "layer": "base",
       "questionMode": "conceptual-application",
       "skills": [
@@ -3007,7 +3007,7 @@
         {
           "index": 2,
           "label": "C",
-          "text": "n=1, כי 1 הוא טבעי",
+          "text": "n=37.5, כי 37.5>37.2",
           "correct": false
         },
         {
@@ -3041,35 +3041,35 @@
       "section": "1.6.2",
       "unitTitle": "תכונת ארכימדס וערך שלם",
       "topic": "תכונת ארכימדס וערך שלם",
-      "prompt": "אם x>0, מה נובע מארכימדיות לגבי 1/x?",
+      "prompt": "יהי x>0 ממשי. מה נובע מתכונת ארכימדס?",
       "options": [
         {
           "index": 0,
           "label": "A",
-          "text": "קיים n טבעי כך ש־n>1/x",
+          "text": "קיים n∈N כך ש־1/n<x",
           "correct": true
         },
         {
           "index": 1,
           "label": "B",
-          "text": "1/x אינו ממשי",
+          "text": "1/n<x לכל n∈N",
           "correct": false
         },
         {
           "index": 2,
           "label": "C",
-          "text": "x חייב להיות טבעי",
+          "text": "קיים n∈N כך ש־1/n=x",
           "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "אין קשר בין x לבין טבעיים",
+          "text": "x≥1",
           "correct": false
         }
       ],
       "correctOption": "A",
-      "feedback": "נכון. זהו שימוש ישיר בכך שלכל ממשי יש טבעי גדול ממנו.",
+      "feedback": "נכון. בוחרים n>1/x, ואז 1/n<x. זה נכון ל־n אחד מתאים, לא לכל n.",
       "layer": "base",
       "questionMode": "application",
       "skills": [
@@ -3092,35 +3092,35 @@
       "section": "1.6.2",
       "unitTitle": "תכונת ארכימדס וערך שלם",
       "topic": "תכונת ארכימדס וערך שלם",
-      "prompt": "מה הרעיון של ערך שלם של מספר ממשי?",
+      "prompt": "מהו הערך השלם של מספר ממשי x?",
       "options": [
         {
           "index": 0,
           "label": "A",
-          "text": "המרחק של המספר מאפס",
+          "text": "המרחק של x מאפס",
           "correct": false
         },
         {
           "index": 1,
           "label": "B",
-          "text": "השלם האחרון שאינו גדול ממנו",
+          "text": "השלם הגדול ביותר שאינו גדול מ־x",
           "correct": true
         },
         {
           "index": 2,
           "label": "C",
-          "text": "השלם הראשון שגדול ממנו",
+          "text": "השלם הקטן ביותר שגדול מ־x",
           "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "חסם עליון של כל הממשיים",
+          "text": "x בלי הספרות שאחרי הנקודה",
           "correct": false
         }
       ],
       "correctOption": "B",
-      "feedback": "נכון. הערך השלם ממקם מספר ממשי בין שני שלמים עוקבים: [x]≤x<[x]+1.",
+      "feedback": "נכון. הערך השלם [x] מקיים [x]≤x<[x]+1. 'מחיקת הספרות' נותנת −1 עבור −1.5, אבל [−1.5]=−2.",
       "layer": "base",
       "questionMode": "conceptual-application",
       "skills": [
@@ -3194,35 +3194,35 @@
       "section": "1.6.2",
       "unitTitle": "תכונת ארכימדס וערך שלם",
       "topic": "תכונת ארכימדס וערך שלם",
-      "prompt": "מה מתאר הערך השלם של x?",
+      "prompt": "מהו הערך השלם של −2.5?",
       "options": [
         {
           "index": 0,
           "label": "A",
-          "text": "המספר הטבעי הקרוב ביותר ל־x",
+          "text": "−2",
           "correct": false
         },
         {
           "index": 1,
           "label": "B",
-          "text": "שלם n כך ש־n≤x<n+1",
+          "text": "−3",
           "correct": true
         },
         {
           "index": 2,
           "label": "C",
-          "text": "הסופרמום של R",
+          "text": "2",
           "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "המספר x עצמו תמיד",
+          "text": "−2.5",
           "correct": false
         }
       ],
       "correctOption": "B",
-      "feedback": "נכון. הערך השלם ממקם את x בין שני שלמים עוקבים.",
+      "feedback": "נכון. −3 הוא השלם הגדול ביותר שאינו גדול מ־−2.5, כי −3≤−2.5<−2.",
       "layer": "base",
       "questionMode": "conceptual-application",
       "skills": [
@@ -3245,35 +3245,35 @@
       "section": "1.6.2",
       "unitTitle": "תכונת ארכימדס וערך שלם",
       "topic": "תכונת ארכימדס וערך שלם",
-      "prompt": "מה תכונת ארכימדס לא אומרת?",
+      "prompt": "יהי ε>0 ממשי. מה נובע מתכונת ארכימדס?",
       "options": [
         {
           "index": 0,
           "label": "A",
-          "text": "שהטבעיים עוברים כל ממשי נתון",
+          "text": "1/n<ε לכל n∈N",
           "correct": false
         },
         {
           "index": 1,
           "label": "B",
-          "text": "שלכל x יש n טבעי גדול ממנו",
-          "correct": false
+          "text": "קיים n∈N כך ש־1/n<ε",
+          "correct": true
         },
         {
           "index": 2,
           "label": "C",
-          "text": "שכל ממשי הוא טבעי",
-          "correct": true
+          "text": "קיים n∈N כך ש־1/n<ε לכל ε>0",
+          "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "ש־N אינה חסומה מלעיל ב־R",
+          "text": "קיים n∈N כך ש־1/n=ε",
           "correct": false
         }
       ],
-      "correctOption": "C",
-      "feedback": "נכון. היא לא מזהה ממשיים עם טבעיים.",
+      "correctOption": "B",
+      "feedback": "נכון. בוחרים n>1/ε. ה־n תלוי ב־ε: אין n אחד שמתאים לכל ε.",
       "layer": "base",
       "questionMode": "conceptual-application",
       "skills": [
@@ -3296,35 +3296,35 @@
       "section": "1.6.2",
       "unitTitle": "תכונת ארכימדס וערך שלם",
       "topic": "תכונת ארכימדס וערך שלם",
-      "prompt": "איזו טענה שקולה לרעיון שהטבעיים אינם חסומים מלעיל?",
+      "prompt": "איזו טענה אומרת ש־N אינה חסומה מלעיל ב־R?",
       "options": [
         {
           "index": 0,
           "label": "A",
-          "text": "יש ממשי שגדול מכל טבעי",
+          "text": "קיים M∈R כך ש־n≤M לכל n∈N",
           "correct": false
         },
         {
           "index": 1,
           "label": "B",
-          "text": "N ריקה",
+          "text": "לכל n∈N קיים M∈R כך ש־n≤M",
           "correct": false
         },
         {
           "index": 2,
           "label": "C",
-          "text": "N חסומה מלעיל על ידי 0",
+          "text": "קיים n∈N כך ש־n>M לכל M∈R",
           "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "לכל חסם מועמד יש טבעי גדול ממנו",
+          "text": "לכל M∈R קיים n∈N כך ש־n>M",
           "correct": true
         }
       ],
       "correctOption": "D",
-      "feedback": "נכון. אין מספר ממשי אחד שחוסם את כל הטבעיים מלמעלה.",
+      "feedback": "נכון. כל מועמד M נכשל, כי יש טבעי גדול ממנו. הטענה השנייה נכונה תמיד ואינה אומרת דבר, והשלישית שקרית (קחו M=n).",
       "layer": "base",
       "questionMode": "conceptual-application",
       "skills": [
@@ -3400,35 +3400,35 @@
       "section": "1.6.3",
       "unitTitle": "שרש שתיים",
       "topic": "שרש שתיים",
-      "prompt": "בהוכחה בשלילה ש־√2 רציונלי, מה מניחים לרוב?",
+      "prompt": "בהוכחה בשלילה ש־√2 אינו רציונלי, מה מניחים בהתחלה?",
       "options": [
         {
           "index": 0,
           "label": "A",
-          "text": "√2=p/q בשבר מצומצם",
+          "text": "ש־√2=p/q, כאשר p ו־q שלמים, q≠0, והשבר מצומצם",
           "correct": true
         },
         {
           "index": 1,
           "label": "B",
-          "text": "√2 הוא שלילי",
+          "text": "ש־√2=p/q, כאשר p ו־q שניהם זוגיים",
           "correct": false
         },
         {
           "index": 2,
           "label": "C",
-          "text": "2 הוא אי־רציונלי",
+          "text": "ש־√2 אינו רציונלי",
           "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "אין מספרים זוגיים",
+          "text": "ש־p²=q² עבור שלמים p ו־q",
           "correct": false
         }
       ],
       "correctOption": "A",
-      "feedback": "נכון. הנחת שבר מצומצם מאפשרת להגיע לסתירה על זוגיות.",
+      "feedback": "נכון. מניחים את ההפך מהטענה, כלומר ש־√2 רציונלי. כתיבה כשבר מצומצם היא מה שמאפשר להגיע לסתירה בסוף.",
       "layer": "base",
       "questionMode": "conceptual-application",
       "skills": [
@@ -3469,7 +3469,7 @@
         {
           "index": 2,
           "label": "C",
-          "text": "p חייב להיות 0",
+          "text": "p מתחלק ב־4",
           "correct": false
         },
         {
@@ -3480,7 +3480,7 @@
         }
       ],
       "correctOption": "B",
-      "feedback": "נכון. ריבוע של אי־זוגי הוא אי־זוגי, ולכן p עצמו זוגי.",
+      "feedback": "נכון. ריבוע של אי־זוגי הוא אי־זוגי, ולכן p זוגי. אבל p לא חייב להתחלק ב־4, למשל p=2.",
       "layer": "base",
       "questionMode": "application",
       "skills": [
@@ -3504,35 +3504,35 @@
       "section": "1.6.3",
       "unitTitle": "שרש שתיים",
       "topic": "שרש שתיים",
-      "prompt": "מה הסתירה בסוף ההוכחה הקלאסית?",
+      "prompt": "בהוכחה מקבלים p²=2q², ואז p=2k. מה נובע?",
       "options": [
         {
           "index": 0,
           "label": "A",
-          "text": "p ו־q שניהם זוגיים למרות שהשבר נבחר מצומצם",
-          "correct": true
+          "text": "q=k",
+          "correct": false
         },
         {
           "index": 1,
           "label": "B",
-          "text": "p קטן מ־q",
-          "correct": false
+          "text": "q²=2k², ולכן גם q זוגי",
+          "correct": true
         },
         {
           "index": 2,
           "label": "C",
-          "text": "q שווה 1",
+          "text": "q²=k²",
           "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "2 אינו מספר",
+          "text": "p=q",
           "correct": false
         }
       ],
-      "correctOption": "A",
-      "feedback": "נכון. אם שניהם זוגיים, השבר לא היה מצומצם.",
+      "correctOption": "B",
+      "feedback": "נכון. מציבים ומקבלים 4k²=2q², כלומר q²=2k². לכן q² זוגי, ומכאן q זוגי.",
       "layer": "base",
       "questionMode": "application",
       "skills": [
@@ -3561,25 +3561,25 @@
         {
           "index": 0,
           "label": "A",
-          "text": "כדי שסתירה של p ו־q זוגיים תהיה משמעותית",
+          "text": "כדי שהמסקנה 'p ו־q שניהם זוגיים' תהיה סתירה",
           "correct": true
         },
         {
           "index": 1,
           "label": "B",
-          "text": "כדי להראות ש־q=0",
+          "text": "כי אחרת √2 לא היה מספר ממשי",
           "correct": false
         },
         {
           "index": 2,
           "label": "C",
-          "text": "כדי להימנע משימוש בזוגיות",
+          "text": "כדי ש־p ו־q יהיו שניהם אי־זוגיים",
           "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "כי כל שבר מצומצם הוא שלם",
+          "text": "כי כל שבר שאינו מצומצם שווה ל־1",
           "correct": false
         }
       ],
@@ -3608,35 +3608,35 @@
       "section": "1.6.3",
       "unitTitle": "שרש שתיים",
       "topic": "שרש שתיים",
-      "prompt": "אם q² זוגי, מה נכון לגבי q?",
+      "prompt": "מה צריך לשנות בהוכחה כדי להראות ש־√3 אינו רציונלי?",
       "options": [
         {
           "index": 0,
           "label": "A",
-          "text": "q אי־זוגי",
-          "correct": false
+          "text": "להחליף 'זוגי' ב'מתחלק ב־3'",
+          "correct": true
         },
         {
           "index": 1,
           "label": "B",
-          "text": "q שלילי",
+          "text": "שום דבר: ההוכחה עובדת מילה במילה",
           "correct": false
         },
         {
           "index": 2,
           "label": "C",
-          "text": "q זוגי",
-          "correct": true
+          "text": "אי אפשר, כי √3 רציונלי",
+          "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "q אינו שלם",
+          "text": "להניח שהשבר אינו מצומצם",
           "correct": false
         }
       ],
-      "correctOption": "C",
-      "feedback": "נכון. ריבוע של אי־זוגי הוא אי־זוגי, לכן q עצמו זוגי.",
+      "correctOption": "A",
+      "feedback": "נכון. מ־p²=3q² מקבלים ש־3 מחלק את p², ולכן את p (כי 3 ראשוני). אחר כך 3 מחלק גם את q, בסתירה לצמצום.",
       "layer": "base",
       "questionMode": "application",
       "skills": [
@@ -3717,30 +3717,30 @@
         {
           "index": 0,
           "label": "A",
-          "text": "שאין מספרים ממשיים",
+          "text": "שהמשוואה x²=2 אין לה פתרון ב־R",
           "correct": false
         },
         {
           "index": 1,
           "label": "B",
-          "text": "שכל ממשי הוא רציונלי",
+          "text": "ש־Q אינו שדה",
           "correct": false
         },
         {
           "index": 2,
           "label": "C",
-          "text": "ש־Q אינו שדה",
-          "correct": false
+          "text": "שיש נקודות על ישר המספרים שאינן רציונליות",
+          "correct": true
         },
         {
           "index": 3,
           "label": "D",
-          "text": "ש־Q אינו כולל את כל המספרים שעל הישר",
-          "correct": true
+          "text": "ש־R אינו שלם",
+          "correct": false
         }
       ],
-      "correctOption": "D",
-      "feedback": "נכון. יש נקודות על הישר שאינן ניתנות לכתיבה כמנה של שלמים.",
+      "correctOption": "C",
+      "feedback": "נכון. לאלכסון של ריבוע שצלעו 1 יש אורך √2, ואורך זה אינו רציונלי. לכן Q לא ממלא את כל הישר. Q עדיין שדה, ולמשוואה x²=2 יש פתרון ב־R.",
       "layer": "base",
       "questionMode": "conceptual-application",
       "skills": [
@@ -3923,29 +3923,29 @@
         {
           "index": 0,
           "label": "A",
-          "text": "אין הבדל",
+          "text": "חסם מלעיל חייב להיות שייך לקבוצה",
           "correct": false
         },
         {
           "index": 1,
           "label": "B",
-          "text": "חסם מלעיל חייב להשתייך לקבוצה",
-          "correct": false
-        },
-        {
-          "index": 2,
-          "label": "C",
           "text": "מקסימום הוא חסם מלעיל ששייך לקבוצה",
           "correct": true
         },
         {
+          "index": 2,
+          "label": "C",
+          "text": "מקסימום הוא החסם המלעיל הקטן ביותר, גם אם אינו בקבוצה",
+          "correct": false
+        },
+        {
           "index": 3,
           "label": "D",
-          "text": "מקסימום אינו קשור לסדר",
+          "text": "לכל קבוצה חסומה מלעיל יש מקסימום",
           "correct": false
         }
       ],
-      "correctOption": "C",
+      "correctOption": "B",
       "feedback": "נכון. שייכות לקבוצה היא ההבדל הקריטי.",
       "layer": "base",
       "questionMode": "conceptual-application",
@@ -4139,18 +4139,18 @@
         {
           "index": 2,
           "label": "C",
-          "text": "הוא לא חייב להיות חסם מלעיל",
+          "text": "הוא קיים לכל קבוצה חסומה מלעיל",
           "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "הוא תמיד שווה למינימום",
+          "text": "הוא תמיד גדול ממש מכל איברי הקבוצה",
           "correct": false
         }
       ],
       "correctOption": "B",
-      "feedback": "נכון. שני איברים שכל אחד מהם גדול או שווה לכל איברי הקבוצה חייבים להיות שווים.",
+      "feedback": "נכון. אם M ו־K מקסימומים, שניהם בקבוצה ושניהם חוסמים אותה, ולכן M≤K וגם K≤M.",
       "layer": "base",
       "questionMode": "application",
       "skills": [
@@ -4190,13 +4190,13 @@
         {
           "index": 2,
           "label": "C",
-          "text": "לכל קבוצה חסומה מלרע יש איבר ראשון",
+          "text": "לכל קבוצה לא ריקה של ממשיים יש חסם מלעיל",
           "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "כל סדרה חסומה היא מתכנסת",
+          "text": "לכל קבוצה חסומה של ממשיים יש איבר קטן ביותר",
           "correct": false
         }
       ],
@@ -4280,30 +4280,30 @@
         {
           "index": 0,
           "label": "A",
-          "text": "כי כל קבוצה חסומה של רציונליים ריקה",
+          "text": "כי Q אינה שדה סדור",
           "correct": false
         },
         {
           "index": 1,
           "label": "B",
-          "text": "כי יש קבוצות רציונליות חסומות שהחסם הקטן ביותר שלהן אינו רציונלי",
+          "text": "כי יש קבוצות של רציונליים, לא ריקות וחסומות מלעיל, שאין להן חסם מלעיל קטן ביותר ב־Q",
           "correct": true
         },
         {
           "index": 2,
           "label": "C",
-          "text": "כי יחס הסדר על Q אינו טרנזיטיבי",
+          "text": "כי ב־Q יש קבוצות לא ריקות שאינן חסומות",
           "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "כי אין משמעות לחסם מלעיל בתוך Q",
+          "text": "כי חסם מלעיל של קבוצה רציונלית חייב להיות שלם",
           "correct": false
         }
       ],
       "correctOption": "B",
-      "feedback": "נכון. למשל חתכים הקשורים ל־√2 מדגימים את החסר.",
+      "feedback": "נכון. למשל ל־{q∈Q : q²<2} יש חסמים מלעיל ב־Q, אבל החסם הקטן ביותר היה צריך להיות √2.",
       "layer": "base",
       "questionMode": "conceptual-application",
       "skills": [
@@ -4434,30 +4434,30 @@
         {
           "index": 0,
           "label": "A",
-          "text": "כי קבוצה ריקה תמיד מכילה מקסימום",
+          "text": "כי לקבוצה הריקה אין חסמים מלעיל",
           "correct": false
         },
         {
           "index": 1,
           "label": "B",
-          "text": "כי האקסיומה מנוסחת עבור קבוצות לא ריקות וחסומות מלעיל",
+          "text": "כי לקבוצה הריקה כל ממשי הוא חסם מלעיל, ואין ביניהם קטן ביותר",
           "correct": true
         },
         {
           "index": 2,
           "label": "C",
-          "text": "כי קבוצה ריקה אינה קבוצה",
+          "text": "כי הקבוצה הריקה אינה קבוצה",
           "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "כי קבוצה ריקה אינה חסומה",
+          "text": "כי לקבוצה הריקה יש מקסימום",
           "correct": false
         }
       ],
       "correctOption": "B",
-      "feedback": "נכון. זה חלק מתנאי ההפעלה של האקסיומה.",
+      "feedback": "נכון. כל M∈R חוסם את ∅ באופן ריק, וקבוצת כל החסמים היא R, שאין לה מינימום.",
       "layer": "base",
       "questionMode": "conceptual-application",
       "skills": [
@@ -4480,35 +4480,35 @@
       "section": "1.6.5",
       "unitTitle": "אקסיומת השלמות",
       "topic": "אקסיומת השלמות",
-      "prompt": "איך מקבלים קיום של אינפימום מתוך אקסיומת השלמות?",
+      "prompt": "c=sup(−A), כאשר −A={−x : x∈A}. מהו inf A?",
       "options": [
         {
           "index": 0,
           "label": "A",
-          "text": "מחליפים את כל האיברים באפס",
+          "text": "c",
           "correct": false
         },
         {
           "index": 1,
           "label": "B",
-          "text": "מספיק לצייר את הקבוצה",
-          "correct": false
+          "text": "−c",
+          "correct": true
         },
         {
           "index": 2,
           "label": "C",
-          "text": "אי אפשר להסיק זאת משלמות",
+          "text": "1/c",
           "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "עוברים לקבוצת הנגדיים ומפעילים סופרמום",
-          "correct": true
+          "text": "−c, אבל רק אם c∈−A",
+          "correct": false
         }
       ],
-      "correctOption": "D",
-      "feedback": "נכון. קבוצת הנגדיים הופכת חסמים מלרעיים לחסמים מלעיליים, ואז אקסיומת השלמות נותנת סופרמום מתאים.",
+      "correctOption": "B",
+      "feedback": "נכון. שינוי סימן הופך חסמים מלעיל של −A לחסמים מלרע של A, ומהקטן ביותר מקבלים את הגדול ביותר.",
       "layer": "base",
       "questionMode": "conceptual-application",
       "skills": [
@@ -4531,35 +4531,35 @@
       "section": "1.6.5",
       "unitTitle": "אקסיומת השלמות",
       "topic": "אקסיומת השלמות",
-      "prompt": "איזו דוגמה ממחישה את החסר של Q ביחס לשלמות?",
+      "prompt": "איזו קבוצה מדגימה שאקסיומת השלמות נכשלת ב־Q?",
       "options": [
         {
           "index": 0,
           "label": "A",
-          "text": "קבוצת רציונליים הקשורים ל־q²<2",
-          "correct": true
+          "text": "{q∈Q : q<2}",
+          "correct": false
         },
         {
           "index": 1,
           "label": "B",
-          "text": "הקבוצה {1}",
-          "correct": false
+          "text": "{q∈Q : q²<2}",
+          "correct": true
         },
         {
           "index": 2,
           "label": "C",
-          "text": "הקבוצה הריקה",
+          "text": "{1/n : n∈N, n≥1}",
           "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "כל המספרים השלמים בלבד",
+          "text": "Z",
           "correct": false
         }
       ],
-      "correctOption": "A",
-      "feedback": "נכון. החסם הטבעי של קבוצה כזו קשור ל־√2, שאינו רציונלי.",
+      "correctOption": "B",
+      "feedback": "נכון. לשתי הקבוצות האחרות שחסומות יש סופרמום רציונלי (2 ו־1), ו־Z אינה חסומה. ל־{q∈Q : q²<2} החסם הקטן ביותר היה צריך להיות √2.",
       "layer": "base",
       "questionMode": "conceptual-application",
       "skills": [
@@ -4639,7 +4639,7 @@
         {
           "index": 0,
           "label": "A",
-          "text": "b אינו חסם מלעיל",
+          "text": "b∈A",
           "correct": false
         },
         {
@@ -4651,13 +4651,13 @@
         {
           "index": 2,
           "label": "C",
-          "text": "b חייב להיות ב־A",
+          "text": "b>a לכל a∈A",
           "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "A אינה חסומה",
+          "text": "b+1 אינו חסם מלעיל של A",
           "correct": false
         }
       ],
@@ -4696,19 +4696,19 @@
         {
           "index": 1,
           "label": "B",
-          "text": "לכל a∈A מתקיים a>b",
+          "text": "b−ε∈A לכל ε>0",
           "correct": false
         },
         {
           "index": 2,
           "label": "C",
-          "text": "קיים ε>0 כך שאין איברים ב־A",
+          "text": "כל a∈A מקיים a>b−ε",
           "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "b הוא תמיד מינימום",
+          "text": "קיים a∈A כך ש־a>b",
           "correct": false
         }
       ],
@@ -4799,19 +4799,19 @@
         {
           "index": 1,
           "label": "B",
-          "text": "sup A אינו קיים",
+          "text": "sup A>max A",
           "correct": false
         },
         {
           "index": 2,
           "label": "C",
-          "text": "sup A קטן מכל איברי A",
+          "text": "sup A קיים רק אם A סופית",
           "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "sup A הוא תמיד 0",
+          "text": "אין קשר כללי בין השניים",
           "correct": false
         }
       ],
@@ -4896,25 +4896,25 @@
         {
           "index": 0,
           "label": "A",
-          "text": "רק ש־b∈A",
+          "text": "ש־b>a לכל a∈A",
           "correct": false
         },
         {
           "index": 1,
           "label": "B",
-          "text": "ש־b חסם מלעיל ושאין חסם מלעיל קטן ממנו",
+          "text": "ש־b חסם מלעיל, ושאין חסם מלעיל קטן ממנו",
           "correct": true
         },
         {
           "index": 2,
           "label": "C",
-          "text": "רק ש־b גדול מאיבר אחד",
+          "text": "שקיים a∈A כך ש־a<b",
           "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "ש־A סופית",
+          "text": "ש־b+1 חסם מלעיל של A",
           "correct": false
         }
       ],
@@ -5004,24 +5004,24 @@
         {
           "index": 1,
           "label": "B",
-          "text": "A={x∈R : x<0}",
+          "text": "A={x∈Q : x≥0 ∧ x²≤c}",
           "correct": false
         },
         {
           "index": 2,
           "label": "C",
-          "text": "A=N בלבד",
+          "text": "A={x∈R : x²=c}",
           "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "A=∅",
+          "text": "A={x∈R : x≤c}",
           "correct": false
         }
       ],
       "correctOption": "A",
-      "feedback": "נכון. הסופרמום של קבוצה זו ישמש מועמד לשורש.",
+      "feedback": "נכון. הסופרמום של A הוא המועמד לשורש. ב־Q לא מובטח סופרמום, והקבוצה {x : x²=c} מניחה את מה שרוצים להוכיח.",
       "layer": "base",
       "questionMode": "conceptual-application",
       "skills": [
@@ -5102,7 +5102,7 @@
         {
           "index": 0,
           "label": "A",
-          "text": "רק b<0",
+          "text": "את האפשרויות b<0 ו־b>c",
           "correct": false
         },
         {
@@ -5114,13 +5114,13 @@
         {
           "index": 2,
           "label": "C",
-          "text": "את האפשרות b∈R",
+          "text": "את האפשרויות b∈A ו־b∉A",
           "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "את האפשרות c>0",
+          "text": "את האפשרות b²=c",
           "correct": false
         }
       ],
@@ -5149,35 +5149,35 @@
       "section": "1.6.7",
       "unitTitle": "לכל מספר ממשי חיובי יש שורש",
       "topic": "לכל מספר ממשי חיובי יש שורש",
-      "prompt": "מה המשמעות של מציאת b עם b²=c ו־b≥0?",
+      "prompt": "למה ההוכחה לא עובדת אם מחליפים את R ב־Q?",
       "options": [
         {
           "index": 0,
           "label": "A",
-          "text": "b הוא השורש החיובי של c",
+          "text": "ב־Q אין אקסיומת שלמות, ולכן sup A לא בהכרח קיים",
           "correct": true
         },
         {
           "index": 1,
           "label": "B",
-          "text": "c אינו ממשי",
+          "text": "ב־Q אין יחס סדר",
           "correct": false
         },
         {
           "index": 2,
           "label": "C",
-          "text": "b אינו קשור ל־c",
+          "text": "ב־Q הקבוצה A ריקה",
           "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "A ריקה",
+          "text": "ב־Q אי אפשר לחלק",
           "correct": false
         }
       ],
       "correctOption": "A",
-      "feedback": "נכון. זהו בדיוק קיום השורש החיובי.",
+      "feedback": "נכון. בלי שלמות אין את b, וזה בדיוק מה ש־√2∉Q מראה.",
       "layer": "base",
       "questionMode": "conceptual-application",
       "skills": [
@@ -5206,7 +5206,7 @@
         {
           "index": 0,
           "label": "A",
-          "text": "כי כל ממשי שייך אליה",
+          "text": "כי c שייך אליה תמיד",
           "correct": false
         },
         {
@@ -5218,18 +5218,18 @@
         {
           "index": 2,
           "label": "C",
-          "text": "כי c שייך אליה תמיד",
+          "text": "כי 1 שייך אליה תמיד",
           "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "כי היא שווה ל־R",
+          "text": "כי c/2 שייך אליה תמיד",
           "correct": false
         }
       ],
       "correctOption": "B",
-      "feedback": "נכון. 0²≤c עבור c חיובי.",
+      "feedback": "נכון. המספר 0 מקיים 0≥0 ו־0²=0≤c. האחרים לא תמיד שייכים: עבור c=4 מתקיים c²>c, עבור c=1/4 מתקיים 1²>c, ועבור c=8 מתקיים (c/2)²>c.",
       "layer": "base",
       "questionMode": "conceptual-application",
       "skills": [
@@ -5305,35 +5305,35 @@
       "section": "1.6.7",
       "unitTitle": "לכל מספר ממשי חיובי יש שורש",
       "topic": "לכל מספר ממשי חיובי יש שורש",
-      "prompt": "מה הרעיון במקרה b²<c בהוכחת קיום שורש?",
+      "prompt": "במקרה b²<c, מה הסתירה?",
       "options": [
         {
           "index": 0,
           "label": "A",
-          "text": "להראות ש־b אינו ממשי",
+          "text": "יש חסם מלעיל של A שקטן מ־b",
           "correct": false
         },
         {
           "index": 1,
           "label": "B",
-          "text": "להסיק ש־c<0",
-          "correct": false
+          "text": "יש איבר של A שגדול מ־b, ולכן b אינו חסם מלעיל",
+          "correct": true
         },
         {
           "index": 2,
           "label": "C",
-          "text": "להגדיל מעט את b ועדיין להישאר ב־A",
-          "correct": true
+          "text": "A ריקה",
+          "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "להראות ש־A ריקה",
+          "text": "c<0",
           "correct": false
         }
       ],
-      "correctOption": "C",
-      "feedback": "נכון. כך מקבלים איבר של A שגדול מהסופרמום, וזו סתירה.",
+      "correctOption": "B",
+      "feedback": "נכון. מגדילים מעט את b ונשארים בתוך A. במקרה b²>c הסתירה הפוכה: מקטינים את b ומקבלים חסם מלעיל קטן יותר.",
       "layer": "base",
       "questionMode": "conceptual-application",
       "skills": [
@@ -5566,35 +5566,35 @@
       "section": "1.6.8",
       "unitTitle": "תכונות נוספות של הממשיים",
       "topic": "תכונות נוספות של הממשיים",
-      "prompt": "ידוע ש־Q צפופה ב־R. מה אפשר להסיק לגבי הקטע (2,2.01)?",
+      "prompt": "האם קבוצת המספרים האי־רציונליים צפופה ב־R?",
       "options": [
         {
           "index": 0,
           "label": "A",
-          "text": "יש בו רציונלי אחד לפחות",
-          "correct": true
+          "text": "לא, כי אי־רציונליים הם מקרים נדירים",
+          "correct": false
         },
         {
           "index": 1,
           "label": "B",
-          "text": "כל המספרים בו רציונליים",
-          "correct": false
+          "text": "כן: בכל קטע פתוח לא ריק יש מספר אי־רציונלי",
+          "correct": true
         },
         {
           "index": 2,
           "label": "C",
-          "text": "אין בו אי־רציונליים",
+          "text": "לא, כי בין שני רציונליים אין אי־רציונלי",
           "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "יש בו רק מספרים שלמים",
+          "text": "רק בקטעים שמכילים את √2",
           "correct": false
         }
       ],
-      "correctOption": "A",
-      "feedback": "נכון. צפיפות מבטיחה רציונלי בכל קטע פתוח לא ריק; היא לא אומרת שכל המספרים בקטע רציונליים.",
+      "correctOption": "B",
+      "feedback": "נכון. זו מסקנה 1.6.41. למשל בין רציונליים a<b נמצא a+(b−a)·√2/2.",
       "layer": "base",
       "questionMode": "proof-step",
       "skills": [
@@ -5618,35 +5618,35 @@
       "section": "1.6.8",
       "unitTitle": "תכונות נוספות של הממשיים",
       "topic": "תכונות נוספות של הממשיים",
-      "prompt": "מה פירוש שקבוצה A צפופה בתוך B?",
+      "prompt": "לפי הגדרה 1.6.34, מה פירוש ש־A צפופה בתוך B?",
       "options": [
         {
           "index": 0,
           "label": "A",
-          "text": "בין כל שני איברים שונים של B יש איבר של A",
+          "text": "לכל b∈B ולכל ε>0 קיים a∈A כך ש־|b−a|<ε",
           "correct": true
         },
         {
           "index": 1,
           "label": "B",
-          "text": "A=B בהכרח",
+          "text": "קיים a∈A כך ש־|b−a|<ε לכל b∈B ולכל ε>0",
           "correct": false
         },
         {
           "index": 2,
           "label": "C",
-          "text": "A סופית",
+          "text": "A=B",
           "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "אין איברים של A בין איברי B",
+          "text": "A⊆B ו־A אינסופית",
           "correct": false
         }
       ],
       "correctOption": "A",
-      "feedback": "נכון. צפיפות היא טענה על הימצאות איברים בתוך כל רווח.",
+      "feedback": "נכון. ה־a נבחר אחרי b ו־ε, ולכן יכול להיות תלוי בהם. בניסוח השני a אחד היה צריך להתאים לכל b ולכל ε.",
       "layer": "base",
       "questionMode": "application",
       "skills": [
@@ -5675,19 +5675,19 @@
         {
           "index": 0,
           "label": "A",
-          "text": "אין מספרים ביניהם",
+          "text": "לא בהכרח, אם הם קרובים מאוד זה לזה",
           "correct": false
         },
         {
           "index": 1,
           "label": "B",
-          "text": "יש רק אי־רציונליים ביניהם",
+          "text": "יש ביניהם רק אי־רציונליים",
           "correct": false
         },
         {
           "index": 2,
           "label": "C",
-          "text": "יש רק רציונליים ביניהם",
+          "text": "רק אם ההפרש ביניהם גדול מ־1",
           "correct": false
         },
         {
@@ -5698,7 +5698,7 @@
         }
       ],
       "correctOption": "D",
-      "feedback": "נכון. הרציונליים צפופים בממשיים, בלי תלות בסוג נקודות הקצה.",
+      "feedback": "נכון. כיוון ש־Q צפופה ב־R, בכל קטע פתוח לא ריק יש רציונלי, יהיו הקצוות אשר יהיו ויהיה הקטע קצר ככל שיהיה.",
       "layer": "base",
       "questionMode": "conceptual-application",
       "skills": [
@@ -5727,30 +5727,30 @@
         {
           "index": 0,
           "label": "A",
-          "text": "יש רק מספר אחד ביניהם",
+          "text": "בדיוק אחד: הממוצע שלהם",
           "correct": false
         },
         {
           "index": 1,
           "label": "B",
-          "text": "אין רציונליים ביניהם",
+          "text": "מספר סופי, שתלוי במרחק ביניהם",
           "correct": false
         },
         {
           "index": 2,
           "label": "C",
-          "text": "יש אינסוף רציונליים ביניהם",
+          "text": "אינסוף רציונליים",
           "correct": true
         },
         {
           "index": 3,
           "label": "D",
-          "text": "יש רק שלמים ביניהם",
+          "text": "אין ביניהם אי־רציונליים",
           "correct": false
         }
       ],
       "correctOption": "C",
-      "feedback": "נכון. צפיפות נותנת רציונלי, וחוזרים על הטיעון כדי לקבל אינסוף.",
+      "feedback": "נכון. זו טענה 1.6.37. לוקחים ממוצע, ושוב ממוצע, וכן הלאה. אם היו רק סופית רבים, הממוצע של a והקרוב ביותר אליו היה רציונלי חדש.",
       "layer": "base",
       "questionMode": "conceptual-application",
       "skills": [
@@ -5785,24 +5785,24 @@
         {
           "index": 1,
           "label": "B",
-          "text": "לכל a∈R יש q∈Q כך ש־a=q",
+          "text": "יש q∈Q כך שלכל a<b ממשיים a<q<b",
           "correct": false
         },
         {
           "index": 2,
           "label": "C",
-          "text": "לכל q∈Q יש r∈R כך ש־q<r",
+          "text": "לכל a<b רציונליים יש q∈Q כך ש־a<q<b",
           "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "בין כל שני ממשיים יש רק רציונליים",
+          "text": "לכל a∈R יש q∈Q כך ש־q>a",
           "correct": false
         }
       ],
       "correctOption": "A",
-      "feedback": "נכון. צפיפות היא טענה על קיום איבר רציונלי בתוך כל קטע פתוח לא ריק.",
+      "feedback": "נכון. הטענה השנייה מחליפה את סדר הכמתים ושקרית. השלישית והרביעית נכונות אבל חלשות יותר: הן לא מבטיחות רציונלי בכל קטע של ממשיים.",
       "layer": "base",
       "questionMode": "conceptual-application",
       "skills": [
@@ -6035,35 +6035,35 @@
       "section": "1.6.9",
       "unitTitle": "אי שוויונים חשובים - תיעוד מהתרגולים",
       "topic": "אי שוויונים חשובים - תיעוד מהתרגולים",
-      "prompt": "איזה כלי מתאים לפיתוח (a+b)^n?",
+      "prompt": "לפי נוסחת הבינום (טענה 1.6.42), מה המקדם של a²b בפיתוח של (a+b)^3?",
       "options": [
         {
           "index": 0,
           "label": "A",
-          "text": "נוסחת הבינום",
-          "correct": true
+          "text": "1",
+          "correct": false
         },
         {
           "index": 1,
           "label": "B",
-          "text": "אי־שוויון המשולש בלבד",
+          "text": "2",
           "correct": false
         },
         {
           "index": 2,
           "label": "C",
-          "text": "תכונת ארכימדס",
-          "correct": false
+          "text": "3",
+          "correct": true
         },
         {
           "index": 3,
           "label": "D",
-          "text": "הגדרת חסם מלעיל",
+          "text": "6",
           "correct": false
         }
       ],
-      "correctOption": "A",
-      "feedback": "נכון. נוסחת הבינום מפרקת חזקת סכום לסכום של איברים.",
+      "correctOption": "C",
+      "feedback": "נכון. לפי הבינום מתקיים (a+b)^3=a^3+3a²b+3ab²+b^3, ולכן המקדם הוא 3.",
       "layer": "base",
       "questionMode": "conceptual-application",
       "skills": [
@@ -6087,35 +6087,35 @@
       "section": "1.6.9",
       "unitTitle": "אי שוויונים חשובים - תיעוד מהתרגולים",
       "topic": "אי שוויונים חשובים - תיעוד מהתרגולים",
-      "prompt": "באיזה תנאי בסיסי משתמשים באי־שוויון הממוצעים כפי שמופיע בפרקון?",
+      "prompt": "לאילו מספרים מנוסח אי־שוויון הממוצעים (טענה 1.6.43)?",
       "options": [
         {
           "index": 0,
           "label": "A",
-          "text": "המספרים אי־שליליים או חיוביים לפי הניסוח המדויק",
+          "text": "למספרים חיוביים",
           "correct": true
         },
         {
           "index": 1,
           "label": "B",
-          "text": "המספרים שלמים",
+          "text": "לכל מספרים ממשיים",
           "correct": false
         },
         {
           "index": 2,
           "label": "C",
-          "text": "המספרים חייבים להיות שונים זה מזה",
+          "text": "למספרים שלמים בלבד",
           "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "המספרים חייבים להיות קטנים מ־1",
+          "text": "למספרים שונים זה מזה",
           "correct": false
         }
       ],
       "correctOption": "A",
-      "feedback": "נכון. צריך תנאי חיוביות מתאים כדי שהממוצעים יהיו מוגדרים כפי שנוסחו.",
+      "feedback": "נכון. בממוצע הגאומטרי יש שורש, ובממוצע ההרמוני מחלקים במספרים; לכן הטענה מנוסחת רק למספרים חיוביים. השוויון מתקיים בדיוק כשכולם שווים.",
       "layer": "base",
       "questionMode": "application",
       "skills": [
@@ -6144,30 +6144,30 @@
         {
           "index": 0,
           "label": "A",
-          "text": "כאשר a ו־b באותו כיוון סימן או שאחד מהם 0",
+          "text": "כאשר ab≥0, כלומר a ו־b אינם בעלי סימנים מנוגדים",
           "correct": true
         },
         {
           "index": 1,
           "label": "B",
-          "text": "כאשר a ו־b בהכרח שווים",
+          "text": "רק כאשר a=b",
           "correct": false
         },
         {
           "index": 2,
           "label": "C",
-          "text": "כאשר a ו־b סימנים מנוגדים",
+          "text": "כאשר a ו־b בעלי סימנים מנוגדים",
           "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "רק כאשר שניהם חיוביים ממש",
+          "text": "רק כאשר a>0 ו־b>0",
           "correct": false
         }
       ],
       "correctOption": "A",
-      "feedback": "נכון. שוויון במשולש דורש שלא תהיה 'התנגשות כיוונים'.",
+      "feedback": "נכון. כש־ab≥0 אין 'ביטול' בין המחוברים. למשל עבור a=1 ו־b=−1 מתקבל |a+b|=0, אבל |a|+|b|=2.",
       "layer": "base",
       "questionMode": "application",
       "skills": [
@@ -6202,13 +6202,13 @@
         {
           "index": 1,
           "label": "B",
-          "text": "להשתמש בגבול של סדרה אינסופית",
+          "text": "להשתמש באי־שוויון ברנולי",
           "correct": false
         },
         {
           "index": 2,
           "label": "C",
-          "text": "להחליף את r ב־1",
+          "text": "להציב r=1 בנוסחה",
           "correct": false
         },
         {
@@ -6219,7 +6219,7 @@
         }
       ],
       "correctOption": "A",
-      "feedback": "נכון. הכפל ב־1−r גורם לרוב האיברים להתבטל.",
+      "feedback": "נכון. (1−r)(1+r+...+r^n)=1−r^(n+1), כי כל האיברים האמצעיים מצטמצמים. ב־r=1 הנוסחה אינה מוגדרת.",
       "layer": "base",
       "questionMode": "conceptual-application",
       "skills": [
@@ -6396,7 +6396,7 @@
       "section": "סיכום",
       "unitTitle": "קוויז סיכום פרק 1",
       "topic": "קבוצות",
-      "prompt": "אם A⊆B בתוך מרחב X, איזו טענה על משלימים נכונה?",
+      "prompt": "A ו־B תת־קבוצות של קבוצה X, ו־A⊆B. המשלימים הם ביחס ל־X. איזו טענה נכונה?",
       "options": [
         {
           "index": 0,
@@ -6419,7 +6419,7 @@
         {
           "index": 3,
           "label": "D",
-          "text": "A∩B^c=X",
+          "text": "A^c∩B^c=∅",
           "correct": false
         }
       ],
@@ -6617,7 +6617,7 @@
         {
           "index": 2,
           "label": "C",
-          "text": "החסם המלעיל הקטן ביותר הטבעי שלה אינו נמצא ב־Q",
+          "text": "ל־C אין חסם מלעיל קטן ביותר בתוך Q",
           "correct": true
         },
         {
@@ -6917,13 +6917,13 @@
         {
           "index": 1,
           "label": "B",
-          "text": "מ־||x|−|y|| קטן מסיקים תמיד ש־|x−y| קטן באותה מידה",
+          "text": "מ־||x|−|y|| קטן מסיקים ש־|x−y| קטן באותה מידה",
           "correct": false
         },
         {
           "index": 2,
           "label": "C",
-          "text": "מ־|x+y|≤|x|+|y| מסיקים x=y",
+          "text": "מ־|x−y|≥1 מסיקים ש־||x|−|y||≥1",
           "correct": false
         },
         {
@@ -6934,7 +6934,7 @@
         }
       ],
       "correctOption": "A",
-      "feedback": "המשולש ההפוך נותן ||x|−|y||≤|x−y|, כלומר קרבה של x,y גוררת קרבה של הערכים המוחלטים.",
+      "feedback": "לפי המשולש ההפוך ||x|−|y||≤|x−y|, ולכן קרבה של x ו־y גוררת קרבה של הערכים המוחלטים. הכיוון ההפוך נכשל, למשל עבור x=1 ו־y=−1.",
       "layer": "assessment",
       "questionMode": "proof-step",
       "skills": [
@@ -6959,7 +6959,7 @@
       "topic": "כמתים ושלילה",
       "prompt": "כתבו שלילה פורמלית מלאה לטענה. אין צורך להוכיח אם הטענה נכונה או לא; המטרה היא סדר הכמתים והשלילה.",
       "tex": "\\forall\\varepsilon>0\\ \\exists n\\in\\mathbb{N}:\\ \\frac{1}{n}<\\varepsilon",
-      "modelSolution": "השלילה היא שקיים אפסילון חיובי שעבורו אף מספר טבעי לא מצליח להפוך את 1/n לקטן ממנו. מחליפים את \\forall ב־\\exists, את \\exists ב־\\forall, ואת < ב־\\ge.",
+      "modelSolution": "מחליפים כל ∀ ב־∃ ולהפך, שומרים על הסדר שלהם, ושוללים את התנאי הפנימי, כך ש־1/n<ε הופך ל־1/n≥ε.\n\nבמילים: קיים ε חיובי, כך שלכל n טבעי 1/n≥ε. לבדיקה עצמית: האם הכמת הראשון הוא ∃? האם ε>0 נשאר כמו שהוא (הוא חלק מהתחום, לא מהטענה)? האם האי־שוויון הוא ≥ ולא >?",
       "modelSolutionTex": "\\exists\\varepsilon>0\\ \\forall n\\in\\mathbb{N}:\\ \\frac{1}{n}\\ge\\varepsilon",
       "layer": "practice",
       "questionMode": "open-writing",
@@ -6985,7 +6985,7 @@
       "topic": "קבוצות והוכחה",
       "prompt": "הוכיחו את השוויון בעזרת שתי הכלות. הקפידו לפתוח כל הכלה עם איבר שרירותי.",
       "tex": "A\\setminus(B\\cup C)=(A\\setminus B)\\cap(A\\setminus C)",
-      "modelSolution": "נראה שתי הכלות. יהי x\\in A\\setminus(B\\cup C). אז x\\in A וגם x\\notin B\\cup C, ולכן x\\notin B וגם x\\notin C. לכן x\\in A\\setminus B וגם x\\in A\\setminus C, ומכאן x\\in(A\\setminus B)\\cap(A\\setminus C).\n\nלהכלה ההפוכה, יהי x\\in(A\\setminus B)\\cap(A\\setminus C). אז x\\in A\\setminus B וגם x\\in A\\setminus C, ולכן x\\in A, x\\notin B ו־x\\notin C. מכאן x\\notin B\\cup C, ולכן x\\in A\\setminus(B\\cup C).",
+      "modelSolution": "הכלה ראשונה. יהי x באגף שמאל. אז x∈A, ו־x אינו שייך לאיחוד B∪C. מי שאינו באיחוד אינו באף אחת מהקבוצות, ולכן x∉B וגם x∉C. מ־x∈A ו־x∉B נובע ש־x בהפרש של A ו־B, ומ־x∈A ו־x∉C נובע ש־x בהפרש של A ו־C. לכן x בחיתוך שלהם, כלומר באגף ימין.\n\nהכלה שנייה. יהי x באגף ימין. אז x בשני ההפרשים, ולכן x∈A, x∉B ו־x∉C. מכאן x∉B∪C, ולכן x שייך להפרש של A ו־B∪C, כלומר לאגף שמאל.\n\nלבדיקה עצמית: האם כל הכלה נפתחת ב'יהי x' מהאגף הנכון? האם השתמשת בדה־מורגן, כלומר בכך ש־x∉B∪C אם ורק אם x∉B וגם x∉C? האם כתבת את שתי ההכלות ולא רק אחת?",
       "modelSolutionTex": "A\\setminus(B\\cup C)\\subseteq(A\\setminus B)\\cap(A\\setminus C),\\qquad (A\\setminus B)\\cap(A\\setminus C)\\subseteq A\\setminus(B\\cup C)",
       "layer": "practice",
       "questionMode": "open-writing",
@@ -7011,8 +7011,8 @@
       "topic": "חסמים וסופרמום",
       "prompt": "מצאו חסם עליון, חסם תחתון, מקסימום ומינימום אם הם קיימים, ונמקו לפי ההגדרות.",
       "tex": "A=\\left\\{1-\\frac{1}{n}:n\\in\\mathbb{N},\\ n\\ge 1\\right\\}",
-      "modelSolution": "האיבר הראשון הוא 0, והאיברים גדלים ומתקרבים ל־1 מלמטה. לכן 0 הוא מינימום וגם אינפימום. 1 הוא חסם עליון קטן ביותר, כלומר סופרמום, אבל הוא לא שייך לקבוצה ולכן אין מקסימום.",
-      "modelSolutionTex": "\\inf A=\\min A=0,\\qquad \\sup A=1,\\qquad \\max A\\text{ לא קיים}",
+      "modelSolution": "מינימום ואינפימום. לכל n≥1 מתקיים 1/n≤1, ולכן 1−1/n≥0. עבור n=1 מקבלים 0∈A. לכן 0 הוא מינימום, ולכן גם האינפימום.\n\nסופרמום. לכל n מתקיים 1−1/n<1, ולכן 1 חסם מלעיל. נראה שאין חסם קטן יותר: יהי t<1. לפי ארכימדס קיים n>1/(1−t), ואז 1/n<1−t, כלומר 1−1/n>t. לכן t אינו חסם מלעיל, ו־sup A=1.\n\nמקסימום. 1∉A, כי 1−1/n=1 גורר 1/n=0. סופרמום שאינו שייך לקבוצה אינו מקסימום, ולכן ל־A אין מקסימום.\n\nלבדיקה עצמית: האם הראית גם ש־1 חוסם וגם שכל t<1 אינו חוסם? האם השתמשת בארכימדס כדי למצוא n? האם בדקת בנפרד אם 0 ו־1 שייכים ל־A?",
+      "modelSolutionTex": "\\inf A=\\min A=0,\\qquad \\sup A=1\\notin A",
       "layer": "practice",
       "questionMode": "open-writing",
       "skills": [
@@ -7038,7 +7038,7 @@
       "topic": "אפיון סופרמום",
       "prompt": "נסחו והוכיחו את הכיוון: אם s הוא הסופרמום של A, אז מתקיים אפיון האפסילון.",
       "tex": "s=\\sup A\\Longrightarrow\n\\forall\\varepsilon>0\\ \\exists a\\in A:\\ a>s-\\varepsilon",
-      "modelSolution": "יהי \\varepsilon>0. מכיוון ש־s הוא החסם העליון הקטן ביותר של A, המספר s-\\varepsilon קטן מ־s ולכן אינו חסם מלעיל של A. לכן קיים איבר a\\in A שעובר אותו, כלומר a>s-\\varepsilon. זה בדיוק אפיון האפסילון.",
+      "modelSolution": "יהי ε>0. מכיוון ש־s הוא החסם המלעיל הקטן ביותר של A, והמספר s−ε קטן מ־s, הוא אינו חסם מלעיל של A. כלומר לא כל איברי A קטנים או שווים ל־s−ε: קיים a∈A כך ש־a>s−ε. זה אפיון האפסילון.\n\nלבדיקה עצמית: האם פתחת ב'יהי ε>0' (טענת 'לכל')? האם הסברת למה s−ε אינו חסם מלעיל? האם השלילה של 'חסם מלעיל' נכתבה נכון: קיים a∈A עם a>s−ε?",
       "modelSolutionTex": "\\forall\\varepsilon>0\\ \\exists a\\in A:\\ a>s-\\varepsilon",
       "layer": "practice",
       "questionMode": "open-writing",
@@ -7141,8 +7141,8 @@
       "unitTitle": "תרגיל להגשה 1",
       "topic": "תרגיל להגשה 1",
       "prompt": "מצאו חסם עליון, חסם תחתון, מקסימום ומינימום אם הם קיימים. נמקו את החסמים בעזרת ההגדרות, לא רק לפי אינטואיציה.",
-      "tex": "D=\\left\\{\\frac{m}{n}:m,n\\in\\mathbb{N},\\ m<n\\right\\}",
-      "hint": "התחילו מ־0≤m/n<1. קירוב ל־0 מתקבל עם m קטן ו־n גדול; קירוב ל־1 מתקבל עם m=n−1. בסוף בדקו בנפרד אם הקצוות עצמם שייכים לקבוצה.",
+      "tex": "D=\\left\\{\\frac{m}{n}:m,n\\in\\mathbb{N},\\ 1\\le m<n\\right\\}",
+      "hint": "כל איבר מקיים 0<m/n<1. כדי להתקרב ל־0 בוחרים m=1 ו־n גדול; כדי להתקרב ל־1 בוחרים m=n−1. בסוף בדקו בנפרד אם 0 או 1 עצמם שייכים ל־D.",
       "hintCost": 5,
       "layer": "submission",
       "questionMode": "application",
