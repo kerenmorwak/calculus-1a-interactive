@@ -26,6 +26,8 @@ PDFs. Edit the source files, then rebuild; do not edit `_site/` directly.
 - `interactive.js`: questions, quizzes, progression, coins, and paid hints.
 - `assets/chapter-1.pdf`, `assets/chapter-2.pdf`: current local reading material.
 - `assets/mathjax-tex-svg.js`: bundled mathematical typesetting engine.
+- `assets/fonts/`: bundled Assistant and Frank Ruhl Libre web fonts (SIL Open Font License; licenses alongside).
+- `assets/coin.svg`: coin icon used for the coin counter, hint prices and awards. Replace this one file to change the coin artwork.
 - `build_notes.py`: renders PDFs and generates the static site in `_site/`.
 
 The local copy contains two chapter PDFs. Do not assume all chapters or all
