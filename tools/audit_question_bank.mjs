@@ -31,7 +31,8 @@ const modeLabels = {
   "proof-step": "צעד בהוכחה / מציאת טעות",
   application: "חישוב או החלטה על דוגמה",
   counterexample: "דוגמה נגדית",
-  "open-writing": "כתיבה פתוחה"
+  "open-writing": "כתיבה פתוחה",
+  "enrichment-decision": "החלטה על העשרה"
 };
 
 const skillLabels = Object.fromEntries((bank.skillTaxonomy || []).map((skill) => [skill.id, skill.label || skill.id]));
@@ -192,6 +193,9 @@ function renderMarkdown() {
   const aOrB = positionStats.A + positionStats.B;
   const definitionChecks = items.filter((item) => item.questionMode === "definition-check");
   const writing = items.filter((item) => item.kind === "writingPractice" || item.kind === "homework");
+  const definitionCheckRisk = definitionChecks.length
+    ? `3. **שאלות זיהוי/הגדרה:** יש ${definitionChecks.length} שאלות מסוג זה. הן לא בהכרח פסולות, אבל כדאי לצמצם אותן או להפוך אותן ליישום, מציאת טעות, דוגמה נגדית או צעד בהוכחה.`
+    : "3. **שאלות זיהוי/הגדרה:** אין כרגע שאלות שמסומנות כבדיקת ניסוח/הגדרה. כדאי לשמור על המצב הזה בבדיקות הבאות.";
 
   const lines = [
     "# ביקורת מאגר השאלות",
@@ -216,7 +220,7 @@ function renderMarkdown() {
     "",
     `1. **הטיית מיקום תשובה נכונה:** A=${positionStats.A}, B=${positionStats.B}, C=${positionStats.C}, D=${positionStats.D}. כלומר A/B הן ${aOrB}/${multipleChoiceItems.length} (${percent(aOrB, multipleChoiceItems.length)}). אם האתר לא מערבב אפשרויות בזמן ריצה, זו בעיית איכות חמורה.`,
     `2. **רמז אורך תשובה:** ב־${longestAnswerStats().uniqueLongest}/${multipleChoiceItems.length} שאלות התשובה הנכונה היא הארוכה ביותר באופן יחיד. גם אחרי ערבוב, כדאי לעבור על חלק מהמסיחים כדי שלא יהיה אפשר לנחש לפי אורך.`,
-    `3. **שאלות זיהוי/הגדרה:** יש ${definitionChecks.length} שאלות מסוג זה. הן לא בהכרח פסולות, אבל כדאי לצמצם אותן או להפוך אותן ליישום, מציאת טעות, דוגמה נגדית או צעד בהוכחה.`,
+    definitionCheckRisk,
     "4. **תרגול כתיבה והגשה:** כל ניסוח שמרמז על בדיקה אנושית או אוטומטית צריך להימחק עד שיש בדיקה אמיתית. אפשר לכתוב “כתבתי”, “השוואה לפתרון” או “תרגול כתיבה”.",
     "5. **סעיף 1.1:** זה כנראה סעיף קריאה/מוטיבציה. כדאי להחליט אם שאלות עליו בכלל צריכות לנעול התקדמות, או לעבור למצב העשרה לא נועל.",
     "",

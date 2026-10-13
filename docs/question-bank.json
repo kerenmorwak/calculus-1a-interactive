@@ -27,8 +27,8 @@
       "תרגול": 4
     },
     "byReviewStatus": {
-      "לסקירה": 18,
-      "תקין": 128
+      "לסקירה": 2,
+      "תקין": 144
     },
     "bySkill": {
       "אי־רציונליות": 17,
@@ -91,7 +91,7 @@
       "correctOption": "B",
       "feedback": "נכון. זהו הקשר מוטיבציוני והיסטורי, לא מקור לטענות פורמליות.",
       "layer": "base",
-      "questionMode": "definition-check",
+      "questionMode": "enrichment-decision",
       "skills": [
         "course-orientation",
         "mathematical-language"
@@ -100,8 +100,9 @@
       "sourcePath": "docs/question-bank.json",
       "reviewStatus": "review",
       "qualityFlags": [
-        "definition_check"
-      ]
+        "move_to_enrichment"
+      ],
+      "reviewNote": "סעיף 1.1 הוא פתיחה/מוטיבציה. מומלץ להעביר שאלה זו להעשרה לא נועלת או להסיר מנעילת ההתקדמות."
     },
     {
       "id": "ch01-s01-q02",
@@ -195,7 +196,7 @@
       "correctOption": "B",
       "feedback": "נכון. הטקסט מכין ללמידה שדורשת מאמץ, בלי להפוך את הקושי לכישלון.",
       "layer": "base",
-      "questionMode": "definition-check",
+      "questionMode": "enrichment-decision",
       "skills": [
         "course-orientation",
         "mathematical-language"
@@ -204,8 +205,9 @@
       "sourcePath": "docs/question-bank.json",
       "reviewStatus": "review",
       "qualityFlags": [
-        "definition_check"
-      ]
+        "move_to_enrichment"
+      ],
+      "reviewNote": "סעיף 1.1 הוא פתיחה/מוטיבציה. מומלץ להעביר שאלה זו להעשרה לא נועלת או להסיר מנעילת ההתקדמות."
     },
     {
       "id": "ch01-s01-q04",
@@ -320,47 +322,46 @@
       "section": "1.2",
       "unitTitle": "לאן הגעתם, איך מדברים כאן",
       "topic": "לאן הגעתם, איך מדברים כאן",
-      "prompt": "מה נדרש מהדרך מהנחות למסקנה בהוכחה?",
+      "prompt": "סטודנטית כותבת בהוכחה: “מההנחות נובע המבוקש”. מה חסר כדי שזה יהיה צעד תקף?",
       "options": [
         {
           "index": 0,
           "label": "A",
-          "text": "שתהיה קצרה ככל האפשר",
+          "text": "בדיקה בכמה דוגמאות מספריות לפני שחוזרים לטענה הכללית",
           "correct": false
         },
         {
           "index": 1,
           "label": "B",
-          "text": "שתהיה נהירה לחלוטין וללא דילוגים מהותיים",
-          "correct": true
+          "text": "ציור שמראה את המצב הכללי",
+          "correct": false
         },
         {
           "index": 2,
           "label": "C",
-          "text": "שתסתמך על ציור",
-          "correct": false
+          "text": "פירוט המעבר הלוגי מההנחות למסקנה",
+          "correct": true
         },
         {
           "index": 3,
           "label": "D",
-          "text": "שתכלול דוגמה מספרית",
+          "text": "ניסוח קצר יותר של אותה שורה",
           "correct": false
         }
       ],
-      "correctOption": "B",
-      "feedback": "נכון. הדיוק הוא חלק מהותי מהשפה של הקורס.",
+      "correctOption": "C",
+      "feedback": "נכון. בהוכחה צריך להיות ברור מאילו הנחות כל צעד נובע, ולא להסתפק בקפיצה כללית אל המסקנה.",
       "layer": "base",
-      "questionMode": "definition-check",
+      "questionMode": "proof-step",
       "skills": [
         "mathematical-language",
         "proof-structure"
       ],
       "sourcePool": "app-checks",
       "sourcePath": "docs/question-bank.json",
-      "reviewStatus": "review",
-      "qualityFlags": [
-        "definition_check"
-      ]
+      "reviewStatus": "ok",
+      "qualityFlags": [],
+      "reviewNote": ""
     },
     {
       "id": "ch01-s02-q03",
@@ -1627,17 +1628,16 @@
       "correctOption": "A",
       "feedback": "נכון. צריך להשתמש בשני חלקי ההגדרה, אבל להכלה המבוקשת מספיק החלק x∈A.",
       "layer": "base",
-      "questionMode": "definition-check",
+      "questionMode": "proof-step",
       "skills": [
         "sets-operations",
         "proof-structure"
       ],
       "sourcePool": "app-checks",
       "sourcePath": "docs/question-bank.json",
-      "reviewStatus": "review",
-      "qualityFlags": [
-        "definition_check"
-      ]
+      "reviewStatus": "ok",
+      "qualityFlags": [],
+      "reviewNote": ""
     },
     {
       "id": "ch01-s04-q08",
@@ -1752,47 +1752,46 @@
       "section": "1.5",
       "unitTitle": "קבוצות חשובות של מספרים",
       "topic": "קבוצות חשובות של מספרים",
-      "prompt": "מהו |x| לפי ההגדרה הגיאומטרית?",
+      "prompt": "על הישר הממשי, מה מייצג הביטוי |−3−2|?",
       "options": [
         {
           "index": 0,
           "label": "A",
-          "text": "המספר x עצמו תמיד",
+          "text": "המרחק של −3 מאפס, ולכן ערכו 3",
           "correct": false
         },
         {
           "index": 1,
           "label": "B",
-          "text": "המרחק של x מאפס",
-          "correct": true
+          "text": "המספר −5, כי −3−2=−5",
+          "correct": false
         },
         {
           "index": 2,
           "label": "C",
-          "text": "המספר השלילי של x",
+          "text": "המרחק של 2 מ־1, ולכן ערכו 1",
           "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "המרחק של x מ־1",
-          "correct": false
+          "text": "המרחק בין −3 ל־2, ולכן ערכו 5",
+          "correct": true
         }
       ],
-      "correctOption": "B",
-      "feedback": "נכון. ערך מוחלט הוא מרחק מאפס ולכן אינו שלילי.",
+      "correctOption": "D",
+      "feedback": "נכון. הביטוי |x−y| מתאר את המרחק בין x ל־y. כאן המרחק בין −3 ל־2 הוא 5.",
       "layer": "base",
-      "questionMode": "definition-check",
+      "questionMode": "application",
       "skills": [
         "number-systems",
         "absolute-value-inequalities"
       ],
       "sourcePool": "app-checks",
       "sourcePath": "docs/question-bank.json",
-      "reviewStatus": "review",
-      "qualityFlags": [
-        "definition_check"
-      ]
+      "reviewStatus": "ok",
+      "qualityFlags": [],
+      "reviewNote": ""
     },
     {
       "id": "ch01-s05-q03",
@@ -2475,37 +2474,37 @@
       "section": "1.6",
       "unitTitle": "המספרים הממשיים",
       "topic": "המספרים הממשיים",
-      "prompt": "מהו שימוש נכון באקסיומה או תכונה בסיסית?",
+      "prompt": "בהוכחה מופיע המעבר: “אם x<y אז x+z<y+z”. מה צריך להיאמר כדי שהצעד יהיה מוצדק?",
       "options": [
         {
           "index": 0,
           "label": "A",
-          "text": "להזכיר את הכלל שמצדיק את המעבר במקום להסתמך רק על אינטואיציה",
-          "correct": true
+          "text": "שזה נכון רק בדוגמאות שבהן z חיובי",
+          "correct": false
         },
         {
           "index": 1,
           "label": "B",
-          "text": "לכתוב 'ברור' בכל מעבר",
+          "text": "שאחרי ההוספה צריך לבדוק מחדש כל דוגמה בנפרד",
           "correct": false
         },
         {
           "index": 2,
           "label": "C",
-          "text": "להוכיח כל דבר מחדש מתורת הקבוצות",
-          "correct": false
+          "text": "התאמת הסדר לחיבור בשדה סדור",
+          "correct": true
         },
         {
           "index": 3,
           "label": "D",
-          "text": "להשתמש רק בדוגמאות מספריות",
+          "text": "שצריך קודם להוכיח ש־x ו־y טבעיים",
           "correct": false
         }
       ],
-      "correctOption": "A",
-      "feedback": "נכון. זו בדיוק רמת הפורמליות שהרשימות מכוונות אליה.",
+      "correctOption": "C",
+      "feedback": "נכון. המעבר נשען על אקסיומת הסדר שמתאימה לחיבור: הוספת אותו איבר לשני האגפים שומרת על אי־השוויון.",
       "layer": "base",
-      "questionMode": "definition-check",
+      "questionMode": "proof-step",
       "skills": [
         "ordered-field",
         "completeness",
@@ -2513,10 +2512,9 @@
       ],
       "sourcePool": "app-checks",
       "sourcePath": "docs/question-bank.json",
-      "reviewStatus": "review",
-      "qualityFlags": [
-        "definition_check"
-      ]
+      "reviewStatus": "ok",
+      "qualityFlags": [],
+      "reviewNote": ""
     },
     {
       "id": "ch01-s061-q01",
@@ -2631,47 +2629,46 @@
       "section": "1.6.1",
       "unitTitle": "שדה ושדה סדור",
       "topic": "שדה ושדה סדור",
-      "prompt": "מהי דוגמה לתכונה אלגברית של שדה?",
+      "prompt": "באיזה מעבר משתמשים בחוק הפילוג בשדה?",
       "options": [
         {
           "index": 0,
           "label": "A",
-          "text": "לכל קבוצה חסומה יש סופרמום",
+          "text": "מ־a<b להסיק a+c<b+c",
           "correct": false
         },
         {
           "index": 1,
           "label": "B",
-          "text": "x(y+z)=xy+xz",
-          "correct": true
+          "text": "מ־a≠0 להסיק שקיים 1/a",
+          "correct": false
         },
         {
           "index": 2,
           "label": "C",
-          "text": "בין כל שני ממשיים יש רציונלי",
+          "text": "מ־a+b=b+a להסיק שסדר החיבור לא משנה",
           "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "כל סדרה מתכנסת",
-          "correct": false
+          "text": "מ־3(a+b)−3a לעבור ל־3a+3b−3a",
+          "correct": true
         }
       ],
-      "correctOption": "B",
-      "feedback": "נכון. זוהי חוק הפילוג.",
+      "correctOption": "D",
+      "feedback": "נכון. הפילוג מאפשר לפתוח את 3(a+b) ל־3a+3b, ואז אפשר לצמצם את 3a−3a.",
       "layer": "base",
-      "questionMode": "definition-check",
+      "questionMode": "application",
       "skills": [
         "ordered-field",
         "algebraic-manipulation"
       ],
       "sourcePool": "app-checks",
       "sourcePath": "docs/question-bank.json",
-      "reviewStatus": "review",
-      "qualityFlags": [
-        "definition_check"
-      ]
+      "reviewStatus": "ok",
+      "qualityFlags": [],
+      "reviewNote": ""
     },
     {
       "id": "ch01-s061-q04",
@@ -2735,47 +2732,46 @@
       "section": "1.6.1",
       "unitTitle": "שדה ושדה סדור",
       "topic": "שדה ושדה סדור",
-      "prompt": "מהו האיבר הנגדי של x בשדה?",
+      "prompt": "בפתרון המשוואה x+a=b בשדה, איזה צעד משתמש באיבר הנגדי של a?",
       "options": [
         {
           "index": 0,
           "label": "A",
-          "text": "איבר שמקיים x+(−x)=0",
-          "correct": true
+          "text": "כופלים את שני האגפים ב־a ואז מחלקים באותו מספר",
+          "correct": false
         },
         {
           "index": 1,
           "label": "B",
-          "text": "איבר שמקיים x·x=1",
-          "correct": false
+          "text": "מחברים את −a לשני האגפים",
+          "correct": true
         },
         {
           "index": 2,
           "label": "C",
-          "text": "האיבר הגדול מ־x",
+          "text": "מחליפים את a ב־1/a גם אם a=0",
           "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "איבר שאינו בשדה",
+          "text": "מסיקים מיד ש־x=a+b",
           "correct": false
         }
       ],
-      "correctOption": "A",
-      "feedback": "נכון. האיבר הנגדי מבטל את x ביחס לחיבור.",
+      "correctOption": "B",
+      "feedback": "נכון. האיבר הנגדי מבטל את a ביחס לחיבור, כי a+(−a)=0.",
       "layer": "base",
-      "questionMode": "definition-check",
+      "questionMode": "application",
       "skills": [
         "ordered-field",
         "algebraic-manipulation"
       ],
       "sourcePool": "app-checks",
       "sourcePath": "docs/question-bank.json",
-      "reviewStatus": "review",
-      "qualityFlags": [
-        "definition_check"
-      ]
+      "reviewStatus": "ok",
+      "qualityFlags": [],
+      "reviewNote": ""
     },
     {
       "id": "ch01-s061-q06",
@@ -2890,47 +2886,46 @@
       "section": "1.6.1",
       "unitTitle": "שדה ושדה סדור",
       "topic": "שדה ושדה סדור",
-      "prompt": "מה פירוש יחס סדר מלא?",
+      "prompt": "מה יראה שיחס סדר נתון אינו סדר מלא?",
       "options": [
         {
           "index": 0,
           "label": "A",
-          "text": "אפשר להשוות רק איברים טבעיים",
+          "text": "מציאת איבר חיובי אחד",
           "correct": false
         },
         {
           "index": 1,
           "label": "B",
-          "text": "אין צורך בטרנזיטיביות",
+          "text": "מציאת שני איברים שונים a,b כך ש־a<b",
           "correct": false
         },
         {
           "index": 2,
           "label": "C",
-          "text": "כל שני איברים שונים אינם ניתנים להשוואה",
-          "correct": false
+          "text": "זוג איברים שאינם ניתנים להשוואה",
+          "correct": true
         },
         {
           "index": 3,
           "label": "D",
-          "text": "כל שני איברים ניתנים להשוואה לפי הסדר",
-          "correct": true
+          "text": "מציאת איבר שאין לו איבר נגדי ביחס לחיבור",
+          "correct": false
         }
       ],
-      "correctOption": "D",
-      "feedback": "נכון. סדר מלא מאפשר להשוות בין כל זוג איברים.",
+      "correctOption": "C",
+      "feedback": "נכון. בסדר מלא כל שני איברים ניתנים להשוואה. זוג שאינו ניתן להשוואה מפריך מלאות.",
       "layer": "base",
-      "questionMode": "definition-check",
+      "questionMode": "counterexample",
       "skills": [
         "ordered-field",
         "algebraic-manipulation"
       ],
       "sourcePool": "app-checks",
       "sourcePath": "docs/question-bank.json",
-      "reviewStatus": "review",
-      "qualityFlags": [
-        "definition_check"
-      ]
+      "reviewStatus": "ok",
+      "qualityFlags": [],
+      "reviewNote": ""
     },
     {
       "id": "ch01-s062-q01",
@@ -2943,47 +2938,46 @@
       "section": "1.6.2",
       "unitTitle": "תכונת ארכימדס וערך שלם",
       "topic": "תכונת ארכימדס וערך שלם",
-      "prompt": "מה אומרת תכונת ארכימדס בניסוח בסיסי?",
+      "prompt": "מה ההבדל בין שתי הטענות: (א) לכל x∈R קיים n∈N כך ש־n>x; (ב) קיים n∈N כך שלכל x∈R מתקיים n>x?",
       "options": [
         {
           "index": 0,
           "label": "A",
-          "text": "יש מספר ממשי גדול מכל הטבעיים",
-          "correct": false
+          "text": "(א) נכונה; (ב) שקרית",
+          "correct": true
         },
         {
           "index": 1,
           "label": "B",
-          "text": "לכל x∈R קיים n∈N כך ש־n>x",
-          "correct": true
+          "text": "שתיהן שקולות, כי סדר הכמתים אינו משנה בטענות כאלה",
+          "correct": false
         },
         {
           "index": 2,
           "label": "C",
-          "text": "כל ממשי הוא טבעי",
+          "text": "(ב) נכונה ו־(א) שקרית",
           "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "כל קבוצה חסומה מלעיל",
+          "text": "שתיהן שקריות כי קבוצת הטבעיים חסומה בתוך הממשיים",
           "correct": false
         }
       ],
-      "correctOption": "B",
-      "feedback": "נכון. הטבעיים אינם חסומים מלעיל בתוך R.",
+      "correctOption": "A",
+      "feedback": "נכון. בתכונת ארכימדס המספר הטבעי יכול להיות תלוי ב־x; אין n יחיד שגדול מכל מספר ממשי.",
       "layer": "base",
-      "questionMode": "definition-check",
+      "questionMode": "conceptual-application",
       "skills": [
         "archimedean-property",
         "proof-structure"
       ],
       "sourcePool": "app-checks",
       "sourcePath": "docs/question-bank.json",
-      "reviewStatus": "review",
-      "qualityFlags": [
-        "definition_check"
-      ]
+      "reviewStatus": "ok",
+      "qualityFlags": [],
+      "reviewNote": ""
     },
     {
       "id": "ch01-s062-q02",
@@ -3353,37 +3347,37 @@
       "section": "1.6.3",
       "unitTitle": "שרש שתיים",
       "topic": "שרש שתיים",
-      "prompt": "מהי הטענה המרכזית לגבי √2 בסעיף?",
+      "prompt": "בהוכחה בשלילה ש־√2 אינו רציונלי מניחים √2=p/q בשבר מצומצם. איזו סתירה מחפשים?",
       "options": [
         {
           "index": 0,
           "label": "A",
-          "text": "√2 הוא טבעי",
+          "text": "ש־p=q ולכן השבר שווה תמיד ל־1",
           "correct": false
         },
         {
           "index": 1,
           "label": "B",
-          "text": "√2 הוא רציונלי",
+          "text": "ש־q=0 ולכן הביטוי כלל אינו שבר חוקי",
           "correct": false
         },
         {
           "index": 2,
           "label": "C",
-          "text": "√2 אינו רציונלי",
-          "correct": true
+          "text": "ש־√2 אינו מספר ממשי",
+          "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "√2 אינו ממשי",
-          "correct": false
+          "text": "ש־p ו־q שניהם זוגיים",
+          "correct": true
         }
       ],
-      "correctOption": "C",
-      "feedback": "נכון. זוהי אחת הדוגמאות הראשונות למספר ממשי שאינו רציונלי.",
+      "correctOption": "D",
+      "feedback": "נכון. אם מגיעים לכך שגם המונה וגם המכנה זוגיים, השבר לא היה מצומצם כפי שהנחנו.",
       "layer": "base",
-      "questionMode": "definition-check",
+      "questionMode": "proof-step",
       "skills": [
         "irrationality",
         "number-systems",
@@ -3391,10 +3385,9 @@
       ],
       "sourcePool": "app-checks",
       "sourcePath": "docs/question-bank.json",
-      "reviewStatus": "review",
-      "qualityFlags": [
-        "definition_check"
-      ]
+      "reviewStatus": "ok",
+      "qualityFlags": [],
+      "reviewNote": ""
     },
     {
       "id": "ch01-s063-q02",
@@ -3903,17 +3896,16 @@
       "correctOption": "A",
       "feedback": "נכון. גם 1 עצמו הוא חסם מלעיל.",
       "layer": "base",
-      "questionMode": "definition-check",
+      "questionMode": "application",
       "skills": [
         "bounds-extrema",
         "proof-structure"
       ],
       "sourcePool": "app-checks",
       "sourcePath": "docs/question-bank.json",
-      "reviewStatus": "review",
-      "qualityFlags": [
-        "definition_check"
-      ]
+      "reviewStatus": "ok",
+      "qualityFlags": [],
+      "reviewNote": ""
     },
     {
       "id": "ch01-s064-q04",
@@ -4385,47 +4377,46 @@
       "section": "1.6.5",
       "unitTitle": "אקסיומת השלמות",
       "topic": "אקסיומת השלמות",
-      "prompt": "מה פירוש 'חסם מלעיל קטן ביותר'?",
+      "prompt": "עבור A=(0,1), למה 1 מתאים להיות החסם מלעיל הקטן ביותר?",
       "options": [
         {
           "index": 0,
           "label": "A",
-          "text": "איבר כלשהו בקבוצה",
+          "text": "כי 1 הוא איבר של A ולכן הוא המקסימום של הקבוצה",
           "correct": false
         },
         {
           "index": 1,
           "label": "B",
-          "text": "חסם מלרע של הקבוצה",
-          "correct": false
+          "text": "1 חוסם מלמעלה, ואין חסם קטן ממנו",
+          "correct": true
         },
         {
           "index": 2,
           "label": "C",
-          "text": "חסם מלעיל שקטן או שווה לכל חסם מלעיל אחר",
-          "correct": true
+          "text": "כי אין ל־A חסמים מלעיל אחרים מלבד המספר 1",
+          "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "מספר שאינו חסם",
+          "text": "כי כל מספר גדול מ־1 שייך ל־A",
           "correct": false
         }
       ],
-      "correctOption": "C",
-      "feedback": "נכון. זהו בדיוק הרעיון של סופרמום.",
+      "correctOption": "B",
+      "feedback": "נכון. 1 חוסם את A מלמעלה, וכל מספר קטן ממנו מפספס איברים של A שקרובים ל־1.",
       "layer": "base",
-      "questionMode": "definition-check",
+      "questionMode": "application",
       "skills": [
         "completeness",
         "supremum-infimum"
       ],
       "sourcePool": "app-checks",
       "sourcePath": "docs/question-bank.json",
-      "reviewStatus": "review",
-      "qualityFlags": [
-        "definition_check"
-      ]
+      "reviewStatus": "ok",
+      "qualityFlags": [],
+      "reviewNote": ""
     },
     {
       "id": "ch01-s065-q06",
@@ -4591,47 +4582,46 @@
       "section": "1.6.6",
       "unitTitle": "סופרמום ואינפימום",
       "topic": "סופרמום ואינפימום",
-      "prompt": "מהו sup A?",
+      "prompt": "ל־A=(0,1), איזה מספר מתאים ל־sup A?",
       "options": [
         {
           "index": 0,
           "label": "A",
-          "text": "איבר שרירותי של A",
+          "text": "0, כי הוא קצה של הקטע",
           "correct": false
         },
         {
           "index": 1,
           "label": "B",
-          "text": "החסם מלעיל הקטן ביותר של A",
-          "correct": true
+          "text": "אין סופרמום כי אין מקסימום",
+          "correct": false
         },
         {
           "index": 2,
           "label": "C",
-          "text": "החסם מלרע הגדול ביותר של A",
+          "text": "כל מספר גדול מ־1",
           "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "תמיד המקסימום של A",
-          "correct": false
+          "text": "1, אף שאינו שייך ל־A",
+          "correct": true
         }
       ],
-      "correctOption": "B",
-      "feedback": "נכון. סופרמום אינו חייב להיות איבר בקבוצה.",
+      "correctOption": "D",
+      "feedback": "נכון. 1 הוא חסם מלעיל של A, וכל מספר קטן מ־1 אינו חוסם את כל איברי (0,1).",
       "layer": "base",
-      "questionMode": "definition-check",
+      "questionMode": "application",
       "skills": [
         "supremum-infimum",
         "bounds-extrema"
       ],
       "sourcePool": "app-checks",
       "sourcePath": "docs/question-bank.json",
-      "reviewStatus": "review",
-      "qualityFlags": [
-        "definition_check"
-      ]
+      "reviewStatus": "ok",
+      "qualityFlags": [],
+      "reviewNote": ""
     },
     {
       "id": "ch01-s066-q02",
@@ -4746,47 +4736,46 @@
       "section": "1.6.6",
       "unitTitle": "סופרמום ואינפימום",
       "topic": "סופרמום ואינפימום",
-      "prompt": "מהו inf A?",
+      "prompt": "ל־A=(0,1), איזה מספר מתאים ל־inf A?",
       "options": [
         {
           "index": 0,
           "label": "A",
-          "text": "החסם מלרע הגדול ביותר",
+          "text": "0, אף שאינו שייך ל־A",
           "correct": true
         },
         {
           "index": 1,
           "label": "B",
-          "text": "החסם מלעיל הקטן ביותר",
+          "text": "1, כי הוא קצה של הקטע",
           "correct": false
         },
         {
           "index": 2,
           "label": "C",
-          "text": "כל איבר קטן של A",
+          "text": "אין אינפימום כי אין מינימום",
           "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "המקסימום של A",
+          "text": "כל מספר קטן מ־0",
           "correct": false
         }
       ],
       "correctOption": "A",
-      "feedback": "נכון. אינפימום הוא המקביל מלרע לסופרמום.",
+      "feedback": "נכון. 0 הוא חסם מלרע של A, וכל מספר גדול מ־0 אינו חוסם את כל איברי (0,1) מלמטה.",
       "layer": "base",
-      "questionMode": "definition-check",
+      "questionMode": "application",
       "skills": [
         "supremum-infimum",
         "bounds-extrema"
       ],
       "sourcePool": "app-checks",
       "sourcePath": "docs/question-bank.json",
-      "reviewStatus": "review",
-      "qualityFlags": [
-        "definition_check"
-      ]
+      "reviewStatus": "ok",
+      "qualityFlags": [],
+      "reviewNote": ""
     },
     {
       "id": "ch01-s066-q05",
@@ -4850,47 +4839,46 @@
       "section": "1.6.6",
       "unitTitle": "סופרמום ואינפימום",
       "topic": "סופרמום ואינפימום",
-      "prompt": "מהו inf A?",
+      "prompt": "נסמן A={1/n : n∈N, n≥1}. מה נכון לגבי A?",
       "options": [
         {
           "index": 0,
           "label": "A",
-          "text": "חסם מלעיל קטן ביותר",
+          "text": "sup A=1, max A=1, inf A=0, וגם min A=0",
           "correct": false
         },
         {
           "index": 1,
           "label": "B",
-          "text": "איבר אקראי של A",
+          "text": "inf A=1 ולכן כל איברי A גדולים או שווים ל־1",
           "correct": false
         },
         {
           "index": 2,
           "label": "C",
-          "text": "חסם מלרע גדול ביותר",
+          "text": "sup A=max A=1; inf A=0; אין min",
           "correct": true
         },
         {
           "index": 3,
           "label": "D",
-          "text": "מקסימום של A",
+          "text": "0 הוא מינימום של A כי הסדרה מתקרבת אליו",
           "correct": false
         }
       ],
       "correctOption": "C",
-      "feedback": "נכון. אינפימום הוא התמונה המלרעית של סופרמום.",
+      "feedback": "נכון. האיבר הגדול ביותר הוא 1, והאיברים מתקרבים ל־0 מלמעלה בלי להגיע אליו.",
       "layer": "base",
-      "questionMode": "definition-check",
+      "questionMode": "application",
       "skills": [
         "supremum-infimum",
         "bounds-extrema"
       ],
       "sourcePool": "app-checks",
       "sourcePath": "docs/question-bank.json",
-      "reviewStatus": "review",
-      "qualityFlags": [
-        "definition_check"
-      ]
+      "reviewStatus": "ok",
+      "qualityFlags": [],
+      "reviewNote": ""
     },
     {
       "id": "ch01-s066-q07",
@@ -5421,37 +5409,37 @@
       "section": "1.6.8",
       "unitTitle": "תכונות נוספות של הממשיים",
       "topic": "תכונות נוספות של הממשיים",
-      "prompt": "מה פירוש 'Q צפופה ב־R'?",
+      "prompt": "ידוע ש־Q צפופה ב־R. מה מובטח עבור הקטע הפתוח (√2, √2+0.01)?",
       "options": [
         {
           "index": 0,
           "label": "A",
-          "text": "כל ממשי הוא רציונלי",
+          "text": "כל איברי הקטע רציונליים",
           "correct": false
         },
         {
           "index": 1,
           "label": "B",
-          "text": "בין כל שני ממשיים שונים יש מספר רציונלי",
-          "correct": true
+          "text": "אין בו רציונליים כי √2 אי־רציונלי",
+          "correct": false
         },
         {
           "index": 2,
           "label": "C",
-          "text": "יש רק מספר סופי של רציונליים",
+          "text": "יש בו רציונלי רק אם שני קצות הקטע רציונליים",
           "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "כל רציונלי הוא שלם",
-          "correct": false
+          "text": "יש בו לפחות מספר רציונלי אחד",
+          "correct": true
         }
       ],
-      "correctOption": "B",
-      "feedback": "נכון. צפיפות אומרת שאפשר למצוא רציונלי בכל קטע פתוח לא ריק.",
+      "correctOption": "D",
+      "feedback": "נכון. צפיפות Q ב־R אומרת שבכל קטע פתוח לא ריק יש רציונלי, גם כשהקצוות אינם רציונליים.",
       "layer": "base",
-      "questionMode": "definition-check",
+      "questionMode": "application",
       "skills": [
         "density",
         "archimedean-property",
@@ -5459,10 +5447,9 @@
       ],
       "sourcePool": "app-checks",
       "sourcePath": "docs/question-bank.json",
-      "reviewStatus": "review",
-      "qualityFlags": [
-        "definition_check"
-      ]
+      "reviewStatus": "ok",
+      "qualityFlags": [],
+      "reviewNote": ""
     },
     {
       "id": "ch01-s068-q02",
@@ -5995,37 +5982,37 @@
       "section": "1.6.9",
       "unitTitle": "אי שוויונים חשובים - תיעוד מהתרגולים",
       "topic": "אי שוויונים חשובים - תיעוד מהתרגולים",
-      "prompt": "מהי נוסחת סכום סדרה הנדסית סופית עבור r≠1?",
+      "prompt": "סטודנטית כתבה ∑_{j=0}^n r^j=(1−r^n)/(1−r). איזו בדיקה מהירה מראה שחסר איבר?",
       "options": [
         {
           "index": 0,
           "label": "A",
-          "text": "∑_{j=0}^n r^j=(1−r^{n+1})/(1−r)",
-          "correct": true
+          "text": "להציב r=1, כי הנוסחה מוגדרת שם",
+          "correct": false
         },
         {
           "index": 1,
           "label": "B",
-          "text": "∑_{j=0}^n r^j=(1−r^n)/(1−r)",
-          "correct": false
+          "text": "להציב n=0: הסכום 1 אבל הנוסחה נותנת 0",
+          "correct": true
         },
         {
           "index": 2,
           "label": "C",
-          "text": "∑_{j=0}^n r^j=(r^{n+1}−1)/(1−r)",
+          "text": "להציב n=1 ולקבל תמיד 0",
           "correct": false
         },
         {
           "index": 3,
           "label": "D",
-          "text": "∑_{j=0}^n r^j=(1+r^{n+1})/(1+r)",
+          "text": "להציב ערך שלילי ל־r ולוותר על בדיקת מספר האיברים",
           "correct": false
         }
       ],
-      "correctOption": "A",
-      "feedback": "נכון. ההוכחה נעשית באמצעות כפל ב־1−r וצמצום טלסקופי.",
+      "correctOption": "B",
+      "feedback": "נכון. עבור n=0 הסכום הוא r^0=1; לכן בנוסחה הנכונה צריך להופיע 1−r^{n+1} במונה.",
       "layer": "base",
-      "questionMode": "definition-check",
+      "questionMode": "proof-step",
       "skills": [
         "absolute-value-inequalities",
         "finite-sums-binomial",
@@ -6033,10 +6020,9 @@
       ],
       "sourcePool": "app-checks",
       "sourcePath": "docs/question-bank.json",
-      "reviewStatus": "review",
-      "qualityFlags": [
-        "definition_check"
-      ]
+      "reviewStatus": "ok",
+      "qualityFlags": [],
+      "reviewNote": ""
     },
     {
       "id": "ch01-s069-q05",
