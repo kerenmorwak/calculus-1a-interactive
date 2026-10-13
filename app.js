@@ -24,9 +24,11 @@ chapters.forEach((title, index) => {
 });
 document.title = `${chapters[chapter - 1]} | סיכומים בחדו״א 1א`;
 const section = document.querySelector('#chapter');
-const heading = el('div', 'chapter-heading');
-const titles = el('div');titles.append(el('p', 'chapter-kicker', `פרק ${chapter}`));
-const title = el('h2', '', chapters[chapter - 1]);title.id = 'chapter-title';titles.append(title);heading.append(titles);section.append(heading);
+const heading = el('header', 'chapter-heading');
+const titles = el('div', 'chapter-titles');titles.append(el('p', 'chapter-kicker', `פרק ${chapter}`));
+const title = el('h1', '', chapters[chapter - 1]);title.id = 'chapter-title';titles.append(title);
+titles.append(el('p', 'byline', 'נערך על בסיס הרשימות של שירי ארטשטיין וירון אוסטרובר'));
+heading.append(titles);section.append(heading);
 const data = chapterData[chapter];
 if(data) {
   const actions = el('div', 'actions');
@@ -40,7 +42,7 @@ if(data) {
     a.append(el('span', 'section-number', item.number), el('span', '', item.title));links.append(a);
   });
   const readingNote = chapter === 1
-    ? `מתקדמים במנות קטנות: קוראים עד סוף המקטע, עונים על כמה שאלות קצרות, ואז ממשיכים.`
+    ? `קוראים מקטע, עונים על כמה שאלות קצרות וממשיכים.`
     : `פרק ${chapter} · ${data.pages.length} עמודים. להגדלה, לחיפוש בטקסט או להדפסה אפשר לפתוח את קובץ ה־PDF.`;
   section.append(el('p', 'reading-note', readingNote));
   const pages = el('div', 'pages');

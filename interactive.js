@@ -379,7 +379,7 @@ const homeworkMilestones = [
   {
     afterUnitId: "ch01-s069",
     title: "תרגיל להגשה 1",
-    subtitle: "שאלות הוכחה לפי החומר שכבר כוסה בפרק. כדאי לכתוב פתרון מסודר ולהעלות סריקה לבדיקה.",
+    subtitle: "שאלות הוכחה על חומר הפרק. כתבו פתרון מלא, סרקו אותו והעלו כאן.",
     source: "מבוסס על תרגילי בית 1-2, עם התאמות לסדר הקריאה כאן.",
     tasks: [
       {
@@ -458,9 +458,15 @@ const chapterFinalQuiz = {
   ]
 };
 
+
 function question(id, prompt, options, answer, feedback, difficulty = null, topic = null) {
   return { id, prompt, options, answer, feedback, difficulty: difficulty ?? questionOrdinal(id), topic };
 }
+
+const OPTION_LETTERS = ["א", "ב", "ג", "ד", "ה", "ו"];
+const COIN_IMG = `<img class="coin" src="assets/coin.svg" alt="" width="20" height="20">`;
+const activeAttempts = new Map();
+let overlayReturnFocus = null;
 
 function initInteractiveLearning() {
   const chapter = Number(new URLSearchParams(location.search).get("chapter") || 1);
@@ -468,6 +474,11 @@ function initInteractiveLearning() {
   const section = document.querySelector("#chapter");
   const pages = document.querySelector(".pages");
   if (!section || !pages) return;
+
+  document.body.classList.add("is-interactive");
+  const coinHud = document.querySelector("#coin-hud");
+  if (coinHud) coinHud.hidden = false;
+  renderProgressLine();
 
   const readingNote = section.querySelector(".reading-note");
   if (readingNote) readingNote.after(renderInteractiveOverview());
@@ -500,6 +511,7 @@ function initInteractiveLearning() {
   bindReadingNavigationLocks();
   bindQuestionOverlay();
   updateInteractiveProgress();
+  requestAnimationFrame(() => typesetMath(section));
 }
 
 function readInteractiveProgress() {
@@ -534,27 +546,66 @@ function tagContentsLinksForUnits() {
   });
 }
 
+/* ---------- Reading: one figure per original page, later parts blurred ---------- */
+
 function renderGuidedReadingPages(pages) {
   const sourcePages = collectRenderedPageData(pages);
   if (!sourcePages.size) return false;
 
-  const fragment = document.createDocumentFragment();
-  interactiveChapterOne.units.forEach((unit, unitIndex) => {
-    const plan = chapterOneReadingPlan[unit.id] || [{ page: unit.page, id: `page-${unit.page}` }];
-    plan.forEach((segment, segmentIndex) => {
-      const page = sourcePages.get(segment.page);
-      if (!page) return;
-      fragment.append(renderPageSegment(unit, unitIndex, segment, page, segmentIndex));
-    });
+  const regionsByPage = buildPageRegions();
+  const markersAfterPage = new Map();
+  interactiveChapterOne.units.forEach((unit) => {
+    const plan = readingPlanFor(unit);
+    const lastPage = plan[plan.length - 1].page;
+    if (!markersAfterPage.has(lastPage)) markersAfterPage.set(lastPage, []);
+    markersAfterPage.get(lastPage).push(unit.id);
+  });
 
-    const marker = document.createElement("span");
-    marker.hidden = true;
-    marker.dataset.unitEnd = unit.id;
-    fragment.append(marker);
+  const fragment = document.createDocumentFragment();
+  [...regionsByPage.keys()].sort((a, b) => a - b).forEach((pageNumber, order) => {
+    const page = sourcePages.get(pageNumber);
+    if (!page) return;
+    fragment.append(renderReadingPage(page, regionsByPage.get(pageNumber), order));
+    (markersAfterPage.get(pageNumber) || []).forEach((unitId) => {
+      const marker = document.createElement("span");
+      marker.hidden = true;
+      marker.dataset.unitEnd = unitId;
+      fragment.append(marker);
+    });
   });
 
   pages.replaceChildren(fragment);
+  pages.classList.add("guided-pages");
   return true;
+}
+
+function readingPlanFor(unit) {
+  return chapterOneReadingPlan[unit.id] || [{ page: unit.page, id: `page-${unit.page}` }];
+}
+
+// Every page appears once. Each unit owns a vertical band of the page; the bands are
+// contiguous, so the running header at the top belongs to the first unit on the page.
+function buildPageRegions() {
+  const regionsByPage = new Map();
+  interactiveChapterOne.units.forEach((unit, unitIndex) => {
+    readingPlanFor(unit).forEach((segment, segmentIndex) => {
+      if (!regionsByPage.has(segment.page)) regionsByPage.set(segment.page, []);
+      regionsByPage.get(segment.page).push({
+        unitId: unit.id,
+        unitIndex,
+        top: normalizeSegmentEdge(segment.top ?? 0, 0),
+        startsUnit: segmentIndex === 0
+      });
+    });
+  });
+  regionsByPage.forEach((regions) => {
+    regions.sort((a, b) => a.unitIndex - b.unitIndex || a.top - b.top);
+    regions[0].top = 0;
+    regions.forEach((region, index) => {
+      region.bottom = index < regions.length - 1 ? regions[index + 1].top : 1;
+    });
+  });
+  return regionsByPage;
 }
 
 function collectRenderedPageData(pages) {
@@ -577,54 +628,59 @@ function collectRenderedPageData(pages) {
   return result;
 }
 
-function renderPageSegment(unit, unitIndex, segment, page, segmentIndex) {
-  const top = normalizeSegmentEdge(segment.top ?? 0, 0);
-  const bottom = normalizeSegmentEdge(segment.bottom ?? 1, 1);
-
+function renderReadingPage(page, regions, order) {
   const figure = document.createElement("figure");
-  figure.className = "page page-segment";
-  if (segment.id) figure.id = segment.id;
+  figure.className = "page reading-page";
+  figure.id = `page-${page.number}`;
   figure.dataset.pageNumber = String(page.number);
-  figure.dataset.readingUnitId = unit.id;
-  figure.dataset.readingUnitIndex = String(unitIndex);
-  figure.dataset.segmentTop = String(top);
-  figure.dataset.segmentBottom = String(bottom);
+  figure.dataset.readingUnitIds = regions.map((region) => region.unitId).join(" ");
 
   const caption = document.createElement("figcaption");
-  caption.append(document.createElement("span"), document.createElement("a"));
-  caption.querySelector("span").textContent = segment.label || `עמוד ${page.number}`;
-  const link = caption.querySelector("a");
+  const label = document.createElement("span");
+  label.textContent = `עמוד ${page.number}`;
+  const link = document.createElement("a");
   link.href = page.pdfHref;
   link.target = "_blank";
   link.rel = "noopener";
   link.textContent = "למקור";
+  caption.append(label, link);
 
-  const viewport = document.createElement("div");
-  viewport.className = "page-focus";
-  viewport.style.setProperty("--page-width", page.width);
-  viewport.style.setProperty("--focus-top", `${top * 100}%`);
-  viewport.style.setProperty("--focus-bottom", `${(1 - bottom) * 100}%`);
+  const sheet = document.createElement("div");
+  sheet.className = "page-sheet";
+  sheet.style.aspectRatio = `${page.width} / ${page.height}`;
 
   const image = document.createElement("img");
   image.dataset.src = page.src;
   image.width = page.width;
   image.height = page.height;
-  image.loading = segmentIndex === 0 && unitIndex < 2 ? "eager" : "lazy";
+  image.loading = order < 3 ? "eager" : "lazy";
   image.decoding = "async";
-  image.alt = `פרק 1 — ${segment.label || `עמוד ${page.number}`}.`;
+  image.alt = `פרק 1 — עמוד ${page.number}. הטקסט המלא זמין בקובץ PDF.`;
+  sheet.append(image);
 
-  viewport.append(image);
-  if (top > 0.01) viewport.append(createPageBlur("top", top));
-  if (bottom < 0.99) viewport.append(createPageBlur("bottom", 1 - bottom));
-  figure.append(caption, viewport);
+  regions.forEach((region) => {
+    if (region.startsUnit) {
+      const anchor = document.createElement("span");
+      anchor.className = "unit-anchor";
+      anchor.id = `read-${region.unitId}`;
+      anchor.tabIndex = -1;
+      anchor.style.top = `${region.top * 100}%`;
+      sheet.append(anchor);
+    }
+    if (region.top > 0.005) {
+      const blur = document.createElement("div");
+      blur.className = "page-blur";
+      blur.dataset.blurUnitId = region.unitId;
+      blur.setAttribute("aria-hidden", "true");
+      blur.style.top = `${region.top * 100}%`;
+      blur.style.height = `${(region.bottom - region.top) * 100}%`;
+      blur.innerHTML = `<span>ייפתח אחרי בדיקת ההבנה</span>`;
+      sheet.append(blur);
+    }
+  });
+
+  figure.append(caption, sheet);
   return figure;
-}
-
-function createPageBlur(position, ratio) {
-  const blur = document.createElement("div");
-  blur.className = `page-blur page-blur-${position}`;
-  blur.style.setProperty("--blur-size", `${Math.max(0, Math.min(ratio, 1)) * 100}%`);
-  return blur;
 }
 
 function normalizeSegmentEdge(value, fallback) {
@@ -633,89 +689,133 @@ function normalizeSegmentEdge(value, fallback) {
   return Math.min(Math.max(number, 0), 1);
 }
 
-function addContentsBadges() {
-  const unitsBySection = new Map(interactiveChapterOne.units.map((unit) => [unit.section, unit]));
-  document.querySelectorAll(".section-list a").forEach((link) => {
-    const number = link.querySelector(".section-number")?.textContent?.trim();
-    const unit = unitsBySection.get(number);
-    if (!unit || link.querySelector(".practice-link")) return;
-    const badge = document.createElement("span");
-    badge.className = "practice-link";
-    badge.textContent = "בדיקה קצרה";
-    link.append(badge);
-  });
-}
+/* ---------- Chapter map, progress line ---------- */
 
 function renderInteractiveOverview() {
   const panel = document.createElement("section");
-  panel.className = "interactive-overview";
-  panel.setAttribute("aria-labelledby", "interactive-title");
+  panel.className = "chapter-map";
+  panel.setAttribute("aria-label", "מפת הפרק");
   panel.innerHTML = `
-    <div class="interactive-heading">
-      <div>
-        <p class="interactive-kicker">פרק 1</p>
-        <h3 id="interactive-title">התקדמות בקריאה</h3>
-      </div>
-      <div class="interactive-stats">
-        <div class="interactive-meter" aria-label="התקדמות בפרק">
-          <strong id="interactive-percent">0%</strong>
-          <span><i id="interactive-bar"></i></span>
-        </div>
-        <div class="coin-hud overview-coin-hud" aria-label="מטבעות שנצברו">
-          <span class="coin-emoji" aria-hidden="true">🪙</span>
-          <strong data-coin-count>0</strong>
-        </div>
-      </div>
-    </div>
     <details class="interactive-map">
-      <summary>מפת הפרק</summary>
-      <nav class="interactive-unit-list" aria-label="התקדמות בפרק 1">
+      <summary><span>מפת הפרק</span><span class="map-count" id="interactive-percent">0%</span></summary>
+      <nav class="interactive-unit-list" aria-label="סעיפי פרק 1">
         ${interactiveChapterOne.units.map((unit) => `
           <a href="#learn-${unit.id}" data-progress-link="${unit.id}">
-            <span>${unit.section}</span>
-            ${formatInlineText(unit.title)}
-            <bdi>·</bdi>
+            <bdi class="unit-num">${unit.section}</bdi>
+            <span class="unit-title">${formatInlineText(unit.title)}</span>
             <em>בהמשך</em>
           </a>
         `).join("")}
-          <a href="#learn-${chapterFinalQuiz.id}" data-final-quiz-link>
-            <span>סיכום</span>
-            ${formatInlineText(chapterFinalQuiz.title)}
-            <bdi>·</bdi>
-            <em>בהמשך</em>
-          </a>
+        <a href="#learn-${chapterFinalQuiz.id}" data-final-quiz-link>
+          <bdi class="unit-num">∑</bdi>
+          <span class="unit-title">${formatInlineText(chapterFinalQuiz.title)}</span>
+          <em>בהמשך</em>
+        </a>
       </nav>
     </details>
-    <div class="learner-insight" data-learner-insight></div>
+    <div class="learner-insight" data-learner-insight hidden></div>
   `;
   return panel;
 }
 
+function progressSteps() {
+  return [...getStepUnits(), chapterFinalQuiz];
+}
+
+function getStepUnits() {
+  return interactiveChapterOne.units.filter((unit) => !isIntroUnit(unit));
+}
+
+function renderProgressLine() {
+  const host = document.querySelector("#progress-line");
+  if (!host) return;
+  host.hidden = false;
+  const steps = progressSteps();
+  host.innerHTML = `
+    <span class="line-track" aria-hidden="true"><span class="line-fill" data-line-fill></span></span>
+    <ol class="line-ticks">
+      ${steps.map((unit) => `
+        <li>
+          <a class="tick" href="#learn-${unit.id}" data-tick="${unit.id}">
+            <span class="tick-dot" aria-hidden="true"></span>
+            <bdi class="tick-label">${isFinalQuiz(unit) ? "סיכום" : unit.section}</bdi>
+            <span class="sr-only" data-tick-sr></span>
+          </a>
+        </li>
+      `).join("")}
+    </ol>
+  `;
+  host.addEventListener("click", (event) => {
+    const tick = event.target.closest("[data-tick]");
+    if (!tick) return;
+    if (tick.getAttribute("aria-disabled") === "true") {
+      event.preventDefault();
+      return;
+    }
+    event.preventDefault();
+    const target = document.querySelector(tick.getAttribute("href"));
+    target?.scrollIntoView({ block: "start", behavior: preferredScrollBehavior() });
+  });
+}
+
+function updateProgressLine(progress) {
+  const host = document.querySelector("#progress-line");
+  if (!host || host.hidden) return;
+  const steps = progressSteps();
+  const readingDone = chapterReadingComplete(progress);
+  const current = readingDone
+    ? (finalQuizPassed(progress) ? null : chapterFinalQuiz)
+    : steps.find((unit) => !isFinalQuiz(unit) && !getUnitProgressState(unit, progress[unit.id]).passed);
+  let doneCount = 0;
+  steps.forEach((unit) => {
+    const tick = host.querySelector(`[data-tick="${unit.id}"]`);
+    if (!tick) return;
+    const done = isFinalQuiz(unit) ? finalQuizPassed(progress) : getUnitProgressState(unit, progress[unit.id]).passed;
+    const isCurrent = current?.id === unit.id;
+    const state = done ? "done" : (isCurrent ? "current" : "locked");
+    if (done) doneCount += 1;
+    tick.dataset.state = state;
+    tick.setAttribute("aria-disabled", state === "locked" ? "true" : "false");
+    if (isCurrent) tick.setAttribute("aria-current", "step");
+    else tick.removeAttribute("aria-current");
+    const sr = tick.querySelector("[data-tick-sr]");
+    if (sr) sr.textContent = ` ${unit.title} — ${state === "done" ? "הושלם" : state === "current" ? "עכשיו" : "בהמשך"}`;
+  });
+  const fill = host.querySelector("[data-line-fill]");
+  if (fill) {
+    const reachIndex = current ? steps.findIndex((unit) => unit.id === current.id) : steps.length - 1;
+    fill.style.width = `${steps.length > 1 ? (reachIndex / (steps.length - 1)) * 100 : 100}%`;
+  }
+  host.setAttribute("aria-label", `התקדמות בפרק: ${doneCount} מתוך ${steps.length}`);
+}
+
+/* ---------- Checkpoint cards ---------- */
+
 function renderLearningCard(unit, index) {
   const card = document.createElement("section");
-  card.className = `learning-card mode-${getUnitMode(unit)}`;
+  card.className = `learning-card checkpoint mode-${getUnitMode(unit)}`;
   card.id = `learn-${unit.id}`;
   card.dataset.unitId = unit.id;
   card.dataset.unitIndex = String(index);
+  card.setAttribute("aria-labelledby", `learn-title-${unit.id}`);
+  const size = Math.min(unit.attemptSize || interactiveChapterOne.attemptSize, unit.questions.length);
   card.innerHTML = `
-    <div class="lesson-step-heading">
-      <span>
-        <bdi>${unit.section}</bdi>
-        <strong>${formatInlineText(unit.title)}</strong>
-      </span>
-      <em data-card-status="${unit.id}">מוכן</em>
+    <div class="checkpoint-text">
+      <p class="checkpoint-kicker">${getUnitMode(unit) === "warmup" ? "חימום" : "בדיקת הבנה"}</p>
+      <h2 class="checkpoint-title" id="learn-title-${unit.id}"><bdi class="unit-num">${unit.section}</bdi> ${formatInlineText(unit.title)}</h2>
+      <p class="checkpoint-goal">${formatInlineText(unit.goal)}</p>
     </div>
-    <div class="learning-body">
-      <p>${formatInlineText(unit.goal)}</p>
-      <p class="locked-note" data-locked-note="${unit.id}" hidden></p>
-      <div class="learning-actions">
-        <button class="action primary" type="button" data-start-learning="${unit.id}">${startButtonLabel(unit)}</button>
-      </div>
-      <div class="learning-activity" data-learning-activity="${unit.id}" aria-live="polite"></div>
+    <div class="checkpoint-side">
+      <em class="checkpoint-status" data-card-status="${unit.id}"></em>
+      <button class="action primary" type="button" data-start-learning="${unit.id}">${startButtonLabel(unit)}</button>
+      <p class="checkpoint-meta">${size} שאלות · אפשר לטעות פעם אחת</p>
     </div>
+    <p class="locked-note" data-locked-note="${unit.id}" hidden></p>
+    <div class="learning-activity" data-learning-activity="${unit.id}" aria-live="polite"></div>
   `;
-  card.querySelector("[data-start-learning]").addEventListener("click", () => {
+  card.querySelector("[data-start-learning]").addEventListener("click", (event) => {
     if (!isUnitUnlocked(unit, readInteractiveProgress())) return;
+    overlayReturnFocus = event.currentTarget;
     if (isIntroUnit(unit)) {
       completeIntroUnit(unit);
       return;
@@ -725,45 +825,88 @@ function renderLearningCard(unit, index) {
   return card;
 }
 
+function renderFinalQuizCard(unit) {
+  const card = document.createElement("section");
+  card.className = "learning-card checkpoint final-quiz-card locked";
+  card.id = `learn-${unit.id}`;
+  card.dataset.finalQuizCard = unit.id;
+  card.setAttribute("aria-labelledby", `learn-title-${unit.id}`);
+  const size = Math.min(unit.attemptSize || 10, unit.questions.length);
+  card.innerHTML = `
+    <div class="checkpoint-text">
+      <p class="checkpoint-kicker">בוחן מסכם</p>
+      <h2 class="checkpoint-title" id="learn-title-${unit.id}">${formatInlineText(unit.title)}</h2>
+      <p class="checkpoint-goal">${formatInlineText(unit.goal)}</p>
+    </div>
+    <div class="checkpoint-side">
+      <em class="checkpoint-status" data-final-quiz-status></em>
+      <button class="action primary" type="button" data-start-final-quiz>${finalQuizButtonLabel(unit)}</button>
+      <p class="checkpoint-meta">${size} שאלות · ציון מעבר ${Math.round((unit.passRate || 0.7) * 100)}%</p>
+    </div>
+    <div class="learning-activity" data-learning-activity="${unit.id}" aria-live="polite"></div>
+  `;
+  card.querySelector("[data-start-final-quiz]")?.addEventListener("click", (event) => {
+    if (!isFinalQuizUnlocked(readInteractiveProgress())) return;
+    overlayReturnFocus = event.currentTarget;
+    startUnitAttempt(unit);
+  });
+  return card;
+}
+
+/* ---------- Homework ---------- */
+
 function renderHomeworkMilestone(milestone) {
   const card = document.createElement("section");
   card.className = "homework-card";
+  card.id = `homework-${milestone.afterUnitId}`;
   card.dataset.homeworkAfter = milestone.afterUnitId;
+  card.setAttribute("aria-labelledby", `homework-title-${milestone.afterUnitId}`);
   card.hidden = true;
+  const statusId = `homework-upload-status-${milestone.afterUnitId}`;
   card.innerHTML = `
-    <div class="homework-heading">
-      <div>
-        <p>להגשה</p>
-        <h3>${formatInlineText(milestone.title)}</h3>
-        <span>${formatInlineText(milestone.subtitle)}</span>
-      </div>
-    </div>
+    <header class="homework-heading">
+      <p class="checkpoint-kicker">עבודת הגשה</p>
+      <h2 id="homework-title-${milestone.afterUnitId}">${formatInlineText(milestone.title)}</h2>
+      <p class="homework-lead">${formatInlineText(milestone.subtitle)}</p>
+    </header>
     <ol class="homework-tasks">
       ${milestone.tasks.map((task, taskIndex) => `
         <li>
-          <div class="homework-question">${formatInlineText(task.text)}</div>
-          ${task.tex ? renderTexDisplay(task.tex) : ""}
-          ${task.formula ? renderMathDisplay(task.formula) : ""}
-          ${task.hint ? renderHomeworkHint(task, milestone, taskIndex) : ""}
+          <span class="task-num" aria-hidden="true">${taskIndex + 1}</span>
+          <div class="task-body">
+            <p class="homework-question">${formatInlineText(task.text)}</p>
+            ${task.tex ? renderTexDisplay(task.tex) : ""}
+            ${task.formula ? renderMathDisplay(task.formula) : ""}
+            ${task.hint ? renderHomeworkHint(task, milestone, taskIndex) : ""}
+          </div>
         </li>
       `).join("")}
     </ol>
     <div class="homework-upload">
-      <label>
-        <span>העלאת פתרון סרוק</span>
-        <input type="file" accept="image/*,.pdf" multiple data-homework-upload>
+      <h3>פתרון סרוק</h3>
+      <label class="file-pick">
+        <input class="file-input" type="file" accept="image/*,.pdf" multiple data-homework-upload aria-describedby="${statusId}">
+        <span class="file-pick-button">בחירת קבצים</span>
+        <span class="file-pick-hint">PDF או תמונות</span>
       </label>
-      <p data-homework-upload-status>אפשר לבחור קובץ PDF או תמונות. בדיקה אוטומטית תחובר בשלב הבא.</p>
+      <ul class="file-list" data-homework-files hidden></ul>
+      <div class="submit-row">
+        <button class="action" type="button" disabled aria-describedby="${statusId}">שליחה לבדיקה</button>
+        <p class="upload-status" id="${statusId}" data-homework-upload-status>השליחה לבדיקה עדיין לא זמינה.</p>
+      </div>
     </div>
     <p class="homework-source">${escapeHtml(milestone.source)}</p>
   `;
   const upload = card.querySelector("[data-homework-upload]");
   const status = card.querySelector("[data-homework-upload-status]");
+  const list = card.querySelector("[data-homework-files]");
   upload?.addEventListener("change", () => {
-    const files = [...upload.files].map((file) => file.name);
+    const files = [...upload.files];
+    list.innerHTML = files.map((file) => `<li><bdi>${escapeHtml(file.name)}</bdi></li>`).join("");
+    list.hidden = !files.length;
     status.textContent = files.length
-      ? `נבחרו ${files.length} קבצים: ${files.join(", ")}`
-      : "אפשר לבחור קובץ PDF או תמונות. בדיקה אוטומטית תחובר בשלב הבא.";
+      ? `${files.length === 1 ? "נבחר קובץ אחד" : `נבחרו ${files.length} קבצים`}. הקבצים לא נשלחו — השליחה לבדיקה עדיין לא זמינה.`
+      : "השליחה לבדיקה עדיין לא זמינה.";
   });
   bindHomeworkHintPurchases(card);
   syncHomeworkHints(card);
@@ -773,19 +916,19 @@ function renderHomeworkMilestone(milestone) {
 
 function renderHomeworkHint(task, milestone, taskIndex) {
   const key = homeworkHintKey(milestone, taskIndex);
+  const statusId = `hint-status-${key.replace(/[^a-z0-9]/gi, "-")}`;
   return `
     <div class="homework-hint" data-homework-hint="${key}">
-      <button class="homework-hint-action" type="button" data-homework-hint-button>
+      <button class="hint-button" type="button" data-homework-hint-button aria-describedby="${statusId}"
+        aria-label="פתיחת רמז לשאלה ${taskIndex + 1} תמורת ${HINT_COST} מטבעות">
         <span>רמז</span>
-        <span class="hint-price" aria-label="${HINT_COST} מטבעות">
-          <span class="coin-mark" aria-hidden="true"></span>
-          ${HINT_COST}
-        </span>
+        <span class="hint-price">${COIN_IMG}<bdi>${HINT_COST}</bdi></span>
       </button>
       <div class="homework-hint-panel" data-homework-hint-panel hidden>
+        <p class="hint-label">רמז</p>
         <p>${formatInlineText(task.hint)}</p>
       </div>
-      <p class="homework-hint-status" data-homework-hint-status></p>
+      <p class="homework-hint-status" id="${statusId}" data-homework-hint-status role="status"></p>
     </div>
   `;
 }
@@ -804,12 +947,15 @@ function bindHomeworkHintPurchases(root) {
       if (!result.ok) {
         hint.classList.add("needs-coins");
         if (status) {
-          status.textContent = `צריך ${HINT_COST} מטבעות כדי לפתוח את הרמז. כרגע יש ${result.coins}.`;
+          const missing = HINT_COST - result.coins;
+          status.textContent = missing === 1 ? "חסר מטבע אחד לרמז הזה." : `חסרים ${missing} מטבעות לרמז הזה.`;
         }
         return;
       }
       hint.classList.remove("needs-coins");
-      revealPurchasedHomeworkHint(hint, result.already ? "הרמז כבר פתוח." : `נפתח תמורת ${HINT_COST} מטבעות.`);
+      revealPurchasedHomeworkHint(hint, result.already ? "" : `נפתח תמורת ${HINT_COST} מטבעות.`);
+      if (!result.already) showCoinDelta(-HINT_COST);
+      hint.querySelector("[data-homework-hint-panel]")?.focus?.();
       requestAnimationFrame(() => typesetMath(hint));
     });
   });
@@ -820,7 +966,7 @@ function syncHomeworkHints(root = document) {
   const purchasedHints = progress?.[PROGRESS_META_KEY]?.purchasedHints || {};
   root.querySelectorAll("[data-homework-hint]").forEach((hint) => {
     if (purchasedHints[hint.dataset.homeworkHint]) {
-      revealPurchasedHomeworkHint(hint, "הרמז פתוח.");
+      revealPurchasedHomeworkHint(hint, "");
     }
   });
 }
@@ -830,11 +976,11 @@ function revealPurchasedHomeworkHint(hint, message) {
   const panel = hint.querySelector("[data-homework-hint-panel]");
   const status = hint.querySelector("[data-homework-hint-status]");
   hint.classList.add("is-open");
-  if (panel) panel.hidden = false;
-  if (button) {
-    button.disabled = true;
-    button.innerHTML = `<span>הרמז פתוח</span>`;
+  if (panel) {
+    panel.hidden = false;
+    panel.tabIndex = -1;
   }
+  if (button) button.hidden = true;
   if (status) status.textContent = message;
 }
 
@@ -862,42 +1008,22 @@ function purchaseHomeworkHint(key) {
   progress[PROGRESS_META_KEY] = meta;
   writeInteractiveProgress(progress);
   updateCoinDisplays(progress);
-  pulseCoinHuds();
   return { ok: true, already: false, progress };
 }
 
-function renderFinalQuizCard(unit) {
-  const card = document.createElement("section");
-  card.className = "learning-card final-quiz-card locked";
-  card.id = `learn-${unit.id}`;
-  card.dataset.finalQuizCard = unit.id;
-  card.innerHTML = `
-    <div class="lesson-step-heading">
-      <span>
-        <bdi>${unit.section}</bdi>
-        <strong>${formatInlineText(unit.title)}</strong>
-      </span>
-      <em data-final-quiz-status>בהמשך</em>
-    </div>
-    <div class="learning-body">
-      <p>${formatInlineText(unit.goal)}</p>
-      <div class="learning-actions">
-        <button class="action primary" type="button" data-start-final-quiz>${finalQuizButtonLabel(unit)}</button>
-      </div>
-      <div class="learning-activity" data-learning-activity="${unit.id}" aria-live="polite"></div>
-    </div>
-  `;
-  card.querySelector("[data-start-final-quiz]")?.addEventListener("click", () => {
-    if (!isFinalQuizUnlocked(readInteractiveProgress())) return;
-    startUnitAttempt(unit);
-  });
-  return card;
-}
+/* ---------- Question rounds ---------- */
 
-function startUnitAttempt(unit) {
+function startUnitAttempt(unit, { fresh = false } = {}) {
   if (isIntroUnit(unit)) return;
   const progress = readInteractiveProgress();
   if (isFinalQuiz(unit) ? !isFinalQuizUnlocked(progress) : !isUnitUnlocked(unit, progress)) return;
+  // A round that was closed midway resumes where it stopped, so its answers still count.
+  const existing = activeAttempts.get(unit.id);
+  if (existing && !existing.finished && !fresh) {
+    openQuestionOverlay(unit);
+    renderAttempt(unit, existing, { focus: "prompt" });
+    return;
+  }
   const questions = selectAttemptQuestions(unit, progress[unit.id], progress);
   const attempt = {
     unitId: unit.id,
@@ -905,10 +1031,13 @@ function startUnitAttempt(unit) {
     current: 0,
     answers: {},
     checked: {},
-    questionStartedAt: {}
+    tried: {},
+    questionStartedAt: {},
+    finished: false
   };
+  activeAttempts.set(unit.id, attempt);
   openQuestionOverlay(unit);
-  renderAttempt(unit, attempt);
+  renderAttempt(unit, attempt, { focus: "prompt" });
 }
 
 function selectAttemptQuestions(unit, unitProgress = {}, progress = readInteractiveProgress()) {
@@ -969,52 +1098,109 @@ function questionOrdinal(id) {
   return match ? Number(match[1]) : 99;
 }
 
-function renderAttempt(unit, attempt) {
+function renderProgressDots(attempt) {
+  return `
+    <ol class="q-dots" aria-hidden="true">
+      ${attempt.questions.map((question, index) => {
+        const state = attempt.checked[question.id];
+        let cls = "q-todo";
+        if (state?.correct) cls = state.hadMistake ? "q-corrected" : "q-clean";
+        else if (state) cls = "q-missed";
+        if (index === attempt.current && !attempt.finished) cls += " q-current";
+        return `<li class="${cls}"></li>`;
+      }).join("")}
+    </ol>
+  `;
+}
+
+function roundStatusText(unit, attempt) {
+  const mistakes = countAttemptMistakes(attempt);
+  if (isFinalQuiz(unit)) {
+    const needed = requiredCorrectForUnit(unit, attempt.questions.length);
+    const allowed = attempt.questions.length - needed;
+    if (!mistakes) return `דרושות ${needed} תשובות נכונות בניסיון הראשון.`;
+    if (mistakes <= allowed) return `${mistakes === 1 ? "טעות אחת" : `${mistakes} טעויות`} עד כה · מותרות ${allowed}.`;
+    return "בסבב הזה כבר לא יהיה מעבר. אפשר להמשיך לתרגל ולנסות סבב חדש.";
+  }
+  if (!mistakes) return "";
+  if (mistakes <= interactiveChapterOne.maxMistakes) return "טעות אחת בסבב — עדיין אפשר לעבור.";
+  return "בסבב הזה כבר לא יהיה מעבר. אפשר להמשיך לתרגל ולנסות סבב חדש.";
+}
+
+function renderAttempt(unit, attempt, { focus = null } = {}) {
   const host = getQuestionHost(unit);
   if (!host) return;
   const q = attempt.questions[attempt.current];
   if (!attempt.questionStartedAt[q.id]) attempt.questionStartedAt[q.id] = Date.now();
   const selected = attempt.answers[q.id];
   const checked = attempt.checked[q.id];
-  const completed = Object.values(attempt.checked).filter((item) => item?.correct).length;
-  const mistakes = countAttemptMistakes(attempt);
+  const tried = attempt.tried[q.id] || [];
+  const solved = Boolean(checked?.correct);
+  const isLast = attempt.current === attempt.questions.length - 1;
+  const status = roundStatusText(unit, attempt);
+  const propositional = usesPropositionalLetters(q);
   host.innerHTML = `
     <div class="question-shell">
-      <div class="question-topline">
-        <span>שאלה ${attempt.current + 1} מתוך ${attempt.questions.length}</span>
-        <span>${completed}/${attempt.questions.length} הושלמו · ${mistakes} טעויות</span>
+      <div class="question-progress">
+        ${renderProgressDots(attempt)}
+        <p class="q-count">שאלה ${attempt.current + 1} מתוך ${attempt.questions.length}</p>
       </div>
-      <p class="question-prompt">${formatInlineText(q.prompt)}</p>
-      <fieldset class="options">
-        <legend class="sr-only">אפשרויות תשובה</legend>
-        ${q.options.map((option, optionIndex) => `
-          <label class="${selected === optionIndex ? "selected" : ""}">
-            <input type="radio" name="${q.id}" value="${optionIndex}" ${selected === optionIndex ? "checked" : ""}>
-            <span>${formatInlineText(option)}</span>
-          </label>
-        `).join("")}
+      <p class="question-prompt" id="question-prompt" tabindex="-1">${formatInlineText(q.prompt, { propositional })}</p>
+      <fieldset class="options" aria-labelledby="question-prompt">
+        ${q.options.map((option, optionIndex) => {
+          const wasTried = tried.includes(optionIndex);
+          const isAnswer = solved && optionIndex === q.answer;
+          const classes = [
+            "option",
+            selected === optionIndex ? "is-selected" : "",
+            wasTried ? "is-wrong" : "",
+            isAnswer ? "is-correct" : ""
+          ].filter(Boolean).join(" ");
+          const disabled = solved || wasTried;
+          return `
+            <label class="${classes}">
+              <input type="radio" name="${q.id}" value="${optionIndex}" ${selected === optionIndex ? "checked" : ""} ${disabled ? "disabled" : ""}>
+              <span class="option-letter" aria-hidden="true">${OPTION_LETTERS[optionIndex] || optionIndex + 1}</span>
+              <span class="option-text">${formatInlineText(option, { propositional })}</span>
+              ${wasTried ? `<span class="sr-only">(נבחרה ולא נכונה)</span>` : ""}
+              ${isAnswer ? `<span class="sr-only">(התשובה הנכונה)</span>` : ""}
+            </label>
+          `;
+        }).join("")}
       </fieldset>
-      <div class="question-feedback ${checked ? (checked.correct ? "correct" : "incorrect") : ""}" ${checked ? "" : "hidden"}>
-        ${checked ? renderQuestionFeedback(q, checked) : ""}
+      <div class="question-feedback ${checked ? (checked.correct ? "correct" : "incorrect") : ""}" role="status" ${checked ? "" : "hidden"}>
+        ${checked ? renderQuestionFeedback(q, checked, propositional) : ""}
       </div>
-      <div class="question-actions">
-        <button class="action primary" type="button" data-check-answer>${checked ? "בדיקה חוזרת" : "בדיקת תשובה"}</button>
-        <button class="action" type="button" data-next-question ${checked?.correct ? "" : "disabled"}>${attempt.current === attempt.questions.length - 1 ? "סיום ניסיון" : "השאלה הבאה"}</button>
+      <div class="question-footer">
+        <p class="round-status" ${status ? "" : "hidden"}>${status}</p>
+        <div class="question-actions">
+          ${solved
+            ? `<button class="action primary" type="button" data-next-question>${isLast ? "לסיכום הסבב" : "לשאלה הבאה"}</button>`
+            : `<button class="action primary" type="button" data-check-answer>בדיקה</button>`}
+        </div>
       </div>
     </div>
   `;
   host.querySelectorAll("input[type='radio']").forEach((input) => {
     input.addEventListener("change", () => {
       attempt.answers[q.id] = Number(input.value);
-      renderAttempt(unit, attempt);
+      host.querySelectorAll(".option").forEach((label) => {
+        label.classList.toggle("is-selected", label.querySelector("input") === input);
+      });
+      const feedback = host.querySelector(".question-feedback");
+      if (feedback && !attempt.checked[q.id]?.correct && feedback.dataset.prompted) {
+        feedback.hidden = true;
+        delete feedback.dataset.prompted;
+      }
     });
   });
-  host.querySelector("[data-check-answer]").addEventListener("click", () => {
-    if (attempt.answers[q.id] === undefined) {
+  host.querySelector("[data-check-answer]")?.addEventListener("click", () => {
+    if (attempt.answers[q.id] === undefined || tried.includes(attempt.answers[q.id])) {
       const feedback = host.querySelector(".question-feedback");
       feedback.hidden = false;
-      feedback.className = "question-feedback incorrect";
-      feedback.textContent = "בחרו תשובה לפני הבדיקה.";
+      feedback.dataset.prompted = "true";
+      feedback.className = "question-feedback notice";
+      feedback.textContent = "בחרו תשובה ואז לחצו על בדיקה.";
       return;
     }
     const correct = attempt.answers[q.id] === q.answer;
@@ -1027,26 +1213,42 @@ function renderAttempt(unit, attempt) {
       firstCheckMs,
       topic: q.topic || unit.title
     };
-    renderAttempt(unit, attempt);
+    if (!correct) {
+      attempt.tried[q.id] = [...tried, attempt.answers[q.id]];
+      delete attempt.answers[q.id];
+    }
+    renderAttempt(unit, attempt, { focus: correct ? "next" : "options" });
   });
-  host.querySelector("[data-next-question]").addEventListener("click", () => {
+  host.querySelector("[data-next-question]")?.addEventListener("click", () => {
     if (!attempt.checked[q.id]) return;
     if (attempt.current < attempt.questions.length - 1) {
       attempt.current += 1;
-      renderAttempt(unit, attempt);
+      renderAttempt(unit, attempt, { focus: "prompt" });
     } else {
       finishAttempt(unit, attempt);
     }
   });
-  requestAnimationFrame(() => typesetMath(host));
+  typesetMath(host);
+  if (focus) {
+    const target = focus === "next"
+      ? host.querySelector("[data-next-question]")
+      : focus === "options"
+        ? host.querySelector(".options input:not(:disabled)")
+        : host.querySelector("#question-prompt");
+    target?.focus({ preventScroll: focus !== "prompt" });
+    if (focus === "prompt") host.closest(".question-dialog")?.scrollTo({ top: 0 });
+  }
 }
 
 function finishAttempt(unit, attempt) {
+  attempt.finished = true;
+  activeAttempts.delete(unit.id);
   const total = attempt.questions.length;
   const mistakes = countAttemptMistakes(attempt);
   const correct = Math.max(total - mistakes, 0);
   const needed = requiredCorrectForUnit(unit, total);
   const passed = isFinalQuiz(unit) ? correct >= needed : mistakes <= interactiveChapterOne.maxMistakes;
+  const coinsBefore = currentCoins();
   const unitState = updateUnitProgress(unit, {
     quizPassed: passed,
     best: correct,
@@ -1059,36 +1261,50 @@ function finishAttempt(unit, attempt) {
   const host = getQuestionHost(unit);
   if (!host) return;
   const nextUnit = nextFlowUnit(unit);
+  const primary = passed
+    ? (isFinalQuiz(unit)
+        ? `<button class="action primary" type="button" data-open-homework>לעבודת ההגשה</button>`
+        : nextUnit
+          ? `<button class="action primary" type="button" data-continue-learning="${unit.id}"><span>להמשך הקריאה ב־<bdi>${nextUnit.section}</bdi></span></button>`
+          : `<button class="action primary" type="button" data-open-final-quiz>לבוחן המסכם</button>`)
+    : (isFinalQuiz(unit)
+        ? `<button class="action primary" type="button" data-retry-learning="${unit.id}">סבב חדש</button>`
+        : `<button class="action primary" type="button" data-reread="${unit.id}"><span>חזרה לקריאת <bdi>${unit.section}</bdi></span></button>`);
+  const secondary = passed || !isFinalQuiz(unit)
+    ? `<button class="action" type="button" data-retry-learning="${unit.id}">${passed ? "סבב נוסף" : "סבב חדש"}</button>`
+    : `<button class="action" type="button" data-close-question-overlay>חזרה לרשימות</button>`;
   host.innerHTML = `
     <div class="attempt-result ${passed ? "passed" : "retry"}">
-      <strong>${attemptResultTitle(unit, passed, unitState)}</strong>
-      <p>${attemptResultMessage(unit, unitState, correct, total, needed, passed, mistakes)}</p>
+      ${renderProgressDots(attempt)}
+      <h3 class="result-title" tabindex="-1">${attemptResultTitle(unit, passed, unitState)}</h3>
+      <p class="result-score"><strong><bdi>${correct}</bdi></strong> מתוך <bdi>${total}</bdi> נכונות בניסיון הראשון</p>
+      <p class="result-message">${attemptResultMessage(unit, unitState, correct, total, needed, passed, mistakes)}</p>
       ${passed ? renderCoinAward(unitState.coinsAwarded) : ""}
-      <div class="learning-actions">
-        ${passed && nextUnit ? `<button class="action primary" type="button" data-continue-learning="${unit.id}">המשך בקריאה</button>` : ""}
-        ${passed && !nextUnit && !isFinalQuiz(unit) ? `<button class="action primary" type="button" data-open-final-quiz>לקוויז הסיכום</button>` : ""}
-        ${passed && isFinalQuiz(unit) ? `<button class="action primary" type="button" data-open-homework>לתרגיל ההגשה</button>` : ""}
-        <button class="action ${passed ? "" : "primary"}" type="button" data-retry-learning="${unit.id}">${passed ? "ניסיון נוסף" : "ניסיון חוזר"}</button>
-      </div>
+      <div class="question-actions">${primary}${secondary}</div>
     </div>
   `;
-  host.querySelector("[data-retry-learning]").addEventListener("click", () => startUnitAttempt(unit));
+  host.querySelector("[data-retry-learning]")?.addEventListener("click", () => startUnitAttempt(unit, { fresh: true }));
   host.querySelector("[data-continue-learning]")?.addEventListener("click", () => {
-    closeQuestionOverlay();
-    scrollToUnitStart(nextUnit);
+    closeQuestionOverlay({ restoreFocus: false });
+    scrollToUnitStart(nextUnit, { focus: true });
+  });
+  host.querySelector("[data-reread]")?.addEventListener("click", () => {
+    closeQuestionOverlay({ restoreFocus: false });
+    scrollToUnitStart(unit, { focus: true });
   });
   host.querySelector("[data-open-final-quiz]")?.addEventListener("click", () => {
-    closeQuestionOverlay();
+    closeQuestionOverlay({ restoreFocus: false });
     scrollToFinalQuiz();
   });
   host.querySelector("[data-open-homework]")?.addEventListener("click", () => {
-    closeQuestionOverlay();
+    closeQuestionOverlay({ restoreFocus: false });
     scrollToHomework();
   });
+  host.querySelector(".result-title")?.focus({ preventScroll: true });
   if (passed && unitState.coinsAwarded) {
-    requestAnimationFrame(() => animateCoinAward(unitState.coinsAwarded));
+    requestAnimationFrame(() => animateCoinAward(unitState.coinsAwarded, coinsBefore));
   }
-  requestAnimationFrame(() => typesetMath(host));
+  typesetMath(host);
 }
 
 function requiredCorrectForUnit(unit, total) {
@@ -1120,38 +1336,35 @@ function countAttemptMistakes(attempt) {
   }).length;
 }
 
-function renderQuestionFeedback(question, checked) {
-  const title = checked.correct ? (checked.hadMistake ? "עכשיו נכון." : "יפה.") : "לא בדיוק.";
-  const suffix = checked.correct && checked.hadMistake
-    ? " שימי לב: הטעות הראשונה עדיין נספרת בסבב הזה."
-    : "";
-  return `<strong>${title}</strong> ${formatInlineText(cleanFeedbackPrefix(question.feedback))}${suffix}`;
+function renderQuestionFeedback(question, checked, propositional = false) {
+  const explanation = formatInlineText(cleanFeedbackPrefix(question.feedback), { propositional });
+  if (!checked.correct) {
+    return `<p><strong>לא נכון.</strong> ${explanation}</p><p class="feedback-next">בחרו תשובה אחרת.</p>`;
+  }
+  const note = checked.hadMistake ? `<p class="feedback-next">הטעות הקודמת נספרת בסבב.</p>` : "";
+  return `<p><strong>נכון.</strong> ${explanation}</p>${note}`;
 }
+
+/* ---------- Progress state → page ---------- */
 
 function updateInteractiveProgress() {
   const progress = readInteractiveProgress();
   const gradedUnits = getGradedUnits();
-  const finalQuizOpen = isFinalQuizUnlocked(progress);
   const total = gradedUnits.length + 1;
   const passed = gradedUnits.filter((unit) => getUnitProgressState(unit, progress[unit.id]).passed).length
     + (finalQuizPassed(progress) ? 1 : 0);
   const percent = total ? Math.round((passed / total) * 100) : 0;
   const percentNode = document.querySelector("#interactive-percent");
-  const bar = document.querySelector("#interactive-bar");
   if (percentNode) percentNode.textContent = `${percent}%`;
-  if (bar) bar.style.width = `${percent}%`;
   updateCoinDisplays(progress);
 
   interactiveChapterOne.units.forEach((unit) => {
     const unitProgress = progress[unit.id];
     const unitState = getUnitProgressState(unit, unitProgress);
     const locked = !isUnitUnlocked(unit, progress);
-    document.querySelectorAll(`[data-card-status="${unit.id}"]`).forEach((node) => {
-      node.textContent = locked ? "בהמשך" : unitState.status;
-      node.classList.toggle("done", unitState.passed);
-    });
     document.querySelectorAll(`[data-progress-link="${unit.id}"]`).forEach((link) => {
       link.classList.toggle("locked", locked);
+      link.classList.toggle("done", unitState.passed && !isIntroUnit(unit));
       link.setAttribute("aria-disabled", locked ? "true" : "false");
       const status = link.querySelector("em");
       if (status) {
@@ -1166,6 +1379,7 @@ function updateInteractiveProgress() {
   updateReadingLocks(progress);
   updateFullPdfAccess(progress);
   updateHomeworkLocks(progress);
+  updateProgressLine(progress);
 }
 
 function bindProgressNavigationLocks() {
@@ -1196,23 +1410,58 @@ function bindQuestionOverlay() {
     closeQuestionOverlay();
   });
   document.addEventListener("keydown", (event) => {
-    if (event.key !== "Escape") return;
     const overlay = document.querySelector("#question-overlay");
-    if (overlay && !overlay.hidden) closeQuestionOverlay();
+    if (!overlay || overlay.hidden) return;
+    if (event.key === "Escape") {
+      event.preventDefault();
+      closeQuestionOverlay();
+      return;
+    }
+    if (event.key === "Tab") trapFocus(event, overlay.querySelector(".question-dialog"));
   });
+}
+
+function trapFocus(event, container) {
+  if (!container) return;
+  const focusable = [...container.querySelectorAll("button:not([disabled]), input:not([disabled]), a[href], [tabindex]:not([tabindex='-1'])")]
+    .filter((node) => node.offsetParent !== null);
+  if (!focusable.length) {
+    event.preventDefault();
+    return;
+  }
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+  if (event.shiftKey && (document.activeElement === first || !container.contains(document.activeElement))) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus();
+  }
 }
 
 function updateLearningCardLock(unit, locked, progress) {
   const card = document.querySelector(`[data-unit-id="${unit.id}"]`);
   if (!card) return;
   const readable = isUnitReadable(unit, progress);
+  const state = getUnitProgressState(unit, progress[unit.id]);
   card.hidden = !readable;
   card.classList.toggle("locked", locked);
+  card.classList.toggle("is-done", state.passed);
   const startButton = card.querySelector(`[data-start-learning="${unit.id}"]`);
+  const status = card.querySelector(`[data-card-status="${unit.id}"]`);
   const note = card.querySelector(`[data-locked-note="${unit.id}"]`);
+  if (status) {
+    status.textContent = state.passed ? "הושלם" : "";
+    status.classList.toggle("done", state.passed);
+  }
   if (startButton) {
     startButton.disabled = locked;
-    startButton.textContent = locked ? "נגיע לזה אחרי המקטע הקודם" : startButtonLabel(unit);
+    startButton.classList.toggle("primary", !state.passed);
+    const resuming = activeAttempts.has(unit.id);
+    startButton.textContent = locked
+      ? "נגיע לזה אחרי המקטע הקודם"
+      : (resuming ? "להמשך הסבב" : (state.passed ? "סבב נוסף" : startButtonLabel(unit)));
   }
   if (note) {
     note.hidden = true;
@@ -1231,15 +1480,6 @@ function isUnitUnlocked(unit, progress) {
 function firstAvailableUnit(progress) {
   return interactiveChapterOne.units.find((unit) => isUnitUnlocked(unit, progress) && !getUnitProgressState(unit, progress[unit.id]).passed)
     || interactiveChapterOne.units[interactiveChapterOne.units.length - 1];
-}
-
-function lockedUnitMessage(unit, progress) {
-  const index = interactiveChapterOne.units.findIndex((candidate) => candidate.id === unit.id);
-  const blocker = interactiveChapterOne.units.slice(0, index).find((previousUnit) => {
-    return !getUnitProgressState(previousUnit, progress[previousUnit.id]).passed;
-  });
-  if (!blocker) return "";
-  return `נגיע לזה אחרי ${blocker.section}.`;
 }
 
 function unitEndPage(index) {
@@ -1281,12 +1521,13 @@ function getGradedUnits() {
 
 function startButtonLabel(unit) {
   if (isIntroUnit(unit)) return `המשך ל־${nextFlowUnit(unit)?.section || "המשך"}`;
-  return getUnitMode(unit) === "warmup" ? "חימום קצר" : "בדיקת הבנה";
+  return getUnitMode(unit) === "warmup" ? "להתחלת החימום" : "להתחלת הבדיקה";
 }
 
 function finalQuizButtonLabel(unit) {
   const progress = readInteractiveProgress();
-  return getUnitProgressState(unit, progress[unit.id]).passed ? "ניסיון נוסף" : "התחלת קוויז סיכום";
+  if (activeAttempts.has(unit.id)) return "להמשך הסבב";
+  return getUnitProgressState(unit, progress[unit.id]).passed ? "סבב נוסף" : "להתחלת הבוחן";
 }
 
 function currentReadingUnit(progress) {
@@ -1323,47 +1564,90 @@ function completeIntroUnit(unit) {
   if (nextUnit) scrollToUnitStart(nextUnit);
 }
 
-function scrollToUnitStart(unit) {
+function preferredScrollBehavior() {
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
+}
+
+function scrollToUnitStart(unit, { focus = false } = {}) {
   requestAnimationFrame(() => {
-    const target = document.querySelector(`#page-${unit.page}`) || document.querySelector(`#learn-${unit.id}`);
-    if (target) target.scrollIntoView({ block: "start", behavior: "smooth" });
+    const target = document.querySelector(`#read-${unit.id}`)
+      || document.querySelector(`#page-${unit.page}`)
+      || document.querySelector(`#learn-${unit.id}`);
+    if (!target) return;
+    target.scrollIntoView({ block: "start", behavior: preferredScrollBehavior() });
+    if (focus && target.classList.contains("unit-anchor")) target.focus({ preventScroll: true });
   });
 }
 
 function scrollToFinalQuiz() {
   requestAnimationFrame(() => {
-    document.querySelector(`#learn-${chapterFinalQuiz.id}`)?.scrollIntoView({ block: "start", behavior: "smooth" });
+    const card = document.querySelector(`#learn-${chapterFinalQuiz.id}`);
+    card?.scrollIntoView({ block: "start", behavior: preferredScrollBehavior() });
+    card?.querySelector("[data-start-final-quiz]")?.focus({ preventScroll: true });
   });
 }
 
 function scrollToHomework() {
   requestAnimationFrame(() => {
-    document.querySelector("[data-homework-after]")?.scrollIntoView({ block: "start", behavior: "smooth" });
+    const card = document.querySelector("[data-homework-after]");
+    card?.scrollIntoView({ block: "start", behavior: preferredScrollBehavior() });
+    card?.querySelector("h2")?.setAttribute("tabindex", "-1");
+    card?.querySelector("h2")?.focus({ preventScroll: true });
   });
 }
 
 function updateReadingLocks(progress) {
-  const hiddenUnit = firstHiddenUnit(progress);
-  const hiddenFromPage = hiddenUnit ? hiddenUnit.page : Number.POSITIVE_INFINITY;
-  const unitPages = document.querySelectorAll(".page[data-reading-unit-id]");
-  const pages = unitPages.length ? unitPages : document.querySelectorAll(".page[id^='page-']");
-  pages.forEach((page) => {
-    const unit = interactiveChapterOne.units.find((candidate) => candidate.id === page.dataset.readingUnitId);
-    const pageNumber = Number(page.dataset.pageNumber || page.id?.replace("page-", ""));
-    const locked = unit ? !isUnitReadable(unit, progress) : pageNumber >= hiddenFromPage;
-    if (!locked) loadPageImage(page);
-    page.hidden = locked;
-    page.classList.toggle("page-locked", locked);
-    page.setAttribute("aria-hidden", locked ? "true" : "false");
-  });
+  const overlayOpen = !document.querySelector("#question-overlay")?.hidden && Boolean(document.querySelector("#question-overlay"));
+  const guidedPages = document.querySelectorAll(".reading-page");
+  if (guidedPages.length) {
+    guidedPages.forEach((page) => {
+      const unitIds = (page.dataset.readingUnitIds || "").split(" ").filter(Boolean);
+      const readable = unitIds.some((unitId) => {
+        const unit = interactiveChapterOne.units.find((candidate) => candidate.id === unitId);
+        return unit && isUnitReadable(unit, progress);
+      });
+      if (readable) loadPageImage(page);
+      page.hidden = !readable;
+      page.classList.toggle("page-locked", !readable);
+      page.setAttribute("aria-hidden", readable ? "false" : "true");
+      page.querySelectorAll("[data-blur-unit-id]").forEach((blur) => {
+        const unit = interactiveChapterOne.units.find((candidate) => candidate.id === blur.dataset.blurUnitId);
+        const clear = Boolean(unit && isUnitReadable(unit, progress));
+        if (!page.dataset.ready || !readable) {
+          blur.classList.toggle("cleared", clear);
+          blur.classList.add("no-anim");
+        } else if (clear && !blur.classList.contains("cleared") && !overlayOpen) {
+          blur.classList.remove("no-anim");
+          blur.classList.add("cleared");
+        } else if (!clear) {
+          blur.classList.remove("cleared");
+        }
+      });
+      if (readable) page.dataset.ready = "true";
+    });
+  } else {
+    const hiddenUnit = firstHiddenUnit(progress);
+    const hiddenFromPage = hiddenUnit ? hiddenUnit.page : Number.POSITIVE_INFINITY;
+    document.querySelectorAll(".page[id^='page-']").forEach((page) => {
+      const pageNumber = Number(page.id?.replace("page-", ""));
+      const locked = pageNumber >= hiddenFromPage;
+      if (!locked) loadPageImage(page);
+      page.hidden = locked;
+      page.classList.toggle("page-locked", locked);
+      page.setAttribute("aria-hidden", locked ? "true" : "false");
+    });
+  }
 
   document.querySelectorAll(".section-list a[href^='#page-']").forEach((link) => {
     const unit = interactiveChapterOne.units.find((candidate) => candidate.id === link.dataset.sectionUnitId);
     const pageNumber = Number(link.getAttribute("href").replace("#page-", ""));
+    const hiddenUnit = firstHiddenUnit(progress);
+    const hiddenFromPage = hiddenUnit ? hiddenUnit.page : Number.POSITIVE_INFINITY;
     const locked = unit ? !isUnitReadable(unit, progress) : pageNumber >= hiddenFromPage;
     link.classList.toggle("locked", locked);
     link.dataset.readingLocked = locked ? "true" : "false";
     link.setAttribute("aria-disabled", locked ? "true" : "false");
+    if (unit && !locked && document.querySelector(`#read-${unit.id}`)) link.setAttribute("href", `#read-${unit.id}`);
   });
 }
 
@@ -1394,19 +1678,22 @@ function updateFinalQuizLock(progress) {
   const state = getUnitProgressState(chapterFinalQuiz, progress[chapterFinalQuiz.id]);
   card.hidden = !chapterReadingComplete(progress);
   card.classList.toggle("locked", !unlocked);
+  card.classList.toggle("is-done", state.passed);
   const status = card.querySelector("[data-final-quiz-status]");
   const button = card.querySelector("[data-start-final-quiz]");
   if (status) {
-    status.textContent = !unlocked ? "בהמשך" : (state.passed ? "סיימת" : "מוכן");
+    status.textContent = state.passed ? "עבר" : "";
     status.classList.toggle("done", state.passed);
   }
   if (button) {
     button.disabled = !unlocked;
+    button.classList.toggle("primary", !state.passed);
     button.textContent = !unlocked ? "ייפתח אחרי הקריאה" : finalQuizButtonLabel(chapterFinalQuiz);
   }
   document.querySelectorAll("[data-final-quiz-link]").forEach((link) => {
     const locked = !unlocked;
     link.classList.toggle("locked", locked);
+    link.classList.toggle("done", state.passed);
     link.setAttribute("aria-disabled", locked ? "true" : "false");
     const statusNode = link.querySelector("em");
     if (statusNode) {
@@ -1481,31 +1768,46 @@ function updateUnitProgress(unit, updates) {
   };
 }
 
+/* ---------- Dialog ---------- */
+
 function openQuestionOverlay(unit) {
   const overlay = ensureQuestionOverlay();
+  const wasHidden = overlay.hidden;
+  if (wasHidden && !overlayReturnFocus) overlayReturnFocus = document.activeElement;
   overlay.hidden = false;
   overlay.dataset.unitId = unit.id;
   document.body.classList.add("question-modal-open");
+  document.querySelectorAll(".skip, .masthead, .layout").forEach((node) => node.setAttribute("inert", ""));
   const title = overlay.querySelector("#question-dialog-title");
   const kicker = overlay.querySelector("[data-question-kicker]");
-  const subtitle = overlay.querySelector("[data-question-subtitle]");
   const host = overlay.querySelector("[data-question-modal-host]");
-  if (title) title.innerHTML = formatInlineText(unit.title);
-  if (kicker) kicker.textContent = `${unit.section} · ${getUnitMode(unit) === "warmup" ? "חימום" : "בדיקת הבנה"}`;
-  if (subtitle) subtitle.textContent = "כמה שאלות קצרות, ואז חוזרים לקריאה.";
+  if (title) {
+    title.innerHTML = isFinalQuiz(unit)
+      ? formatInlineText(unit.title)
+      : `<bdi class="unit-num">${unit.section}</bdi> ${formatInlineText(unit.title)}`;
+    typesetMath(title);
+  }
+  if (kicker) kicker.textContent = isFinalQuiz(unit) ? "בוחן מסכם" : (getUnitMode(unit) === "warmup" ? "חימום" : "בדיקת הבנה");
   if (host) {
     host.dataset.unitId = unit.id;
     host.innerHTML = "";
   }
   updateCoinDisplays(readInteractiveProgress());
-  requestAnimationFrame(() => overlay.querySelector(".question-dialog")?.focus({ preventScroll: true }));
 }
 
-function closeQuestionOverlay() {
+function closeQuestionOverlay({ restoreFocus = true } = {}) {
   const overlay = document.querySelector("#question-overlay");
-  if (!overlay) return;
+  if (!overlay || overlay.hidden) return;
   overlay.hidden = true;
   document.body.classList.remove("question-modal-open");
+  document.querySelectorAll("[inert]").forEach((node) => node.removeAttribute("inert"));
+  const returnTo = overlayReturnFocus;
+  overlayReturnFocus = null;
+  // Blur that lifted while the dialog was open fades out now, where the reader can see it.
+  requestAnimationFrame(() => updateInteractiveProgress());
+  if (restoreFocus && returnTo?.isConnected && !returnTo.closest("[hidden]")) {
+    returnTo.focus({ preventScroll: true });
+  }
 }
 
 function ensureQuestionOverlay() {
@@ -1516,20 +1818,21 @@ function ensureQuestionOverlay() {
   overlay.className = "question-overlay";
   overlay.hidden = true;
   overlay.innerHTML = `
-    <div class="question-overlay-backdrop" data-close-question-overlay></div>
-    <section class="question-dialog" role="dialog" aria-modal="true" aria-labelledby="question-dialog-title" tabindex="-1">
-      <button class="question-close" type="button" aria-label="חזרה לקריאה" data-close-question-overlay>×</button>
-      <div class="question-dialog-head">
-        <div>
-          <p data-question-kicker></p>
-          <h3 id="question-dialog-title"></h3>
-          <span data-question-subtitle></span>
+    <div class="question-overlay-backdrop"></div>
+    <section class="question-dialog" role="dialog" aria-modal="true" aria-labelledby="question-dialog-title">
+      <header class="question-dialog-head">
+        <div class="dialog-titles">
+          <p class="checkpoint-kicker" data-question-kicker></p>
+          <h2 id="question-dialog-title"></h2>
         </div>
-        <div class="coin-hud question-coin-bank" aria-label="מטבעות שנצברו">
-          <span class="coin-emoji" aria-hidden="true">🪙</span>
+        <div class="coin-hud dialog-coins" aria-label="מטבעות">
+          ${COIN_IMG}
           <strong data-coin-count>0</strong>
         </div>
-      </div>
+        <button class="question-close" type="button" aria-label="סגירה וחזרה לקריאה" data-close-question-overlay>
+          <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </button>
+      </header>
       <div class="question-modal-host" data-question-modal-host></div>
     </section>
   `;
@@ -1544,10 +1847,20 @@ function getQuestionHost(unit) {
   return document.querySelector(`[data-learning-activity="${unit.id}"]`);
 }
 
+/* ---------- Coins ---------- */
+
+function currentCoins(progress = readInteractiveProgress()) {
+  return Math.max(0, Number(progress?.[PROGRESS_META_KEY]?.coins) || 0);
+}
+
 function updateCoinDisplays(progress = readInteractiveProgress()) {
-  const coins = Math.max(0, Number(progress?.[PROGRESS_META_KEY]?.coins) || 0);
+  const coins = currentCoins(progress);
   document.querySelectorAll("[data-coin-count]").forEach((node) => {
+    if (node.dataset.counting) return;
     node.textContent = String(coins);
+  });
+  document.querySelectorAll("[data-homework-hint]:not(.is-open)").forEach((hint) => {
+    hint.classList.toggle("is-short", coins < HINT_COST);
   });
 }
 
@@ -1558,52 +1871,53 @@ function coinsForUnit(unit) {
 }
 
 function renderCoinAward(amount) {
-  if (!amount) return `<div class="coin-award quiet">כבר נשמר.</div>`;
-  return `<div class="coin-award" data-coin-award="${amount}"><span class="coin-emoji" aria-hidden="true">🪙</span><strong>+${amount}</strong></div>`;
+  if (!amount) return "";
+  return `<p class="coin-award" data-coin-award="${amount}">${COIN_IMG}<span><bdi>+${amount}</bdi> מטבעות</span></p>`;
 }
 
-function animateCoinAward(amount) {
-  pulseCoinHuds();
-  if (!amount || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  const overlay = document.querySelector("#question-overlay");
-  const dialog = overlay?.querySelector(".question-dialog");
-  const start = dialog?.querySelector("[data-coin-award]") || dialog;
-  const target = overlay?.querySelector(".question-coin-bank") || document.querySelector(".overview-coin-hud");
-  if (!start || !target) return;
-
-  const startRect = start.getBoundingClientRect();
-  const targetRect = target.getBoundingClientRect();
-  const coinCount = Math.min(Math.max(amount, 3), 8);
-  for (let index = 0; index < coinCount; index += 1) {
-    const coin = document.createElement("span");
-    coin.className = "flying-coin";
-    coin.textContent = "🪙";
-    const startX = startRect.left + (startRect.width / 2) + ((index - (coinCount - 1) / 2) * 10);
-    const startY = startRect.top + (startRect.height / 2);
-    const endX = targetRect.left + (targetRect.width / 2) - startX;
-    const endY = targetRect.top + (targetRect.height / 2) - startY;
-    coin.style.left = `${startX}px`;
-    coin.style.top = `${startY}px`;
-    coin.style.setProperty("--fly-x", `${endX}px`);
-    coin.style.setProperty("--fly-y", `${endY}px`);
-    coin.style.animationDelay = `${index * 55}ms`;
-    document.body.append(coin);
-    window.setTimeout(() => coin.remove(), 1100 + (index * 55));
-  }
+function animateCoinAward(amount, from) {
+  const to = currentCoins();
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  showCoinDelta(amount);
+  if (reduce || !amount) return;
+  const start = performance.now();
+  const duration = 700;
+  const nodes = [...document.querySelectorAll("[data-coin-count]")];
+  nodes.forEach((node) => { node.dataset.counting = "true"; node.textContent = String(from); });
+  const step = (now) => {
+    const t = Math.min(1, (now - start) / duration);
+    const eased = 1 - Math.pow(1 - t, 3);
+    const value = Math.round(from + (to - from) * eased);
+    nodes.forEach((node) => { node.textContent = String(value); });
+    if (t < 1) requestAnimationFrame(step);
+    else nodes.forEach((node) => { delete node.dataset.counting; node.textContent = String(to); });
+  };
+  requestAnimationFrame(step);
 }
 
-function pulseCoinHuds() {
+function showCoinDelta(amount) {
+  if (!amount) return;
   document.querySelectorAll(".coin-hud").forEach((hud) => {
+    if (hud.offsetParent === null) return;
     hud.classList.remove("coin-pulse");
     void hud.offsetWidth;
     hud.classList.add("coin-pulse");
-    window.setTimeout(() => hud.classList.remove("coin-pulse"), 650);
+    window.setTimeout(() => hud.classList.remove("coin-pulse"), 900);
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const delta = document.createElement("span");
+    delta.className = `coin-delta ${amount < 0 ? "spend" : "gain"}`;
+    delta.setAttribute("aria-hidden", "true");
+    delta.textContent = amount > 0 ? `+${amount}` : `−${Math.abs(amount)}`;
+    hud.append(delta);
+    window.setTimeout(() => delta.remove(), 1300);
   });
 }
 
 function finalReadingUnit() {
   return interactiveChapterOne.units[interactiveChapterOne.units.length - 1] || null;
 }
+
+/* ---------- Learner insight ---------- */
 
 function applyQuestionStats(progress, questionStats) {
   const meta = progress[PROGRESS_META_KEY] || {};
@@ -1639,7 +1953,7 @@ function learnerTopicSummary(progress) {
       const accuracy = item.attempts ? (item.attempts - item.mistakes) / item.attempts : 1;
       const avgMs = item.attempts ? item.totalFirstCheckMs / item.attempts : 0;
       const weakness = (1 - accuracy) + Math.min(avgMs / 90000, 0.75) + Math.min((item.slowAnswers || 0) / Math.max(item.attempts, 1), 0.5);
-      const reason = item.mistakes ? `${item.mistakes} טעויות` : (avgMs > 30000 ? "לקח יותר זמן" : `${Math.round(accuracy * 100)}%`);
+      const reason = item.mistakes ? (item.mistakes === 1 ? "טעות אחת" : `${item.mistakes} טעויות`) : (avgMs > 30000 ? "לקח יותר זמן" : `${Math.round(accuracy * 100)}%`);
       return { ...item, accuracy, avgMs, weakness, reason };
     });
   const weakCandidates = scored.filter((item) => item.mistakes > 0 || item.avgMs > 30000 || item.slowAnswers > 0);
@@ -1659,16 +1973,13 @@ function updateLearnerInsight(progress) {
     return;
   }
   host.hidden = false;
-  const weak = summary.weak.map((item) => `<li>${escapeHtml(item.topic)} <span>${escapeHtml(item.reason)}</span></li>`).join("");
-  const strong = summary.strong.map((item) => `<li>${escapeHtml(item.topic)} <span>${Math.round(item.accuracy * 100)}%</span></li>`).join("");
+  const weak = summary.weak.map((item) => `<li><span>${formatInlineText(item.topic)}</span> <bdi>${escapeHtml(item.reason)}</bdi></li>`).join("");
+  const strong = summary.strong.map((item) => `<li><span>${formatInlineText(item.topic)}</span> <bdi>${Math.round(item.accuracy * 100)}%</bdi></li>`).join("");
   host.innerHTML = `
-    <div>
-      <h4>מבט אישי</h4>
-      <p>האתר מסתכל על טעויות ועל זמן מענה, ובקוויז הסיכום ייתן יותר מקום למה שדורש חיזוק.</p>
-    </div>
-    ${strong ? `<section><strong>הולך טוב</strong><ul>${strong}</ul></section>` : ""}
-    ${weak ? `<section><strong>לחזק</strong><ul>${weak}</ul></section>` : ""}
+    ${strong ? `<section><h3>הולך טוב</h3><ul>${strong}</ul></section>` : ""}
+    ${weak ? `<section class="weak"><h3>כדאי לחזק</h3><ul>${weak}</ul></section>` : ""}
   `;
+  typesetMath(host);
 }
 
 function getUnitProgressState(unit, unitProgress = {}) {
@@ -1705,45 +2016,37 @@ function getUnitProgressState(unit, unitProgress = {}) {
   };
 }
 
+function mistakesPhrase(mistakes) {
+  return mistakes === 1 ? "טעות אחת" : mistakes === 2 ? "שתי טעויות" : `${mistakes} טעויות`;
+}
+
 function attemptResultTitle(unit, passed, unitState) {
-  if (!passed) return "כמעט שם.";
-  if (isFinalQuiz(unit)) return "הקוויז עבר.";
-  if (getUnitMode(unit) === "warmup") return "יופי, אפשר להמשיך.";
-  if (!unitState.passed) return "יפה, הבדיקה עברה.";
-  return unitState.passed ? "יפה, אפשר להמשיך." : "יפה, הבדיקה עברה.";
+  if (!passed) return isFinalQuiz(unit) ? "עוד לא הגעת לציון המעבר." : "הסבב הזה לא עבר.";
+  if (isFinalQuiz(unit)) return "עברת את הבוחן המסכם.";
+  if (getUnitMode(unit) === "warmup") return "החימום הושלם.";
+  return "בדיקת ההבנה עברה.";
 }
 
 function attemptResultMessage(unit, unitState, correct, total, needed, passed, mistakes) {
   if (!passed) {
     if (isFinalQuiz(unit)) {
-      return `ענית נכון על ${correct} מתוך ${total}. צריך לפחות ${needed} תשובות נכונות, ואז תרגיל ההגשה ייפתח.`;
+      return `צריך לפחות ${needed} תשובות נכונות בניסיון הראשון כדי לפתוח את עבודת ההגשה.`;
     }
-    return `בסבב הזה היו ${mistakes} טעויות. כדאי לקרוא שוב את המקטע ולנסות סט שאלות חדש; אפשר לעבור עם לכל היותר ${interactiveChapterOne.maxMistakes} טעות.`;
+    return `היו ${mistakesPhrase(mistakes)}, ומותרת ${interactiveChapterOne.maxMistakes === 1 ? "אחת" : interactiveChapterOne.maxMistakes}. כדאי לחזור למקטע ואז לנסות סבב עם שאלות אחרות.`;
   }
   if (isFinalQuiz(unit)) {
-    return `ענית נכון על ${correct} מתוך ${total}. תרגיל ההגשה פתוח עכשיו.`;
+    return "עבודת ההגשה פתוחה עכשיו.";
   }
-  if (getUnitMode(unit) === "warmup") {
-    return mistakes ? `סיימת עם ${mistakes} טעות מתוך ${total}. נמשיך לסעיף הבא.` : `סיימת בלי טעויות. נמשיך לסעיף הבא.`;
-  }
+  const nextUnit = nextFlowUnit(unit);
   if (hasNextUnit(unit)) {
-    return mistakes ? `סיימת עם ${mistakes} טעות מתוך ${total}. נמשיך לסעיף הבא.` : `סיימת בלי טעויות. נמשיך לסעיף הבא.`;
+    return `הקריאה ממשיכה ב־<bdi>${nextUnit.section}</bdi> ${formatInlineText(nextUnit.title)}.`;
   }
-  return mistakes ? `סיימת את פרק 1 עם ${mistakes} טעות בסבב האחרון.` : "סיימת את פרק 1 בלי טעויות בסבב האחרון.";
+  return "סיימת לקרוא את פרק 1. הבוחן המסכם פתוח.";
 }
 
 function hasNextUnit(unit) {
   if (isFinalQuiz(unit)) return false;
   return Boolean(nextFlowUnit(unit));
-}
-
-function shuffled(items) {
-  const copy = [...items];
-  for (let i = copy.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [copy[i], copy[j]] = [copy[j], copy[i]];
-  }
-  return copy;
 }
 
 function cleanFeedbackPrefix(value) {
@@ -1752,8 +2055,16 @@ function cleanFeedbackPrefix(value) {
     .replace(/^(נכון|לא בדיוק)[.!。]\s*/u, "");
 }
 
-function formatInlineText(value) {
-  const text = normalizeMathSyntaxForDisplay(value).replace(/([\u0590-\u05ff])-/g, "$1־");
+/* ---------- Hebrew text with inline mathematics ---------- */
+
+// In questions about propositions, P and Q are statements, not the rationals.
+function usesPropositionalLetters(q) {
+  const text = [q.prompt, ...q.options, q.feedback].join(" ");
+  return /[⇒⇔]/.test(text) && /(^|[^A-Za-z])P([^A-Za-z(]|$)/.test(text);
+}
+
+function formatInlineText(value, options = {}) {
+  const text = normalizeMathSyntaxForDisplay(value).replace(/([֐-׿])-/g, "$1־");
   const mathAtom = String.raw`(?:[A-Za-z]+|[α-ωΑ-Ωε]|√|∑|∞|∅|[0-9]+|[∈∉∪∩⊆⊂⊇⊃⇒⇔≤≥≠=+\-−·*\/\\^²{}()[\]|:,._<>])`;
   const mathRunPattern = new RegExp(`${mathAtom}(?:\\s*${mathAtom})+`, "gu");
   let html = "";
@@ -1762,13 +2073,26 @@ function formatInlineText(value) {
   for (const match of text.matchAll(mathRunPattern)) {
     const start = match.index || 0;
     const raw = match[0];
-    if (start > lastIndex) html += formatPlainTextSegment(text.slice(lastIndex, start));
-    html += renderMathInline(raw);
+    if (start > lastIndex) html += formatPlainTextSegment(text.slice(lastIndex, start), options);
+    html += renderMathRun(raw, options);
     lastIndex = start + raw.length;
   }
 
-  html += formatPlainTextSegment(text.slice(lastIndex));
+  html += formatPlainTextSegment(text.slice(lastIndex), options);
   return html;
+}
+
+// Plain section numbers (1.2, 1.6.4) and bare numbers read as text, not as formulas.
+// Sentence punctuation stays outside the left-to-right formula; inside it, a final
+// comma or period would be drawn on the wrong side of the formula in a Hebrew line.
+function renderMathRun(raw, options) {
+  const match = raw.match(/^([\s.,:;]*)(.*?)([\s.,:;]*)$/su);
+  const [, lead, core, trail] = match;
+  if (!core) return escapeHtml(raw);
+  if (/^\d+(\.\d+)*$/.test(core) || /^\d+$/.test(core)) {
+    return `${escapeHtml(lead)}<bdi class="num">${escapeHtml(core)}</bdi>${escapeHtml(trail)}`;
+  }
+  return `${escapeHtml(lead)}${renderMathInline(core, options)}${escapeHtml(trail)}`;
 }
 
 function normalizeMathSyntaxForDisplay(value) {
@@ -1799,29 +2123,61 @@ function normalizeMathSyntaxForDisplay(value) {
     .replace(/\bmax\s*\{/g, "max{");
 }
 
-function formatPlainTextSegment(segment) {
+function formatPlainTextSegment(segment, options = {}) {
   return escapeHtml(segment).replace(/(^|[^A-Za-z])([A-Za-zα-ωΑ-Ωε])(?=$|[^A-Za-z])/gu, (full, prefix, variable) => {
-    return `${prefix}${renderMathInline(variable)}`;
+    return `${prefix}${renderMathInline(variable, options)}`;
   });
 }
 
-function renderMathInline(value) {
-  return `<span class="math-inline" dir="ltr">\\(${escapeHtml(mathTextToTex(value))}\\)</span>`;
+function renderMathInline(value, options = {}) {
+  return `<span class="math-inline" dir="ltr">\\(${escapeHtml(mathTextToTex(value, options))}\\)</span>`;
 }
 
 function renderMathDisplay(value) {
   return renderTexDisplay(mathTextToTex(value));
 }
 
+// Wide displays that list several formulas side by side get a stacked twin for phones.
 function renderTexDisplay(value) {
-  return `<div class="math-display tex-display" dir="ltr">\\[${escapeHtml(String(value).trim())}\\]</div>`;
+  const tex = String(value).trim();
+  const parts = tex.split(/\\qquad/)
+    .map((part) => part.trim().replace(/,$/, ""))
+    .filter(Boolean)
+    .flatMap((part) => part.split(/(?=\\Long(?:left)?rightarrow|\\Longleftrightarrow)/).map((piece) => piece.trim()));
+  const wide = `<div class="math-display tex-display${parts.length > 1 ? " has-narrow" : ""}" dir="ltr">\\[${escapeHtml(tex)}\\]</div>`;
+  if (parts.length < 2) return wide;
+  const narrow = `<div class="math-display tex-display tex-narrow" dir="ltr">\\[${escapeHtml(`\\begin{gathered}${parts.join(" \\\\[4pt] ")}\\end{gathered}`)}\\]</div>`;
+  return wide + narrow;
 }
 
-function mathTextToTex(value) {
-  return String(value)
-    .trim()
+// Braces after ^ or _ group TeX; any other brace is a literal set brace.
+function escapeSetBraces(value) {
+  let out = "";
+  const stack = [];
+  for (let i = 0; i < value.length; i += 1) {
+    const char = value[i];
+    if (char === "{") {
+      const prev = value.slice(0, i).trimEnd().slice(-1);
+      const grouping = prev === "^" || prev === "_" || /\\sqrt(\[[^\]]*\])?$/.test(value.slice(0, i)) || /√\[[^\]]*\]$/.test(value.slice(0, i));
+      stack.push(grouping);
+      out += grouping ? "{" : "\\{";
+    } else if (char === "}") {
+      const grouping = stack.length ? stack.pop() : false;
+      out += grouping ? "}" : "\\}";
+    } else {
+      out += char;
+    }
+  }
+  return out;
+}
+
+function mathTextToTex(value, { propositional = false } = {}) {
+  let tex = escapeSetBraces(String(value).trim())
     .replace(/−/g, "-")
-    .replace(/∞/g, "\\infty")
+    .replace(/∞/g, "\\infty ")
+    .replace(/∑/g, "\\sum")
+    .replace(/∅/g, "\\emptyset ")
+    .replace(/·/g, "\\cdot ")
     .replace(/∪/g, "\\cup ")
     .replace(/∩/g, "\\cap ")
     .replace(/⊆/g, "\\subseteq ")
@@ -1840,10 +2196,16 @@ function mathTextToTex(value) {
     .replace(/\^\(([^()]+)\)/g, "^{$1}")
     .replace(/\^\{([^{}]+)\}/g, "^{$1}")
     .replace(/\^([A-Za-z0-9]+)/g, "^{$1}")
+    .replace(/\(([^()]+)\)\/\(([^()]+)\)/g, "\\frac{$1}{$2}")
+    .replace(/²/g, "^{2}")
+    .replace(/(^|[^\\A-Za-z])(sup|inf|max|min)(?![A-Za-z])/g, "$1\\$2 ")
     .replace(/\bR\b/g, "\\mathbb{R}")
     .replace(/\bN\b/g, "\\mathbb{N}")
-    .replace(/\bQ\b/g, "\\mathbb{Q}")
     .replace(/\bZ\b/g, "\\mathbb{Z}");
+  if (!propositional) tex = tex.replace(/\bQ\b/g, "\\mathbb{Q}");
+  // Sums and fractions read better at full size, even inside a line of text.
+  if (/\\sum|\\frac/.test(tex)) tex = `\\displaystyle ${tex}`;
+  return tex;
 }
 
 function typesetMath(root = document.body) {
@@ -1856,15 +2218,6 @@ function typesetMath(root = document.body) {
   mathJax.startup?.promise?.then(() => {
     mathJax.typesetPromise?.([root]).catch(() => {});
   }).catch(() => {});
-}
-
-function formatMathHtml(value) {
-  let html = escapeHtml(String(value).trim());
-  html = html.replace(/\^\(([^()]+)\)/g, "<sup>$1</sup>");
-  html = html.replace(/\^\{([^{}]+)\}/g, "<sup>$1</sup>");
-  html = html.replace(/\^([A-Za-z0-9]+)/g, "<sup>$1</sup>");
-  html = html.replace(/√([A-Za-z0-9]+)/g, "√<span class=\"sqrt-content\">$1</span>");
-  return html;
 }
 
 function escapeHtml(value) {
