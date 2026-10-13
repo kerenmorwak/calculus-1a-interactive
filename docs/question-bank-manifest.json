@@ -15,6 +15,7 @@
       "id": "runtime_question_bank",
       "path": "docs/question-bank.json",
       "readablePath": "docs/question-bank.md",
+      "auditPath": "docs/question-bank-audit.md",
       "purpose": "Runtime source for understanding checks, final quiz, and homework tasks used by the app.",
       "itemCounts": {
         "total": 146,
@@ -35,6 +36,11 @@
       "id": "bank_source_map",
       "path": "docs/question-bank-sources.md",
       "purpose": "Human-readable map of all known question sources without copying heavy archives into Git."
+    },
+    {
+      "id": "question_bank_audit",
+      "path": "docs/question-bank-audit.md",
+      "purpose": "Generated review dashboard with quality risks, review queue, section inventory, skill coverage, answer-position bias, and longest-answer heuristics."
     },
     {
       "id": "learning_design_plan",

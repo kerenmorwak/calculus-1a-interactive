@@ -8,7 +8,9 @@
 
 - קובץ מקור: `docs/question-bank.json`
 - קובץ קריא לביקורת: `docs/question-bank.md`
+- דוח ביקורת וסיכוני איכות: `docs/question-bank-audit.md`
 - כלי ייצוא: `tools/export_question_bank.mjs`
+- כלי ביקורת: `tools/audit_question_bank.mjs`
 - כלי העשרת מטא־דאטה: `tools/enrich_question_bank_metadata.mjs`
 - תכנון פדגוגי: `docs/learning-design-plan.md`
 - סך הכול: 146 פריטים
@@ -71,6 +73,7 @@
 1. עורכים את `docs/question-bank.json`.
 2. מריצים `node tools/enrich_question_bank_metadata.mjs` כדי לוודא שיש מיומנויות ושכבות.
 3. מריצים `node tools/export_question_bank.mjs` כדי לרענן את `docs/question-bank.md`.
-4. מריצים `python build_notes.py` כדי להעתיק את המאגר המעודכן ל־`_site/docs/question-bank.json`.
+4. מריצים `node tools/audit_question_bank.mjs` כדי לרענן את דוח הביקורת `docs/question-bank-audit.md`.
+5. מריצים `python build_notes.py` כדי להעתיק את המאגר המעודכן ל־`_site/docs/question-bank.json`.
 
 שאלות מהמבחנים ומשיעורי הבית לא נכנסות אוטומטית למסלול הלמידה. מכניסים אותן רק אחרי בחירה וסידור לפי מיומנות, רמת קושי ושכבה: בסיס, חיזוק, אתגר, הערכה או הגשה.
