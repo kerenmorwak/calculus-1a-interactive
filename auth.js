@@ -178,7 +178,7 @@
 
   async function signInWithEmail(email) {
     if (!client) return { ok: false, error: "הכניסה עדיין לא מחוברת." };
-    const redirectTo = location.href.split("#")[0];
+    const redirectTo = location.origin || location.href.split("#")[0].split("?")[0];
     const { error } = await client.auth.signInWithOtp({
       email,
       options: { emailRedirectTo: redirectTo }
