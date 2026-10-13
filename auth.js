@@ -7,8 +7,11 @@
   const supabaseKey = String(config.supabaseAnonKey || config.supabasePublishableKey || "").trim();
   const supabaseSdkUrl = String(config.supabaseSdkUrl || "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2").trim();
   const hasConfig = Boolean(supabaseUrl && supabaseKey);
-  const isLocalDevHost = ["", "localhost", "127.0.0.1"].includes(location.hostname);
-  const loginRequired = hasConfig || !isLocalDevHost;
+  // Sign-in is optional unless runtime-config.js sets requireSignIn: true.
+  // Keep it off until Supabase sends email through a custom SMTP provider:
+  // the built-in sender reaches only team members and allows about 2 emails an hour.
+  const loginRequired = hasConfig && config.requireSignIn === true;
+  if (loginRequired) document.body?.classList.add("auth-required", "auth-pending");
   let client = null;
   let state = {
     mode: hasConfig ? "supabase" : "local",
@@ -235,9 +238,13 @@
   // Supabase errors arrive in English; learners see a short Hebrew explanation instead.
   function friendlyError(error) {
     const text = String(error?.message || error || "").toLowerCase();
-    if (/rate|too many|seconds/.test(text)) return "נשלחו כמה קישורים ברצף. אפשר לנסות שוב בעוד דקה.";
+    if (/not authorized|not allowed|signups not allowed/.test(text)) return "אי אפשר לשלוח קישור לכתובת הזו כרגע. מערכת הכניסה עדיין בהגדרה. אפשר להמשיך ללמוד, וההתקדמות נשמרת במכשיר הזה.";
+    if (/seconds/.test(text)) return "כבר נשלח קישור לכתובת הזו. אפשר לבקש קישור חדש בעוד דקה.";
+    if (/rate|too many/.test(text)) return "נשלחו יותר מדי קישורי כניסה בזמן קצר. אפשר לנסות שוב מאוחר יותר. בינתיים ההתקדמות נשמרת במכשיר הזה.";
     if (/invalid|email/.test(text)) return "כתובת המייל לא נראית תקינה. כדאי לבדוק ולנסות שוב.";
-    if (/network|fetch|failed/.test(text)) return "אין חיבור כרגע. צריך חיבור כדי להיכנס לקורס.";
+    if (/network|fetch|failed/.test(text)) return loginRequired
+      ? "אין חיבור כרגע. צריך חיבור כדי להיכנס לקורס."
+      : "אין חיבור כרגע. אפשר להמשיך ללמוד, וההתקדמות נשמרת במכשיר הזה.";
     return "לא הצלחנו לשלוח קישור כרגע. אפשר לנסות שוב בעוד רגע.";
   }
 
