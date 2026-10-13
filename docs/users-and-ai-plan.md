@@ -87,15 +87,35 @@ function or another trusted backend.
 
 ## Avatar direction
 
-Use a small curated bank of mathematician-inspired avatars. They should feel
-academic and warm, not childish. The first set is:
+Use a small curated bank of mathematician avatars: flat illustrated portraits
+inspired by each mathematician's era and look (not likenesses), shown with
+their years. They are drawn by `tools/make_avatars.py`. They should feel academic and warm,
+not childish. The current set (ids must match `supabase/schema.sql`):
 
-- Noether
-- Germain
-- Gauss
-- Cauchy
-- Riemann
-- Cantor
-- Weierstrass
-- Hypatia
+- Noether, Gauss, Germain, Cauchy
+- Kovalevskaya, Riemann, Hypatia, Euler
+- Cantor, Archimedes, Weierstrass, Dedekind
 
+## Sign-in and profile behaviour
+
+- Without Supabase config: no sign-in button; nickname, avatar and progress
+  stay on the device. The profile picker is offered once on the first visit;
+  "לא עכשיו" is remembered.
+- With config, signed out: a "כניסה" button sends an email link.
+- First sign-in, account has a profile: the account profile is used.
+- First sign-in, account has none but the device does: the learner is asked
+  whether to save the device profile to the account.
+- First sign-in, nothing anywhere: the profile picker opens.
+- Progress from the device and the account is merged: a sub-unit passed on
+  either side stays passed, bought hints are kept, and the coin balance is the
+  larger of the two. Progress left on the device by a different account is not
+  merged in.
+- If the sign-in library cannot load, the button stays hidden and the course
+  keeps working on the device.
+- Signing out keeps the device copy and says so. "מחיקה מהמכשיר הזה", with a
+  confirmation step, removes the profile and progress from this browser only;
+  nothing in the account is deleted.
+- If saving the profile to the account fails (for example, an avatar id that
+  is missing from `public.avatars`), the dialog stays open with a short note.
+- Magic-link redirects go to the site origin only (no query string), to match
+  the Redirect URL configured in Supabase (`http://127.0.0.1:8017` locally).

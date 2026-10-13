@@ -12,16 +12,23 @@ let learnerProfileMemoryStore = "";
 let lastHydratedAuthUserId = "";
 let progressCloudWritePaused = false;
 let questionBankLoadPromise = null;
+let interactiveReady = false;
 
+// Mathematicians the chapter itself mentions or builds on. Ids are stored in
+// profiles.avatar_id and must stay in sync with supabase/schema.sql.
 const learnerAvatars = [
-  { id: "noether", name: "אמי נתר", symbol: "N", accent: "algebra", label: "מבנים וסימטריות" },
-  { id: "germain", name: "סופי ז׳רמן", symbol: "S", accent: "prime", label: "ראשוניות ואומץ" },
-  { id: "gauss", name: "גאוס", symbol: "Σ", accent: "sum", label: "סדר וחישוב" },
-  { id: "cauchy", name: "קושי", symbol: "ε", accent: "epsilon", label: "דיוק וגבולות" },
-  { id: "riemann", name: "רימן", symbol: "ζ", accent: "zeta", label: "מרחב ופונקציות" },
-  { id: "cantor", name: "קנטור", symbol: "ℵ", accent: "infinity", label: "קבוצות ואינסוף" },
-  { id: "weierstrass", name: "ויירשטראס", symbol: "δ", accent: "delta", label: "פורמליות נקייה" },
-  { id: "hypatia", name: "היפטיה", symbol: "H", accent: "classic", label: "למידה וסקרנות" }
+  { id: "noether", name: "אמי נתר", years: "1882–1935", symbol: "N", accent: "algebra", label: "מבנים וסימטריות" },
+  { id: "gauss", name: "גאוס", years: "1777–1855", symbol: "Σ", accent: "sum", label: "סדר וחישוב" },
+  { id: "germain", name: "סופי ז׳רמן", years: "1776–1831", symbol: "S", accent: "prime", label: "ראשוניות ואומץ" },
+  { id: "cauchy", name: "קושי", years: "1789–1857", symbol: "ε", accent: "epsilon", label: "דיוק וגבולות" },
+  { id: "kovalevskaya", name: "סופיה קובלבסקיה", years: "1850–1891", symbol: "∂", accent: "partial", label: "משוואות ונגזרות" },
+  { id: "riemann", name: "רימן", years: "1826–1866", symbol: "ζ", accent: "zeta", label: "מרחב ופונקציות" },
+  { id: "hypatia", name: "היפטיה", years: "המאה ה־4", symbol: "H", accent: "classic", label: "למידה וסקרנות" },
+  { id: "euler", name: "אוילר", years: "1707–1783", symbol: "e", accent: "euler", label: "טורים וקבועים" },
+  { id: "cantor", name: "קנטור", years: "1845–1918", symbol: "ℵ", accent: "infinity", label: "קבוצות ואינסוף" },
+  { id: "archimedes", name: "ארכימדס", years: "287–212 לפנה״ס", symbol: "π", accent: "archimedes", label: "קירוב ומדידה" },
+  { id: "weierstrass", name: "ויירשטראס", years: "1815–1897", symbol: "δ", accent: "delta", label: "פורמליות נקייה" },
+  { id: "dedekind", name: "דדקינד", years: "1831–1916", symbol: "ℝ", accent: "dedekind", label: "חתכים והממשיים" }
 ];
 
 const interactiveChapterOne = {
@@ -604,8 +611,7 @@ function initInteractiveLearning() {
 
   const readingNote = section.querySelector(".reading-note");
   if (readingNote) readingNote.after(renderInteractiveOverview());
-  bindLearnerProfileActions();
-  bindLearnerProfileCloudSync();
+  interactiveReady = true;
   tagContentsLinksForUnits();
   const renderedGuidedPages = renderGuidedReadingPages(pages);
   interactiveChapterOne.units.forEach((unit, index) => {
@@ -642,11 +648,75 @@ function initInteractiveLearning() {
   bindReadingNavigationLocks();
   bindQuestionOverlay();
   updateInteractiveProgress();
+}
+
+// Header account area (profile and coins) works on every chapter page.
+function initLearnerAccount() {
+  updateCoinDisplays();
   updateLearnerProfileDisplay();
   mountDevTools();
-  if (!isDevToolsEnabled() && !readLearnerProfile()?.completed) {
-    window.setTimeout(() => openLearnerProfileDialog(), 450);
+  bindLearnerProfileActions();
+  bindLearnerProfileCloudSync();
+  offerProfileOnFirstVisit();
+}
+
+// Local-only sites: a small note under the profile button invites the learner to
+// pick a nickname; it never covers the reading. With accounts, the profile step
+// comes right after sign-in instead.
+function offerProfileOnFirstVisit(waited = 0) {
+  const profile = readLearnerProfile();
+  if (profile?.completed || profile?.dismissedAt) return;
+  const mode = headerAccountMode();
+  if (mode === "starting" && waited < 4000) {
+    window.setTimeout(() => offerProfileOnFirstVisit(waited + 250), 250);
+    return;
   }
+  if (mode !== "local") return;
+  window.setTimeout(showProfileNudge, 1200);
+}
+
+function showProfileNudge() {
+  if (readLearnerProfile()?.completed || document.querySelector("[data-profile-nudge]")) return;
+  const bar = document.querySelector(".account-bar");
+  if (!bar) return;
+  const nudge = document.createElement("div");
+  nudge.className = "profile-nudge";
+  nudge.dataset.profileNudge = "";
+  nudge.setAttribute("role", "note");
+  nudge.innerHTML = `
+    <p>אפשר לבחור כינוי ואווטאר לקורס.</p>
+    <div>
+      <button class="action primary" type="button" data-nudge-open>בחירה</button>
+      <button class="text-button" type="button" data-nudge-later>לא עכשיו</button>
+    </div>
+  `;
+  bar.append(nudge);
+  nudge.querySelector("[data-nudge-open]").addEventListener("click", () => {
+    hideProfileNudge();
+    openLearnerProfileDialog({ returnFocus: document.querySelector("[data-open-learner-profile]") });
+  });
+  nudge.querySelector("[data-nudge-later]").addEventListener("click", () => {
+    hideProfileNudge();
+    rememberProfileDismissed();
+  });
+}
+
+function hideProfileNudge() {
+  document.querySelectorAll("[data-profile-nudge]").forEach((node) => node.remove());
+}
+
+function rememberProfileDismissed() {
+  const profile = readLearnerProfile();
+  if (profile?.completed) return;
+  learnerProfileMemoryStore = JSON.stringify({ ...(profile || {}), id: profile?.id || learnerProfileId(), dismissedAt: new Date().toISOString() });
+  try {
+    window.localStorage?.setItem(LEARNER_PROFILE_STORAGE_KEY, learnerProfileMemoryStore);
+  } catch {}
+}
+
+function refreshProgressUi() {
+  if (interactiveReady) updateInteractiveProgress();
+  else updateCoinDisplays();
 }
 
 function readInteractiveProgress() {
@@ -861,17 +931,6 @@ function renderInteractiveOverview() {
           <strong id="interactive-percent">0%</strong>
           <span><i id="interactive-bar"></i></span>
         </div>
-        <div class="coin-hud overview-coin-hud" aria-label="מטבעות שנצברו">
-          <span class="coin-emoji" aria-hidden="true">🪙</span>
-          <strong data-coin-count>0</strong>
-        </div>
-        <button class="learner-chip" type="button" data-open-learner-profile>
-          <span class="math-avatar" data-learner-avatar aria-hidden="true">?</span>
-          <span>
-            <strong data-learner-name>בחירת פרופיל</strong>
-            <small data-learner-avatar-name>כינוי ואווטאר</small>
-          </span>
-        </button>
       </div>
     </div>
     <details class="interactive-map">
@@ -898,6 +957,8 @@ function renderInteractiveOverview() {
   return panel;
 }
 
+/* ---------- Learner profile: nickname and mathematician avatar ---------- */
+
 function readLearnerProfile() {
   try {
     const stored = window.localStorage?.getItem(LEARNER_PROFILE_STORAGE_KEY);
@@ -912,16 +973,16 @@ function readLearnerProfile() {
   }
 }
 
-function writeLearnerProfile(profile) {
+function writeLearnerProfile(profile, { skipCloud = false } = {}) {
   learnerProfileMemoryStore = JSON.stringify(profile);
   try {
     window.localStorage?.setItem(LEARNER_PROFILE_STORAGE_KEY, learnerProfileMemoryStore);
   } catch {
-    // Profile persistence is progressive enhancement until server auth is connected.
+    // Storage can be blocked in embedded previews; the in-memory copy keeps the session usable.
   }
   attachLearnerIdToProgress(profile.id);
   updateLearnerProfileDisplay(profile);
-  syncLearnerProfileToCloud(profile);
+  if (!skipCloud) syncLearnerProfileToCloud(profile);
 }
 
 function attachLearnerIdToProgress(learnerId) {
@@ -940,7 +1001,7 @@ function learnerProfileId() {
 }
 
 function learnerAvatarById(id) {
-  return learnerAvatars.find((avatar) => avatar.id === id) || learnerAvatars[0];
+  return learnerAvatars.find((avatar) => avatar.id === id) || null;
 }
 
 function currentLearnerProfile() {
@@ -949,23 +1010,51 @@ function currentLearnerProfile() {
   return {
     id: profile?.id || learnerProfileId(),
     nickname: "",
-    avatarId: learnerAvatars[0].id,
-    completed: false
+    avatarId: "",
+    completed: false,
+    dismissedAt: profile?.dismissedAt || null
   };
 }
 
+// Year ranges read left to right even inside Hebrew text.
+function formatAvatarYears(years) {
+  return escapeHtml(years).replace(/\d+–\d+/, (range) => `<bdi dir="ltr">${range}</bdi>`);
+}
+
+function renderMathAvatar(avatar, size = "") {
+  if (!avatar) return `<span class="math-avatar is-empty ${size}" aria-hidden="true"></span>`;
+  return `<span class="math-avatar ${size}" data-avatar-accent="${avatar.accent}" aria-hidden="true"><img src="assets/avatars/${avatar.id}.svg" alt="" width="64" height="64" decoding="async"></span>`;
+}
+
+// The header shows only: avatar and "היי, {כינוי}". The mathematician's name
+// appears only inside the avatar picker. Before sign-in (when sign-in exists)
+// the header shows "כניסה" alone.
+function headerAccountMode() {
+  const auth = window.CalculusAuth;
+  const state = auth?.getState?.() || {};
+  const accountsOn = Boolean(auth?.isAvailable?.()) && state.status !== "error";
+  if (!accountsOn) return "local";
+  if (state.signedIn) return "signed-in";
+  return state.status === "starting" ? "starting" : "signed-out";
+}
+
 function updateLearnerProfileDisplay(profile = readLearnerProfile()) {
-  const avatar = learnerAvatarById(profile?.avatarId);
-  const nickname = profile?.nickname?.trim();
-  document.querySelectorAll("[data-learner-name]").forEach((node) => {
-    node.textContent = nickname || "בחירת פרופיל";
+  const mode = headerAccountMode();
+  const ready = Boolean(profile?.completed && profile?.nickname);
+  const avatar = ready ? learnerAvatarById(profile.avatarId) : null;
+  const showChip = mode === "local" || mode === "signed-in";
+  document.querySelectorAll("[data-open-learner-profile]").forEach((chip) => {
+    chip.hidden = !showChip;
+    chip.classList.toggle("is-empty", !ready);
+    chip.setAttribute("aria-label", ready ? `הפרופיל שלי: ${profile.nickname}` : "בחירת פרופיל");
+    chip.title = ready ? `היי, ${profile.nickname}` : "בחירת פרופיל";
   });
-  document.querySelectorAll("[data-learner-avatar-name]").forEach((node) => {
-    node.textContent = nickname ? avatar.name : "כינוי ואווטאר";
+  if (ready || !showChip) hideProfileNudge();
+  document.querySelectorAll("[data-learner-name]").forEach((node) => {
+    node.textContent = ready ? `היי, ${profile.nickname}` : "בחירת פרופיל";
   });
   document.querySelectorAll("[data-learner-avatar]").forEach((node) => {
-    node.textContent = avatar.symbol;
-    node.dataset.avatarAccent = avatar.accent;
+    node.outerHTML = renderMathAvatar(avatar).replace("<span ", "<span data-learner-avatar ");
   });
 }
 
@@ -974,36 +1063,44 @@ function bindLearnerProfileActions() {
     const button = event.target.closest("[data-open-learner-profile]");
     if (!button) return;
     event.preventDefault();
-    openLearnerProfileDialog();
+    openLearnerProfileDialog({ returnFocus: button });
   });
 }
 
-function openLearnerProfileDialog() {
+let profileReturnFocus = null;
+
+// mode: "edit" (choose or change), "save-to-account" (offer the device profile to a new account)
+function openLearnerProfileDialog({ mode = "edit", returnFocus = document.activeElement } = {}) {
   const profile = currentLearnerProfile();
-  const overlay = ensureLearnerProfileDialog(profile);
+  const overlay = ensureLearnerProfileDialog();
+  profileReturnFocus = returnFocus;
+  renderLearnerProfileDialog(overlay, profile, mode);
   overlay.hidden = false;
   document.body.classList.add("question-modal-open");
   requestAnimationFrame(() => {
-    const input = overlay.querySelector("[data-profile-nickname]");
-    if (input && !input.value) input.focus({ preventScroll: true });
-    else overlay.querySelector(".profile-dialog")?.focus({ preventScroll: true });
+    const target = mode === "save-to-account"
+      ? overlay.querySelector("[data-profile-save-account]")
+      : overlay.querySelector("[data-profile-nickname]");
+    (target || overlay.querySelector(".profile-dialog"))?.focus({ preventScroll: true });
   });
 }
 
-function closeLearnerProfileDialog() {
+function closeLearnerProfileDialog({ dismissed = false } = {}) {
   const overlay = document.querySelector("#learner-profile-overlay");
-  if (!overlay) return;
+  if (!overlay || overlay.hidden) return;
   overlay.hidden = true;
-  document.body.classList.remove("question-modal-open");
+  if (!document.querySelector(".question-overlay:not([hidden])")) {
+    document.body.classList.remove("question-modal-open");
+  }
+  // Remember the "not now" so the picker does not reopen on every visit.
+  if (dismissed) rememberProfileDismissed();
+  if (profileReturnFocus?.isConnected && !profileReturnFocus.closest("[hidden]")) profileReturnFocus.focus({ preventScroll: true });
+  profileReturnFocus = null;
 }
 
-function ensureLearnerProfileDialog(profile) {
+function ensureLearnerProfileDialog() {
   let overlay = document.querySelector("#learner-profile-overlay");
-  if (overlay) {
-    populateLearnerProfileDialog(overlay, profile);
-    return overlay;
-  }
-
+  if (overlay) return overlay;
   overlay = document.createElement("div");
   overlay.id = "learner-profile-overlay";
   overlay.className = "question-overlay profile-overlay";
@@ -1011,74 +1108,239 @@ function ensureLearnerProfileDialog(profile) {
   overlay.innerHTML = `
     <div class="question-overlay-backdrop" data-close-learner-profile></div>
     <section class="question-dialog profile-dialog" role="dialog" aria-modal="true" aria-labelledby="profile-dialog-title" tabindex="-1">
-      <button class="question-close" type="button" aria-label="חזרה לקריאה" data-close-learner-profile>×</button>
-      <div class="profile-dialog-head">
-        <p>פרופיל למידה</p>
-        <h3 id="profile-dialog-title">איך תרצי להופיע בקורס?</h3>
-      </div>
-      <form class="profile-form" data-profile-form>
-        <label class="profile-name-field">
-          <span>כינוי</span>
-          <input type="text" maxlength="24" autocomplete="nickname" data-profile-nickname>
-        </label>
-        <fieldset class="avatar-picker">
-          <legend>אווטאר מתמטיקאי/ת</legend>
-          <div class="avatar-options">
-            ${learnerAvatars.map((avatar) => `
-              <label>
-                <input type="radio" name="learner-avatar" value="${avatar.id}">
-                <span class="math-avatar" data-avatar-accent="${avatar.accent}" aria-hidden="true">${avatar.symbol}</span>
-                <strong>${escapeHtml(avatar.name)}</strong>
-                <small>${escapeHtml(avatar.label)}</small>
-              </label>
-            `).join("")}
-          </div>
-        </fieldset>
-        <div class="profile-actions">
-          <button class="action primary" type="submit">שמירת פרופיל</button>
-          <button class="action" type="button" data-close-learner-profile>בהמשך</button>
-        </div>
-      </form>
+      <button class="question-close" type="button" aria-label="סגירה" data-close-learner-profile>×</button>
+      <div data-profile-dialog-body></div>
     </section>
   `;
   document.body.append(overlay);
-  populateLearnerProfileDialog(overlay, profile);
-  overlay.querySelector("[data-profile-form]")?.addEventListener("submit", (event) => {
-    event.preventDefault();
-    const currentProfile = currentLearnerProfile();
-    const nickname = overlay.querySelector("[data-profile-nickname]")?.value?.trim();
-    const avatarId = overlay.querySelector("input[name='learner-avatar']:checked")?.value || learnerAvatars[0].id;
-    const nextProfile = {
-      id: currentProfile.id || learnerProfileId(),
-      nickname: nickname || "לומדת חדו״א",
-      avatarId,
-      completed: true,
-      updatedAt: new Date().toISOString()
-    };
-    writeLearnerProfile(nextProfile);
-    closeLearnerProfileDialog();
-  });
   overlay.addEventListener("click", (event) => {
     if (!event.target.closest("[data-close-learner-profile]")) return;
     event.preventDefault();
-    closeLearnerProfileDialog();
+    closeLearnerProfileDialog({ dismissed: true });
+  });
+  overlay.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      closeLearnerProfileDialog({ dismissed: true });
+    } else if (event.key === "Tab") {
+      trapFocus(event, overlay.querySelector(".profile-dialog"));
+    }
   });
   return overlay;
 }
 
-function populateLearnerProfileDialog(overlay, profile) {
-  const input = overlay.querySelector("[data-profile-nickname]");
-  if (input) input.value = profile?.nickname || "";
-  const avatarId = profile?.avatarId || learnerAvatars[0].id;
-  const radio = [...overlay.querySelectorAll("input[name='learner-avatar']")]
-    .find((item) => item.value === avatarId);
-  if (radio) radio.checked = true;
+function renderLearnerProfileDialog(overlay, profile, mode) {
+  const body = overlay.querySelector("[data-profile-dialog-body]");
+  if (!body) return;
+  if (mode === "signed-out") {
+    body.innerHTML = `
+      <div class="profile-dialog-head">
+        <h3 id="profile-dialog-title">יצאת מהחשבון</h3>
+        <p class="dialog-lead">הפרופיל, ההתקדמות והמטבעות עדיין שמורים בדפדפן הזה. בחשבון שום דבר לא נמחק.</p>
+      </div>
+      <p class="device-note">במחשב משותף כדאי למחוק אותם מהמכשיר.</p>
+      <div class="profile-actions" data-signed-out-actions>
+        <button class="action primary" type="button" data-close-learner-profile>השארה במכשיר</button>
+        <button class="action" type="button" data-clear-device>מחיקה מהמכשיר הזה</button>
+      </div>
+    `;
+    body.querySelector("[data-clear-device]")?.addEventListener("click", () => {
+      const actions = body.querySelector("[data-signed-out-actions]");
+      actions.innerHTML = `
+        <p class="confirm-line" role="alert">למחוק מהמכשיר את הפרופיל, ההתקדמות והמטבעות?</p>
+        <button class="action danger" type="button" data-confirm-clear>כן, למחוק מהמכשיר</button>
+        <button class="action" type="button" data-close-learner-profile>ביטול</button>
+      `;
+      actions.querySelector("[data-confirm-clear]")?.addEventListener("click", clearLearnerDataFromDevice);
+      actions.querySelector("[data-confirm-clear]")?.focus();
+    });
+    return;
+  }
+  if (mode === "save-to-account") {
+    const avatar = learnerAvatarById(profile.avatarId);
+    body.innerHTML = `
+      <div class="profile-dialog-head">
+        <h3 id="profile-dialog-title">לשמור את הפרופיל בחשבון?</h3>
+        <p class="dialog-lead">כבר בחרת כינוי ואווטאר במכשיר הזה. ההתקדמות שלך נשמרת בכל מקרה.</p>
+      </div>
+      <div class="profile-preview">
+        ${renderMathAvatar(avatar, "is-large")}
+        <div>
+          <strong><bdi>${escapeHtml(profile.nickname)}</bdi></strong>
+          <span>${escapeHtml(avatar?.name || "")}</span>
+        </div>
+      </div>
+      <p class="field-note" data-profile-note role="status"></p>
+      <div class="profile-actions">
+        <button class="action primary" type="button" data-profile-save-account>שמירה בחשבון</button>
+        <button class="action" type="button" data-profile-change>בחירה אחרת</button>
+      </div>
+    `;
+    body.querySelector("[data-profile-save-account]")?.addEventListener("click", (event) => {
+      saveProfileFromDialog({ ...profile, updatedAt: new Date().toISOString() }, body.querySelector("[data-profile-note]"), event.currentTarget);
+    });
+    body.querySelector("[data-profile-change]")?.addEventListener("click", () => {
+      renderLearnerProfileDialog(overlay, profile, "edit");
+      overlay.querySelector("[data-profile-nickname]")?.focus();
+    });
+    return;
+  }
+
+  const auth = window.CalculusAuth;
+  const authState = auth?.getState?.() || {};
+  const accountAvailable = Boolean(auth?.isAvailable?.()) && authState.status !== "error";
+  const selectedId = profile.avatarId || "";
+  body.innerHTML = `
+    <div class="profile-dialog-head">
+      <h3 id="profile-dialog-title">הפרופיל שלי</h3>
+      <p class="dialog-lead">כינוי ואווטאר שילוו אותך לאורך הקורס.</p>
+    </div>
+    <form class="profile-form" data-profile-form novalidate>
+      <div class="profile-preview" aria-hidden="true" data-profile-preview>
+        ${renderMathAvatar(learnerAvatarById(selectedId), "is-large")}
+        <div>
+          <strong data-preview-name>${escapeHtml(profile.nickname ? `היי, ${profile.nickname}` : "היי, …")}</strong>
+          <span data-preview-avatar>${escapeHtml(learnerAvatarById(selectedId)?.name || "בחרו אווטאר")}</span>
+        </div>
+      </div>
+      <div class="profile-name-field">
+        <label for="profile-nickname">כינוי</label>
+        <input id="profile-nickname" type="text" maxlength="24" autocomplete="nickname" dir="auto"
+          placeholder="שם או כינוי" value="${escapeHtml(profile.nickname || "")}" data-profile-nickname aria-describedby="profile-nickname-note">
+        <p class="field-note" id="profile-nickname-note" data-profile-note>עד 24 תווים.</p>
+      </div>
+      <fieldset class="avatar-picker">
+        <legend>אווטאר</legend>
+        <div class="avatar-options">
+          ${learnerAvatars.map((avatar) => `
+            <label class="avatar-option">
+              <input type="radio" name="learner-avatar" value="${avatar.id}" ${avatar.id === selectedId ? "checked" : ""}>
+              ${renderMathAvatar(avatar)}
+              <strong>${escapeHtml(avatar.name)}</strong>
+              <small>${formatAvatarYears(avatar.years)}</small>
+            </label>
+          `).join("")}
+        </div>
+      </fieldset>
+      ${accountAvailable ? renderProfileAccountRow(authState) : ""}
+      <div class="profile-actions">
+        <button class="action primary" type="submit">שמירת פרופיל</button>
+        <button class="action" type="button" data-close-learner-profile>${profile.completed ? "ביטול" : "לא עכשיו"}</button>
+      </div>
+    </form>
+  `;
+  const form = body.querySelector("[data-profile-form]");
+  const input = form.querySelector("[data-profile-nickname]");
+  const note = form.querySelector("[data-profile-note]");
+  const syncPreview = () => {
+    const chosen = learnerAvatarById(form.querySelector("input[name='learner-avatar']:checked")?.value);
+    const preview = form.querySelector("[data-profile-preview]");
+    preview.querySelector(".math-avatar").outerHTML = renderMathAvatar(chosen, "is-large");
+    preview.querySelector("[data-preview-name]").textContent = `היי, ${input.value.trim() || "…"}`;
+    preview.querySelector("[data-preview-avatar]").textContent = chosen?.name || "בחרו אווטאר";
+  };
+  form.addEventListener("input", syncPreview);
+  form.addEventListener("change", syncPreview);
+  form.querySelector("[data-profile-sign-in]")?.addEventListener("click", () => {
+    closeLearnerProfileDialog();
+    auth?.openSignIn?.();
+  });
+  form.querySelector("[data-profile-sign-out]")?.addEventListener("click", async () => {
+    await auth?.signOut?.();
+    afterSignOut();
+  });
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const nickname = input.value.trim().replace(/\s+/g, " ");
+    const avatarId = form.querySelector("input[name='learner-avatar']:checked")?.value;
+    if (nickname.length < 2) {
+      note.textContent = "כדאי לבחור כינוי של שני תווים לפחות.";
+      note.classList.add("error");
+      input.focus();
+      return;
+    }
+    if (!avatarId) {
+      note.textContent = "נשאר לבחור אווטאר.";
+      note.classList.add("error");
+      form.querySelector("input[name='learner-avatar']")?.focus();
+      return;
+    }
+    const current = currentLearnerProfile();
+    note.classList.remove("error");
+    saveProfileFromDialog({
+      id: current.id || learnerProfileId(),
+      nickname,
+      avatarId,
+      completed: true,
+      updatedAt: new Date().toISOString()
+    }, note, form.querySelector("button[type='submit']"));
+  });
 }
+
+// After signing out, say plainly what stays on this device and offer to remove it.
+// Nothing is deleted without the learner choosing it.
+function afterSignOut() {
+  lastHydratedAuthUserId = "";
+  updateLearnerProfileDisplay();
+  openLearnerProfileDialog({ mode: "signed-out", returnFocus: document.querySelector("[data-open-learner-profile]") });
+}
+
+function clearLearnerDataFromDevice() {
+  interactiveMemoryStore = "{}";
+  learnerProfileMemoryStore = "";
+  try {
+    window.localStorage?.removeItem(INTERACTIVE_STORAGE_KEY);
+    window.localStorage?.removeItem(LEARNER_PROFILE_STORAGE_KEY);
+  } catch {}
+  location.replace(location.pathname + location.search);
+}
+
+window.CalculusProfile = { afterSignOut };
+
+function renderProfileAccountRow(authState) {
+  if (authState.signedIn) {
+    return `
+      <div class="profile-account">
+        <span>נשמר בחשבון <bdi>${escapeHtml(authState.email || "")}</bdi></span>
+        <button class="text-button" type="button" data-profile-sign-out>יציאה</button>
+      </div>
+    `;
+  }
+  return `
+    <div class="profile-account">
+      <span>כרגע הפרופיל וההתקדמות נשמרים במכשיר הזה.</span>
+      <button class="text-button" type="button" data-profile-sign-in>כניסה לשמירה בחשבון</button>
+    </div>
+  `;
+}
+
+function trapFocus(event, container) {
+  if (!container) return;
+  const focusable = [...container.querySelectorAll("button:not([disabled]), input:not([disabled]), a[href]")]
+    .filter((node) => node.offsetParent !== null);
+  if (!focusable.length) return;
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+  if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus();
+  }
+}
+
+/* ---------- Account: what happens when a learner signs in ---------- */
 
 function bindLearnerProfileCloudSync() {
   if (!window.CalculusAuth?.onChange) return;
   window.CalculusAuth.onChange((authState) => {
-    if (!authState?.signedIn || !authState.user?.id) return;
+    if (!authState?.signedIn || !authState.user?.id) {
+      if (authState?.status === "signed-out") lastHydratedAuthUserId = "";
+      updateLearnerProfileDisplay();
+      return;
+    }
+    updateLearnerProfileDisplay();
     hydrateUserDataFromCloud(authState).catch(() => {});
   });
 }
@@ -1087,47 +1349,141 @@ async function hydrateUserDataFromCloud(authState) {
   const userId = authState.user?.id;
   if (!userId || lastHydratedAuthUserId === userId) return;
   lastHydratedAuthUserId = userId;
-  progressCloudWritePaused = true;
-  try {
-    attachLearnerIdToProgress(userId);
-  } finally {
-    progressCloudWritePaused = false;
-  }
-  await hydrateLearnerProfileFromCloud(userId);
-  await hydrateProgressSnapshotFromCloud();
-  await hydrateProgressFromCloud();
+  const localProgress = readInteractiveProgress();
+  const previousAccount = localProgress?.[PROGRESS_META_KEY]?.accountUserId || "";
+  // Progress on this device that belonged to a different account is not merged in.
+  const deviceDataIsOtherAccount = Boolean(previousAccount && previousAccount !== userId);
+  await mergeProgressWithCloud(userId, { replaceLocal: deviceDataIsOtherAccount });
+  await hydrateLearnerProfileFromCloud(userId, { ignoreLocal: deviceDataIsOtherAccount });
   await syncLocalProgressToCloud();
 }
 
-async function hydrateLearnerProfileFromCloud(userId) {
+async function hydrateLearnerProfileFromCloud(userId, { ignoreLocal = false } = {}) {
   const auth = window.CalculusAuth;
   if (!auth?.fetchProfile) return;
-  const localProfile = readLearnerProfile();
-  const cloudProfile = await auth.fetchProfile();
-  if (!cloudProfile?.nickname) {
-    if (localProfile?.completed) await syncLearnerProfileToCloud({ ...localProfile, id: userId });
+  const localProfile = ignoreLocal ? null : readLearnerProfile();
+  let cloudProfile = null;
+  try {
+    cloudProfile = await auth.fetchProfile();
+  } catch {
     return;
   }
-  const cloudUpdatedAt = Date.parse(cloudProfile.updated_at || "") || 0;
-  const localUpdatedAt = Date.parse(localProfile?.updatedAt || "") || 0;
-  if (!localProfile?.completed || cloudUpdatedAt >= localUpdatedAt) {
+  if (cloudProfile?.nickname) {
+    // A profile already saved to the account wins.
     writeLearnerProfile({
-      ...localProfile,
       id: userId,
       nickname: cloudProfile.nickname,
-      avatarId: cloudProfile.avatar_id || localProfile?.avatarId || learnerAvatars[0].id,
+      avatarId: learnerAvatarById(cloudProfile.avatar_id)?.id || learnerAvatars[0].id,
       completed: true,
       updatedAt: cloudProfile.updated_at || new Date().toISOString()
-    });
-  } else {
-    await syncLearnerProfileToCloud({ ...localProfile, id: userId });
+    }, { skipCloud: true });
+    return;
   }
+  if (localProfile?.completed && localProfile?.nickname) {
+    writeLearnerProfile({ ...localProfile, id: userId }, { skipCloud: true });
+    openLearnerProfileDialog({ mode: "save-to-account" });
+    return;
+  }
+  if (ignoreLocal) {
+    learnerProfileMemoryStore = "";
+    try {
+      window.localStorage?.removeItem(LEARNER_PROFILE_STORAGE_KEY);
+    } catch {}
+    updateLearnerProfileDisplay(null);
+  }
+  openLearnerProfileDialog({ mode: "edit" });
 }
 
 async function syncLearnerProfileToCloud(profile) {
   const auth = window.CalculusAuth;
-  if (!auth?.getState?.().signedIn || !auth.saveProfile || !profile?.completed) return;
-  await auth.saveProfile(profile);
+  if (!auth?.getState?.().signedIn || !auth.saveProfile || !profile?.completed) return { ok: true, skipped: true };
+  try {
+    return await auth.saveProfile(profile);
+  } catch {
+    return { ok: false };
+  }
+}
+
+// Saves on the device first, then to the account when signed in. The dialog stays
+// open with a short note if the account save fails, so nothing is silently lost.
+async function saveProfileFromDialog(profile, noteNode, button) {
+  writeLearnerProfile(profile, { skipCloud: true });
+  if (button) button.disabled = true;
+  const result = await syncLearnerProfileToCloud(profile);
+  if (button) button.disabled = false;
+  if (result?.ok) {
+    closeLearnerProfileDialog();
+    return;
+  }
+  if (noteNode) {
+    noteNode.textContent = "הפרופיל נשמר במכשיר, אבל לא בחשבון. אפשר לנסות שוב בעוד רגע.";
+    noteNode.classList.add("error");
+  }
+}
+
+// Combines progress from this device and from the account without losing either:
+// a sub-unit passed on either side stays passed, purchased hints are kept, and
+// the coin balance never drops below what either side had.
+function mergeProgress(local = {}, cloud = {}) {
+  const merged = {};
+  const keys = new Set([...Object.keys(local || {}), ...Object.keys(cloud || {})]);
+  keys.delete(PROGRESS_META_KEY);
+  keys.forEach((key) => {
+    const a = local?.[key];
+    const b = cloud?.[key];
+    if (!a || !b) {
+      merged[key] = a || b;
+      return;
+    }
+    const aTime = Date.parse(a.updatedAt || "") || 0;
+    const bTime = Date.parse(b.updatedAt || "") || 0;
+    const [older, newer] = aTime > bTime ? [b, a] : [a, b];
+    merged[key] = {
+      ...older,
+      ...newer,
+      passed: Boolean(a.passed || b.passed),
+      quizPassed: Boolean(a.quizPassed || b.quizPassed),
+      continued: Boolean(a.continued || b.continued),
+      best: Math.max(Number(a.best) || 0, Number(b.best) || 0)
+    };
+  });
+  const localMeta = local?.[PROGRESS_META_KEY] || {};
+  const cloudMeta = cloud?.[PROGRESS_META_KEY] || {};
+  const localTime = Date.parse(localMeta.updatedAt || "") || 0;
+  const cloudTime = Date.parse(cloudMeta.updatedAt || "") || 0;
+  const newerMeta = localTime > cloudTime ? localMeta : cloudMeta;
+  const olderMeta = newerMeta === localMeta ? cloudMeta : localMeta;
+  merged[PROGRESS_META_KEY] = {
+    ...olderMeta,
+    ...newerMeta,
+    coins: Math.max(Number(localMeta.coins) || 0, Number(cloudMeta.coins) || 0),
+    purchasedHints: { ...(cloudMeta.purchasedHints || {}), ...(localMeta.purchasedHints || {}) }
+  };
+  return merged;
+}
+
+async function mergeProgressWithCloud(userId, { replaceLocal = false } = {}) {
+  const auth = window.CalculusAuth;
+  let cloudState = null;
+  try {
+    cloudState = await auth?.fetchLearningState?.();
+  } catch {
+    cloudState = null;
+  }
+  const cloudProgress = cloudState?.progress && typeof cloudState.progress === "object" ? cloudState.progress : {};
+  const localProgress = replaceLocal ? {} : readInteractiveProgress();
+  const merged = mergeProgress(localProgress, cloudProgress);
+  merged[PROGRESS_META_KEY].accountUserId = userId;
+  merged[PROGRESS_META_KEY].learnerId = userId;
+  progressCloudWritePaused = true;
+  try {
+    writeInteractiveProgress(merged, { skipCloud: true });
+  } finally {
+    progressCloudWritePaused = false;
+  }
+  await hydrateProgressFromCloud();
+  refreshProgressUi();
+  syncHomeworkHints();
 }
 
 function renderLearningCard(unit, index) {
@@ -2038,22 +2394,7 @@ async function hydrateProgressFromCloud() {
     };
   });
   writeInteractiveProgress(progress, { skipCloud: true, preserveUpdatedAt: true });
-  updateInteractiveProgress();
-}
-
-async function hydrateProgressSnapshotFromCloud() {
-  const auth = window.CalculusAuth;
-  if (!auth?.fetchLearningState || !auth.getState?.().signedIn) return;
-  const cloudState = await auth.fetchLearningState();
-  if (!cloudState?.progress || typeof cloudState.progress !== "object") return;
-  const localProgress = readInteractiveProgress();
-  const localUpdatedAt = Date.parse(localProgress?.[PROGRESS_META_KEY]?.updatedAt || "") || 0;
-  const cloudUpdatedAt = Date.parse(
-    cloudState.progress?.[PROGRESS_META_KEY]?.updatedAt || cloudState.updated_at || ""
-  ) || 0;
-  if (localUpdatedAt && localUpdatedAt > cloudUpdatedAt) return;
-  writeInteractiveProgress(cloudState.progress, { skipCloud: true, preserveUpdatedAt: true });
-  updateInteractiveProgress();
+  refreshProgressUi();
 }
 
 async function syncProgressSnapshotToCloud(progress) {
@@ -2226,7 +2567,7 @@ function animateCoinAward(amount) {
   const overlay = document.querySelector("#question-overlay");
   const dialog = overlay?.querySelector(".question-dialog");
   const start = dialog?.querySelector("[data-coin-award]") || dialog;
-  const target = overlay?.querySelector(".question-coin-bank") || document.querySelector(".overview-coin-hud");
+  const target = overlay?.querySelector(".question-coin-bank") || document.querySelector(".header-coins");
   if (!start || !target) return;
 
   const startRect = start.getBoundingClientRect();
@@ -2545,7 +2886,10 @@ function escapeHtml(value) {
 }
 
 function startInteractiveLearning() {
-  loadQuestionBank().finally(initInteractiveLearning);
+  loadQuestionBank().finally(() => {
+    initInteractiveLearning();
+    initLearnerAccount();
+  });
 }
 
 if (document.readyState === "loading") {
